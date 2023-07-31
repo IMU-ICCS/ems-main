@@ -21,7 +21,7 @@ import java.util.Map;
 @SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-// Based on: eu.melodic.event.models.interfaces.PullSensor
+// Based on: eu.melodic.models.interfaces.PullSensor
 public class PullSensor extends Sensor {
     private String className;
     @Builder.Default

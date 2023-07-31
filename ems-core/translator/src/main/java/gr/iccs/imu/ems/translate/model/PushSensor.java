@@ -17,7 +17,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-// Based on: eu.melodic.event.models.interfaces.PushSensor
+// Based on: eu.melodic.models.interfaces.PushSensor
 public class PushSensor extends Sensor {
     private int port;
 }

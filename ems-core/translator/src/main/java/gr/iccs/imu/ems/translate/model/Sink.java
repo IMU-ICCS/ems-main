@@ -21,7 +21,7 @@ import java.util.Map;
 @SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-// See: eu.melodic.event.models.interfaces.Sink
+// See: eu.melodic.models.interfaces.Sink
 public class Sink extends AbstractInterfaceRootObject {
     public enum Type { /*CLI, KAIROS_DB,*/ INFLUX, JMS }
 

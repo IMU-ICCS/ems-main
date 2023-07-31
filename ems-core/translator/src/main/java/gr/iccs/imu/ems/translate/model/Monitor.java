@@ -20,7 +20,7 @@ import java.util.Map;
 @SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-// See: eu.melodic.event.models.interfaces.Monitor
+// See: eu.melodic.models.interfaces.Monitor
 public class Monitor extends AbstractInterfaceRootObject {
     private String metric;
     private String component;
