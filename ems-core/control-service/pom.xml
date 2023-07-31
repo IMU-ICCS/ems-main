@@ -33,7 +33,7 @@
         <docker.esperJar>esper-${esper.version}.jar</docker.esperJar>
 
         <!-- io.fabricat8 docker-maven-plugin properties -->
-        <docker-maven-plugin.version>0.39.1</docker-maven-plugin.version>
+        <docker-maven-plugin.version>0.43.2</docker-maven-plugin.version>
         <docker-maven-plugin.imageName>ems-server</docker-maven-plugin.imageName>
         <!--<docker-image-tag>${revision}</docker-image-tag>-->
         <!--<build-description></build-description>-->
@@ -240,7 +240,7 @@
             <plugin>
                 <groupId>io.github.git-commit-id</groupId>
                 <artifactId>git-commit-id-maven-plugin</artifactId>
-                <version>5.0.0</version>
+                <version>6.0.0</version>
                 <!--<executions>
                     <execution>
                         <id>get-the-git-infos</id>
@@ -338,7 +338,7 @@
             <plugin>
                 <groupId>net.nicoulaj.maven.plugins</groupId>
                 <artifactId>checksum-maven-plugin</artifactId>
-                <version>1.8</version>
+                <version>1.11</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
