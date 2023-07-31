@@ -306,7 +306,7 @@ public class BrokerClient {
         long hash = message.hashCode();
         log.debug("BrokerClient.publishEvent(): Sending {} message: connection={}, username={}, destination={}, hash={}, payload={}, properties={}", messageType, connectionString, properties.getBrokerUsername(), destinationName, hash, event, propertiesMap);
         producer.send(message);
-        log.info("BrokerClient.publishEvent(): {} message sent: connection={}, username={}, destination={}, hash={}, payload={}, properties={}", messageType, connectionString, properties.getBrokerUsername(), destinationName, hash, event, propertiesMap);
+        log.debug("BrokerClient.publishEvent(): {} message sent: connection={}, username={}, destination={}, hash={}, payload={}, properties={}", messageType, connectionString, properties.getBrokerUsername(), destinationName, hash, event, propertiesMap);
 
         // close connection
         if (_closeConn) {
