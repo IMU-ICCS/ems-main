@@ -58,8 +58,8 @@
         <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
 
         <!-- Jackson and Snakeyaml - Used in baguette-client-install -->
-        <jackson.version>2.15.0</jackson.version>
-        <snakeyaml.version>1.33</snakeyaml.version>
+        <jackson.version>2.15.2</jackson.version>
+        <snakeyaml.version>2.0</snakeyaml.version>
     </properties>
 
     <modules>
@@ -82,13 +82,16 @@
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

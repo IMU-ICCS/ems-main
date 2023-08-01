@@ -42,7 +42,10 @@ public class Instruction extends AbstractInstructionsBase {
     private Map<String, String> variables;
 
     // Fluent API addition
-    public Instruction pattern(String varName, Pattern pattern) { this.patterns.put(varName, pattern); return this; }
+    public Instruction pattern(String varName, Pattern pattern) {
+        this.patterns.put(varName, pattern);
+        return this;
+    }
 
     // Creators API
     public static Instruction createLog(@NotNull String message) {
