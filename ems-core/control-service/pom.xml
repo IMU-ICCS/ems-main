@@ -606,6 +606,7 @@
                         <version>3.1.0</version>
                         <executions>
                             <execution>
+                                <id>delete-old-docker-context</id>
                                 <phase>install</phase>
                                 <goals>
                                     <goal>run</goal>
