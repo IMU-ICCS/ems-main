@@ -57,11 +57,7 @@
 				</exclusion>
 				<exclusion>
 					<groupId>org.bouncycastle</groupId>
-					<artifactId>bcpg-jdk15on</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.bouncycastle</groupId>
-					<artifactId>bcpkix-jdk15on</artifactId>
+					<artifactId>*</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

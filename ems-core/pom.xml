@@ -61,6 +61,9 @@
         <!-- Jackson and Snakeyaml - Used in baguette-client-install -->
         <jackson.version>2.15.2</jackson.version>
         <snakeyaml.version>2.0</snakeyaml.version>
+
+        <!-- Bouncy Castle version -->
+        <bouncy-castle.version>1.76</bouncy-castle.version>
     </properties>
 
     <modules>
@@ -92,6 +95,22 @@
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>${snakeyaml.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpg-jdk18on</artifactId>
+                <version>${bouncy-castle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk18on</artifactId>
+                <version>${bouncy-castle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>${bouncy-castle.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
