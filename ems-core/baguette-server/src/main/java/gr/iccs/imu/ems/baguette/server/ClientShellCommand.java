@@ -454,7 +454,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             } else
             if (s.startsWith("password=")) {
                 this.clientBrokerPassword = s.substring("password=".length());
-                log.info("{}--> Broker Password: {}", id, clientBrokerPassword);
+                log.info("{}--> Broker Password: {}", id, PasswordUtil.getInstance().encodePassword(clientBrokerPassword));
             } else
             if (s.startsWith("cert=")) {
                 this.clientCertificate = s.substring("cert=".length())
@@ -550,11 +550,11 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     public void sendToClient(String msg, Level logLevel) {
         if (msg == null || (msg = msg.trim()).isEmpty()) return;
         switch (logLevel) {
-            case TRACE: log.trace("{}==> PUSH : {}", id, msg); break;
-            case DEBUG: log.debug("{}==> PUSH : {}", id, msg); break;
-            case WARN:  log.warn("{}==> PUSH : {}", id, msg); break;
-            case ERROR:  log.error("{}==> PUSH : {}", id, msg); break;
-            default: log.info("{}==> PUSH : {}", id, msg);
+            case TRACE -> log.trace("{}==> PUSH : {}", id, msg);
+            case DEBUG -> log.debug("{}==> PUSH : {}", id, msg);
+            case WARN -> log.warn("{}==> PUSH : {}", id, msg);
+            case ERROR -> log.error("{}==> PUSH : {}", id, msg);
+            default -> log.info("{}==> PUSH : {}", id, msg);
         }
         out.println(msg);
     }

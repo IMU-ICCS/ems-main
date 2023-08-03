@@ -13,13 +13,19 @@ import gr.iccs.imu.ems.baguette.server.ClientShellCommand;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
 import gr.iccs.imu.ems.util.ClientConfiguration;
 import gr.iccs.imu.ems.util.KeystoreUtil;
+import gr.iccs.imu.ems.util.PasswordUtil;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.operator.OperatorCreationException;
 
 import javax.validation.constraints.NotBlank;
 import java.io.File;
+import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -48,8 +54,9 @@ public class ClusterZone implements IClusterZone {
     @Getter @Setter
     private ClientShellCommand aggregator;
 
-    @SneakyThrows
-    public ClusterZone(@NotBlank String id, int startPort, int endPort, String keystoreFileName) {
+    public ClusterZone(@NotBlank String id, int startPort, int endPort, String keystoreFileName)
+            throws IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException
+    {
         checkArgs(id, startPort, endPort);
         this.id = id;
         this.startPort = startPort;
@@ -63,15 +70,19 @@ public class ClusterZone implements IClusterZone {
         log.info("New ClusterZone:  zone: {}", id);
         log.info("                  file: {}", clusterKeystoreFile);
         log.info("                  type: {}", clusterKeystoreType);
-        log.debug("              password: {}",
-                StringUtils.isNotBlank(clusterKeystorePassword) ? "Provided" : "Not provided");
+        log.debug("             password: {}", PasswordUtil.getInstance().encodePassword(clusterKeystorePassword));
+
+        log.trace("ClusterZone.<init>: Cluster Keystore: file={}, type={}, pass={}", clusterKeystoreFile.getCanonicalPath(), clusterKeystoreType, clusterKeystorePassword);
+        log.trace("ClusterZone.<init>: Cluster Id: {}", clusterId);
         this.clusterKeystoreBase64 = KeystoreUtil
                 .getKeystore(clusterKeystoreFile.getCanonicalPath(), clusterKeystoreType, clusterKeystorePassword)
                 .createIfNotExist()
                 .createKeyAndCert(clusterId, "CN=" + clusterId, "")
                 .readFileAsBase64();
-        log.debug("        Base64 content: {}",
+        log.debug("       Base64 content: {}",
                 StringUtils.isNotBlank(clusterKeystoreBase64) ? "Not empty" : "!!! Empty !!!");
+        if (log.isTraceEnabled())
+            log.trace("ClusterZone.<init>: Cluster Keystore: Base64: {}", PasswordUtil.getInstance().encodePassword(clusterKeystoreBase64));
     }
 
     private void checkArgs(String id, int startPort, int endPort) {

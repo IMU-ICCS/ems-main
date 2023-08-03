@@ -204,6 +204,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
         }
     }
 
+    @SneakyThrows
     private ClusterZone createClusterZone(@NonNull String id) {
         Map<String,String> values = new HashMap<>();
         values.put("TIMESTAMP", ""+System.currentTimeMillis());

@@ -19,6 +19,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cryptacular.util.CertUtil;
 import org.cryptacular.x509.GeneralNameType;
@@ -99,22 +100,28 @@ public class KeystoreUtil {
 
     // Create/Replace Key pair and Certificate methods
     // If keystore file does not exist it will be created
-    public KeystoreUtil createKeyAndCert(String entryName, String dn, String ext) throws Exception {
+    public KeystoreUtil createKeyAndCert(String entryName, String dn, String ext)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, OperatorCreationException
+    {
         return createKeyAndCert(entryName, DEFAULT_KEY_GEN_ALGORITHM, DEFAULT_KEY_SIZE, DEFAULT_SIGNATURE_ALGORITHM, DEFAULT_CERT_START_DATE_OFFSET, DEFAULT_CERT_END_DATE_OFFSET, dn, ext);
     }
 
-    public KeystoreUtil createOrReplaceKeyAndCert(String entryName, String dn, String ext) throws Exception {
+    public KeystoreUtil createOrReplaceKeyAndCert(String entryName, String dn, String ext)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, OperatorCreationException
+    {
         return this
                 .deleteEntry(entryName)
                 .createKeyAndCert(entryName, dn, ext);
     }
 
-    public KeystoreUtil createKeyAndCert(String entryName, String keyGenAlg, int keySize, String sigAlg, int startDateOffset, int endDateOffset, String dn, String extSAN) throws Exception {
+    public KeystoreUtil createKeyAndCert(String entryName, String keyGenAlg, int keySize, String sigAlg, int startDateOffset, int endDateOffset, String dn, String extSAN)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, OperatorCreationException
+    {
         boolean hasExt = StringUtils.isNotBlank(extSAN);
 
         // Read keystore from file or create it
         log.trace("KeystoreUtil: Reading keystore from file: {}", keystoreFile);
-        KeyStore keystore = null;
+        KeyStore keystore;
         try {
             keystore = readKeystore();
             log.debug("KeystoreUtil: Keystore loaded from file: {}", keystoreFile);
@@ -183,7 +190,7 @@ public class KeystoreUtil {
                 } else
                     log.warn("KeystoreUtil: Ignoring element of Subject Alt. Names: {}", name);
             }
-            GeneralNames subjectAltName = new GeneralNames(altNames.toArray(new GeneralName[altNames.size()]));
+            GeneralNames subjectAltName = new GeneralNames(altNames.toArray(new GeneralName[0]));
             certBuilder.addExtension(Extension.subjectAlternativeName, false, subjectAltName);
         }
 
@@ -210,26 +217,34 @@ public class KeystoreUtil {
         return this;
     }
 
-    public KeystoreUtil createOrReplaceKeyAndCert(String entryName, String keyGenAlg, int keySize, String sigAlg, int startDateOffset, int endDateOffset, String dn, String ext) throws Exception {
+    public KeystoreUtil createOrReplaceKeyAndCert(String entryName, String keyGenAlg, int keySize, String sigAlg, int startDateOffset, int endDateOffset, String dn, String ext)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, OperatorCreationException
+    {
         return this
                 .deleteEntry(entryName)
                 .createKeyAndCert(entryName, keyGenAlg, keySize, sigAlg, startDateOffset, endDateOffset, dn, ext);
     }
 
-    public KeystoreUtil createKeyAndCertWithSAN(String entryName, String dn) throws Exception {
+    public KeystoreUtil createKeyAndCertWithSAN(String entryName, String dn)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, OperatorCreationException
+    {
         String sanExt = String.format("dns:localhost,ip:127.0.0.1,ip:%s,ip:%s",
                 NetUtil.getDefaultIpAddress(), NetUtil.getPublicIpAddress());
         return createKeyAndCert(entryName, dn, sanExt);
     }
 
-    public KeystoreUtil createOrReplaceKeyAndCertWithSAN(String entryName, String dn) throws Exception {
+    public KeystoreUtil createOrReplaceKeyAndCertWithSAN(String entryName, String dn)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, OperatorCreationException
+    {
         return this
                 .deleteEntry(entryName)
                 .createKeyAndCertWithSAN(entryName, dn);
     }
 
     // Delete key pair and/or certificate from keystore
-    public KeystoreUtil deleteEntry(String entryName) throws Exception {
+    public KeystoreUtil deleteEntry(String entryName)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException
+    {
         try {
             log.trace("KeystoreUtil: Deleting entry from keystore: alias={}, file={}", entryName, keystoreFile);
             KeyStore keystore = readKeystore();
@@ -243,19 +258,25 @@ public class KeystoreUtil {
     }
 
     // Query if alias exists in keystore
-    public boolean containsEntry(String entryName) throws Exception {
+    public boolean containsEntry(String entryName)
+            throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException
+    {
         KeyStore keystore = readKeystore(keystoreFile, keystoreType, keystorePassword);
         return keystore.containsAlias(entryName);
     }
 
     // Certificate import/export methods
-    public KeystoreUtil importAndReplaceCertFromFile(String entryName, String certFile) throws Exception {
+    public KeystoreUtil importAndReplaceCertFromFile(String entryName, String certFile)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException
+    {
         return this
                 .deleteEntry(entryName)
                 .importCertFromFile(entryName, certFile);
     }
 
-    public KeystoreUtil importCertFromFile(String entryName, String certFile) throws Exception {
+    public KeystoreUtil importCertFromFile(String entryName, String certFile)
+            throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
+    {
         log.debug("KeystoreUtil: Reading certificate from file: {}", certFile);
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         Certificate cert = cf.generateCertificate(Files.newInputStream(Paths.get(certFile)));
@@ -270,7 +291,9 @@ public class KeystoreUtil {
         return this;
     }
 
-    public KeystoreUtil exportCertToFile(String entryName, String certFile) throws Exception {
+    public KeystoreUtil exportCertToFile(String entryName, String certFile)
+            throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException
+    {
         log.debug("KeystoreUtil: Reading certificate from keystore: alias={}, keystore={}", entryName, keystoreFile);
         String certPem = getEntryCertificateAsPEM(entryName);
         log.trace("KeystoreUtil: Certificate (PEM):\n{}", certPem);
@@ -285,7 +308,9 @@ public class KeystoreUtil {
     }
 
     // Certificate retrieval methods
-    public X509Certificate getEntryCertificate(String entryName) throws Exception {
+    public X509Certificate getEntryCertificate(String entryName)
+            throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException
+    {
         log.trace("KeystoreUtil.getEntryCertificate(): keystore: file={}, type={}, password={}",
                 keystoreFile, keystoreType, passwordUtil().encodePassword(keystorePassword));
         KeyStore keystore = readKeystore(keystoreFile, keystoreType, keystorePassword);
@@ -294,7 +319,9 @@ public class KeystoreUtil {
         return (X509Certificate) keystore.getCertificate(entryName);
     }
 
-    public String getEntryCertificateAsPEM(String entryName) throws Exception {
+    public String getEntryCertificateAsPEM(String entryName)
+            throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException
+    {
         X509Certificate cert = getEntryCertificate(entryName);
         log.trace("KeystoreUtil.getEntryCertificatePEM(): X509 certificate:\n{}", cert);
         String certPem = exportCertificateAsPEM(cert);
@@ -302,7 +329,7 @@ public class KeystoreUtil {
         return certPem;
     }
 
-    public byte[] getEntryCertificateAsDER(String entryName) throws Exception {
+    public byte[] getEntryCertificateAsDER(String entryName) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
         X509Certificate cert = getEntryCertificate(entryName);
         log.trace("KeystoreUtil.getEntryCertificatePEM(): X509 certificate:\n{}", cert);
         byte[] certBytes = cert.getEncoded();
@@ -321,7 +348,7 @@ public class KeystoreUtil {
         return certPem;
     }
 
-    public static byte[] exportCertificateAsDER(X509Certificate cert) throws Exception {
+    public static byte[] exportCertificateAsDER(X509Certificate cert) throws CertificateEncodingException {
         log.trace("KeystoreUtil.exportCertificateAsDER(): X509 certificate:\n{}", cert);
         byte[] certBytes = cert.getEncoded();
         log.trace("KeystoreUtil.exportCertificateAsDER(): X509 certificate (DER):\n{}", certBytes);
@@ -329,7 +356,9 @@ public class KeystoreUtil {
     }
 
     // Certificate names methods
-    public List<String> getEntryNames(String entryName, boolean onlyIp) throws Exception {
+    public List<String> getEntryNames(String entryName, boolean onlyIp)
+            throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException
+    {
         X509Certificate cert = getEntryCertificate(entryName);
         if (cert==null) {
             log.debug("KeystoreUtil.getEntryNames(): No certificate found for {}", entryName);
@@ -406,7 +435,9 @@ public class KeystoreUtil {
         return this;
     }
 
-    public static KeyStore readKeystore(String file, String type, String password) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+    public static KeyStore readKeystore(String file, String type, String password)
+            throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException
+    {
         KeyStore keystore = KeyStore.getInstance(type);
         try (FileInputStream fis = new FileInputStream(file)) {
             keystore.load(fis, password.toCharArray());
@@ -414,14 +445,18 @@ public class KeystoreUtil {
         return keystore;
     }
 
-    public static void writeKeystore(KeyStore keystore, String file, String type, String password) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
+    public static void writeKeystore(KeyStore keystore, String file, String type, String password)
+            throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException
+    {
         try (FileOutputStream fos = new FileOutputStream(file)) {
             keystore.store(fos, password.toCharArray());
         }
     }
 
     // Keystore, Trust store and Certificate initialization based on a properties source
-    public static void initializeKeystoresAndCertificate(IKeystoreAndCertificateProperties properties, PasswordUtil passwordUtil) throws Exception {
+    public static void initializeKeystoresAndCertificate(IKeystoreAndCertificateProperties properties, PasswordUtil passwordUtil)
+            throws CertificateException, KeyStoreException, NoSuchAlgorithmException, IOException, OperatorCreationException
+    {
         if (passwordUtil==null)
             passwordUtil = PasswordUtil.getInstance();
         log.debug("KeystoreUtil.initializeKeystoresAndCertificate(): Initializing keystores and certificate...");

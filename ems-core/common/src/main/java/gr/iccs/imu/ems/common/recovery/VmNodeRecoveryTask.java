@@ -110,7 +110,7 @@ public class VmNodeRecoveryTask <P extends SshClientProperties> extends Abstract
                 port = Integer.parseInt(portStr);
             if (port<1 || port>65535)
                 port = 22;
-        } catch (Exception e) {}
+        } catch (Exception ignored) {}
 
         log.debug("VmNodeRecoveryTask: createSshClientProperties(): os={}, address={}, type={}", os, address, type);
         log.debug("VmNodeRecoveryTask: createSshClientProperties(): username={}, password={}", username, passwordUtil.encodePassword(password));

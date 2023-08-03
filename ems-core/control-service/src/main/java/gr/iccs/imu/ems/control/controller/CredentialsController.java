@@ -102,7 +102,7 @@ public class CredentialsController {
             String username = null;
             String password = null;
             CredentialsMap credentials = config.getCredentials();
-            if (credentials.size()>0) {
+            if (!credentials.isEmpty()) {
                 username = credentials.keySet().stream().findFirst().orElse(null);
                 password = credentials.get(username);
             }

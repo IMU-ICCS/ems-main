@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 public class PresentPasswordEncoder implements PasswordEncoder {
     public String encode(String password) {
         return StringUtils.isEmpty(password)
-                ? ""
+                ? "** No password provided **"
                 : "** password provided **";
     }
 }

@@ -149,31 +149,39 @@ public class CommandExecutor {
     }
 
     void communicateWithServer(InputStream in, PrintStream out, PrintStream err) throws IOException {
+        log.trace("communicateWithServer(): BEGIN");
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         String line;
         while ((line = reader.readLine()) != null) {
+            log.trace("communicateWithServer(): WHILE START: {}", line);
             if (captureInputLine) {
                 lastInputLine = line;
+                log.trace("communicateWithServer(): captureInputLine: {}", line);
                 captureInputLine = false;
                 continue;
             }
             line = line.trim();
             if (StringUtils.startsWithIgnoreCase(line, "CLUSTER-KEY")) {
                 String[] s = line.split(" ", 2);
-                log.info("{} {}", s[0], s.length>1 ? passwordUtil.encodePassword(s[1]) : "");
+                log.info("Cluster key from Server: {} {}", s[0], s.length>1 ? passwordUtil.encodePassword(s[1]) : "");
             } else
-                log.info(line);
+                log.info("Server input: {}", line);
+
             try {
+                log.trace("communicateWithServer(): Calling execCmd: {}", line);
                 boolean exit = execCmd(line.split("[ \t]+"), in, out, err);
+                log.trace("communicateWithServer(): Exit code: {}", exit);
                 if (exit) break;
             } catch (Exception ex) {
-                log.error("", ex);
+                log.error("communicateWithServer(): EXCEPTION: ", ex);
                 // Report exception back to server
                 err.println(ex);
                 ex.printStackTrace(err);
                 err.flush();
             }
+            log.trace("communicateWithServer(): WHILE END");
         }
+        log.trace("communicateWithServer(): END");
     }
 
     public void executeCommand(String command) throws IOException, InterruptedException {

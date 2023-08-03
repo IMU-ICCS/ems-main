@@ -257,7 +257,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                         .filter(StringUtils::isNotBlank)
                         .map(String::trim)
                         .collect(Collectors.toList());
-                if (instructionSetFileList.size()==0)
+                if (instructionSetFileList.isEmpty())
                     log.warn("VmInstallationHelper.prepareInstallationInstructionsForLinux: Context map contains 'instruction-files' entry with no contents");
             } else {
                 instructionSetFileList = properties.getInstructions().get("LINUX");
