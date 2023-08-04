@@ -79,11 +79,10 @@
 			<version>2.0.1.Final</version>
 		</dependency>
 
-		<!-- Apache Commons text (for StringSubstitutor) -->
+		<!-- Apache Commons Text (for StringSubstitutor) -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
-			<version>1.10.0</version>
 		</dependency>
 
 		<!-- For importing: class org.glassfish.jersey.internal.guava.InetAddresses -->
