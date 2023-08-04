@@ -251,7 +251,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         Map nodeInfo = null;
         if (StringUtils.isNotBlank(nodeAddress)) {
             nodeInfo = nodeInfoHelper.getNodeInfo(nodeId, nodeAddress);
-            if (nodeInfo == null || nodeInfo.size() == 0) {
+            if (nodeInfo == null || nodeInfo.isEmpty()) {
                 log.warn("SelfHealingPlugin: createRecoveryTask(): Node info is null or empty. Cannot recover node.");
                 return;
             }
@@ -262,7 +262,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
 
         // Schedule node recovery task
         final RecoveryTask recoveryTask = applicationContext.getBean(recoveryTaskClass);
-        if (nodeInfo!=null && nodeInfo.size()>0)
+        if (nodeInfo!=null && !nodeInfo.isEmpty())
             recoveryTask.setNodeInfo(nodeInfo);
         final AtomicInteger retries = new AtomicInteger(0);
         Instant firstAttempt;

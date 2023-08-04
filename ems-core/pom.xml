@@ -35,7 +35,7 @@
         <java.version>17</java.version>
         <maven.compiler.release>17</maven.compiler.release>
 
-        <!-- Versions for common plugins -->
+        <!-- Versions for common Maven plugins -->
         <source-plugin.version>2.4</source-plugin.version>
         <maven-compiler.version>3.11.0</maven-compiler.version>
         <javadoc-plugin.version>2.9.1</javadoc-plugin.version>
