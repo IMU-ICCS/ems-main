@@ -31,6 +31,10 @@ import java.util.List;
 		"file:${EMS_CONFIG_DIR}/baguette-client.properties"
 }, ignoreResourceNotFound = true)
 public class BaguetteClientProperties extends SshClientProperties {
+	private boolean connectionRetryEnabled = true;
+	private long connectionRetryDelay = 10 * 1000L;
+	private int connectionRetryLimit = -1;
+
 	private boolean exitCommandAllowed = false;
 	private int killDelay = 5;
 

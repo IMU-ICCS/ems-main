@@ -21,6 +21,9 @@ jasypt.encryptor.ivGeneratorClassname = org.jasypt.iv.NoIvGenerator
 
 # Baguette Client configuration
 
+connection-retry-enabled = true
+connection-retry-delay = 10000
+connection-retry-limit = -1
 auth-timeout = 60000
 exec-timeout = 120000
 #retry-period = 60000

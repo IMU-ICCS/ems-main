@@ -165,20 +165,44 @@ public class BaguetteClient implements ApplicationRunner {
     }
 
     protected void runSshClient() {
-        boolean retry = true;
+        long retryDelay = baguetteClientProperties.getConnectionRetryDelay();
+        boolean retry = baguetteClientProperties.isConnectionRetryEnabled() && retryDelay>=0;
+        int retryLimit = baguetteClientProperties.getConnectionRetryLimit();
+        int retryCount = 0;
         while (true) {
             try {
+                // Connect to baguette server
                 startSshClient(retry);
 
+                // Exchange messages with Baguette server
                 log.trace("BaguetteClient: Calling SSHC run()");
                 client.run();
+                retryCount = 0;
 
+                // Disconnect from baguette server
                 stopSshClient();
             } catch (Exception ex) {
                 log.error("BaguetteClient: EXCEPTION: ", ex);
             }
+
+            // Check if retry is enabled
             if (!retry) break;
-            log.trace("BaguetteClient: Restarting client...");
+
+            // Check if retry limit has been reached
+            retryCount++;
+            if (retryLimit>=0 && retryCount > retryLimit) {
+                log.error("BaguetteClient: Giving up connection retries after {} failed attempts", retryCount-1);
+                break;
+            }
+
+            // Wait for a while before retrying to reconnect
+            try {
+                Thread.sleep(retryDelay);
+            } catch (InterruptedException e) {
+                log.warn("BaguetteClient: Cancelling connection retry");
+                break;
+            }
+            log.info("BaguetteClient: Retrying to connect (attempt #{})...", retryCount);
         }
     }
 
