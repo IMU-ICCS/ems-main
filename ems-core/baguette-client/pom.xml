@@ -98,6 +98,12 @@
 			<groupId>io.atomix</groupId>
 			<artifactId>atomix</artifactId>
 			<version>${atomix.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.atomix</groupId>
@@ -124,7 +130,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>30.0-jre</version>
+			<version>32.1.2-jre</version>
 		</dependency>
 	</dependencies>
 
