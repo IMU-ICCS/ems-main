@@ -19,7 +19,10 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties
 @ToString(exclude = "serverPassword")
 public class SshClientProperties {
+	private long connectTimeout = 60000;
 	private long authTimeout = 60000;
+	private long heartbeatInterval = 60000;
+	private long heartbeatReplyWait = heartbeatInterval;
 	private long execTimeout = 120000;
 	private long retryPeriod = 60000;
 
@@ -28,7 +31,9 @@ public class SshClientProperties {
 	private String serverAddress;
 	private int serverPort = 22;
 	private String serverPubkey;
-	private String serverFingerprint;
+	private String serverPubkeyFingerprint;
+	private String serverPubkeyAlgorithm;
+	private String serverPubkeyFormat;
 
 	private String serverUsername;
 	private String serverPassword;

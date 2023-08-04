@@ -21,11 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sshd.common.session.Session;
 import org.apache.sshd.common.session.SessionListener;
-import org.apache.sshd.server.Command;
+import org.apache.sshd.server.channel.ChannelSession;
+import org.apache.sshd.server.command.Command;
 import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.ExitCallback;
-import org.apache.sshd.server.SessionAware;
 import org.apache.sshd.server.session.ServerSession;
+import org.apache.sshd.server.session.ServerSessionAware;
 import org.cryptacular.util.CertUtil;
 import org.slf4j.event.Level;
 
@@ -40,7 +41,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class ClientShellCommand implements Command, Runnable, SessionAware {
+public class ClientShellCommand implements Command, Runnable, ServerSessionAware {
 
     private final static Object LOCK = new Object();
     private final static AtomicLong counter = new AtomicLong(0);
@@ -185,11 +186,13 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         this.callback = callback;
     }
 
-    public void start(Environment env) {
+    @Override
+    public void start(ChannelSession channelSession, Environment environment) throws IOException {
         new Thread(this).start();
     }
 
-    public void destroy() {
+    @Override
+    public void destroy(ChannelSession channelSession) throws Exception {
     }
 
     public void run() {

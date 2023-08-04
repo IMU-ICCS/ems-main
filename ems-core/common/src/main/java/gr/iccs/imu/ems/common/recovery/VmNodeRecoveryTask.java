@@ -104,6 +104,8 @@ public class VmNodeRecoveryTask <P extends SshClientProperties> extends Abstract
         String password = str(nodeInfo.get("ssh.password"));
         String key = str(nodeInfo.get("ssh.key"));
         String fingerprint = str(nodeInfo.get("ssh.fingerprint"));
+        String keyAlgorithm = str(nodeInfo.get("ssh.key-algorithm"));
+        String keyFormat = str(nodeInfo.get("ssh.key-format"));
         int port = 22;
         try {
             if (StringUtils.isNotBlank(portStr))
@@ -126,7 +128,9 @@ public class VmNodeRecoveryTask <P extends SshClientProperties> extends Abstract
         }
         if (!key.isEmpty()) {
             config.setServerPubkey(key);
-            config.setServerFingerprint(fingerprint);
+            config.setServerPubkeyFingerprint(fingerprint);
+            config.setServerPubkeyAlgorithm(keyAlgorithm);
+            config.setServerPubkeyFormat(keyFormat);
         }
 
         //XXX:TODO: Make recovery authTimeout configurable

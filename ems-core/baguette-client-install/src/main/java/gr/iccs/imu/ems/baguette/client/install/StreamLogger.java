@@ -12,8 +12,6 @@ package gr.iccs.imu.ems.baguette.client.install;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.sshd.common.util.io.NoCloseInputStream;
-import org.apache.sshd.common.util.io.NoCloseOutputStream;
 
 import java.io.*;
 import java.util.Arrays;
@@ -29,10 +27,10 @@ public class StreamLogger {
     private final PipedInputStream pis;
     private final MonitorOutputStream mos;
 
-    private final NoCloseOutputStream ncInvertedIn;
-    private final NoCloseInputStream ncIn;
-    private final NoCloseOutputStream ncOut;
-    private final NoCloseOutputStream ncErr;
+    private final OutputStream ncInvertedIn;
+    private final InputStream ncIn;
+    private final OutputStream ncOut;
+    private final OutputStream ncErr;
 
     private String lastLine;
     private long lastLineTime;
@@ -47,10 +45,10 @@ public class StreamLogger {
         this.pis = new PipedInputStream(pos);
         this.mos = new MonitorOutputStream(this);
 
-        this.ncIn = new NoCloseInputStream(new LoggerInputStream(pis, prefix+"  IN", toArray(System.out, fos)));
-        this.ncInvertedIn = new NoCloseOutputStream(pos);
-        this.ncOut = new NoCloseOutputStream(new LoggerOutputStream(prefix+" OUT", toArray(System.out, mos, fos)));
-        this.ncErr = new NoCloseOutputStream(new LoggerOutputStream(prefix+" ERR", toArray(System.err, fos)));
+        this.ncIn = new LoggerInputStream(pis, prefix+"  IN", toArray(System.out, fos));
+        this.ncInvertedIn = pos;
+        this.ncOut = new LoggerOutputStream(prefix+" OUT", toArray(System.out, mos, fos));
+        this.ncErr = new LoggerOutputStream(prefix+" ERR", toArray(System.err, fos));
     }
 
     private OutputStream[] toArray(OutputStream...streams) {

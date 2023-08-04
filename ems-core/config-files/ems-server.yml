@@ -448,7 +448,7 @@ baguette.server:
   # SSH Server settings
   address: ${EMS_SERVER_ADDRESS}
   port: 2222
-  key-file: ${EMS_CONFIG_DIR}/hostkey.ser
+  key-file: ${EMS_CONFIG_DIR}/hostkey.pem
   heartbeat-enabled: true
   heartbeat-period: 60000
 

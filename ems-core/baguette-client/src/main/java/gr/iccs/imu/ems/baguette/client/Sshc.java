@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.sshd.client.ClientFactoryManager;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ClientChannel;
 import org.apache.sshd.client.config.hosts.HostConfigEntryResolver;
@@ -23,22 +23,18 @@ import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.client.simple.SimpleClient;
 import org.apache.sshd.common.PropertyResolverUtils;
 import org.apache.sshd.common.config.keys.KeyUtils;
-import org.apache.sshd.common.config.keys.impl.RSAPublicKeyDecoder;
-import org.apache.sshd.common.keyprovider.KeyPairProvider;
-import org.apache.sshd.common.util.io.NoCloseInputStream;
-import org.apache.sshd.common.util.io.NoCloseOutputStream;
+import org.apache.sshd.core.CoreModuleProperties;
+import org.apache.sshd.mina.MinaServiceFactoryFactory;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.util.io.pem.PemObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.net.SocketAddress;
 import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.Base64;
 import java.util.Optional;
-
-//import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
-//import org.apache.sshd.client.keyverifier.RequiredServerKeyVerifier;
 
 
 /**
@@ -111,79 +107,57 @@ public class Sshc implements gr.iccs.imu.ems.common.client.SshClient<BaguetteCli
 
         String host = config.getServerAddress();
         int port = config.getServerPort();
-        String serverPubKey = config.getServerPubkey();
-        String serverFingerprint = config.getServerFingerprint();
+        String serverPubKey = StringEscapeUtils.unescapeJson(config.getServerPubkey());
+        String serverPubkeyFingerprint = config.getServerPubkeyFingerprint();
+        String serverPubKeyAlgorithm = config.getServerPubkeyAlgorithm();
+        String serverPubKeyFormat = config.getServerPubkeyFormat();
         String username = config.getServerUsername();
         String password = config.getServerPassword();
+        long connectTimeout = config.getConnectTimeout();
         long authTimeout = config.getAuthTimeout();
+        long heartbeatInterval = config.getHeartbeatInterval();
+        long heartbeatReplyWait = config.getHeartbeatReplyWait();
 
         // Starting client and connecting to server
         this.client = SshClient.setUpDefaultClient();
         client.setHostConfigEntryResolver(HostConfigEntryResolver.EMPTY);
-        client.setKeyPairProvider(KeyPairProvider.EMPTY_KEYPAIR_PROVIDER);
 
-        //client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
-        //client.setServerKeyVerifier(new RequiredServerKeyVerifier(....));
         if (useServerKeyVerifier) {
-            client.setServerKeyVerifier(new ServerKeyVerifier() {
-                        private String serverFingerprint;
-                        private String serverPubKey;
+            // Get configured server public key
+            PublicKey pubKey = getPublicKeyFromString(serverPubKeyAlgorithm, serverPubKeyFormat, serverPubKey);
 
-                        public boolean verifyServerKey(ClientSession sshClientSession, SocketAddress remoteAddress, PublicKey serverKey) {
+            // Provided server key verifiers
+            //client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
+            //client.setServerKeyVerifier(new RequiredServerKeyVerifier(pubKey));
 
-                            // Print server address info
-                            log.info("verifyServerKey(): remoteAddress: {}", remoteAddress.toString());
-
-                            // Check that server public key fingerprint matches with the one in configuration
-                            String fingerprint = KeyUtils.getFingerPrint(serverKey);
-                            log.info("verifyServerKey(): serverKey: fingerprint: {}", fingerprint);
-                            //if ( fingerprint!=null && KeyUtils.checkFingerPrint(serverFingerprint, serverKey).getFirst() ) log.info("verifyServerKey(): serverKey: fingerprint: MATCH");
-                            //else log.warn("verifyServerKey(): serverKey: fingerprint: NO MATCH");
-
-                            // Check that server public key matches with the one in configuration
-                            try {
-                                log.debug("verifyServerKey(): serverKey: decoder: {}", KeyUtils.getPublicKeyEntryDecoder(serverKey).getClass());
-                                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-                                ((RSAPublicKeyDecoder) KeyUtils.getPublicKeyEntryDecoder(serverKey)).encodePublicKey(baos, (RSAPublicKey) serverKey);
-                                String keyStr = new String(Base64.getEncoder().encode(baos.toByteArray()));
-                                log.debug("verifyServerKey(): serverKey: server public key: \n{}", keyStr);
-
-                                return keyStr.equalsIgnoreCase(serverPubKey);
-
-                            } catch (Exception ex) {
-                                log.error("verifyServerKey(): serverKey: EXCEPTION: ", ex);
-                                return false;
-                            }
-                        }
-
-                        public ServerKeyVerifier setServerPubKey(String pubkey, String fingerprint) {
-                            this.serverFingerprint = fingerprint;
-                            this.serverPubKey = pubkey;
-                            return this;
-                        }
-                    }
-                    .setServerPubKey(serverPubKey, serverFingerprint)
-            );
+            // Custom server key verifier
+            client.setServerKeyVerifier( getCustomServerKeyVerifier(serverPubkeyFingerprint, pubKey) );
         }
 
         this.simple = SshClient.wrapAsSimpleClient(client);
-        //simple.setConnectTimeout(...CONNECT_TIMEOUT...);
-        //simple.setAuthenticationTimeout(...AUTH_TIMEOUT...);
+        //simple.setConnectTimeout(connectTimeout);
+        //simple.setAuthenticationTimeout(authTimeout);
 
-        // Set a huge idle timeout, keep-alive to true and heartbeat to 1 minute
-        long heartbeatInterval = 60000;
-        PropertyResolverUtils.updateProperty(client, ClientFactoryManager.HEARTBEAT_INTERVAL, heartbeatInterval);
-        PropertyResolverUtils.updateProperty(client, ClientFactoryManager.IDLE_TIMEOUT, Long.MAX_VALUE);
-        PropertyResolverUtils.updateProperty(client, ClientFactoryManager.SOCKET_KEEPALIVE, true);
-        log.debug("Set IDLE_TIMEOUT to MAX, KEEP-ALIVE to true, and HEARTBEAT to {}", heartbeatInterval);
+        // Set a huge idle timeout, keep-alive to true and heartbeat to configured value
+        PropertyResolverUtils.updateProperty(client, CoreModuleProperties.HEARTBEAT_INTERVAL.getName(), heartbeatInterval);      // Prevents server-side connection closing
+        PropertyResolverUtils.updateProperty(client, CoreModuleProperties.HEARTBEAT_REPLY_WAIT.getName(), heartbeatReplyWait);   // Prevents client-side connection closing
+        PropertyResolverUtils.updateProperty(client, CoreModuleProperties.IDLE_TIMEOUT.getName(), Integer.MAX_VALUE);
+        PropertyResolverUtils.updateProperty(client, CoreModuleProperties.SOCKET_KEEPALIVE.getName(), true);               // Socket keep-alive at OS-level
+        log.debug("Set IDLE_TIMEOUT to MAX, SOCKET-KEEP-ALIVE to true, and HEARTBEAT to {}", heartbeatInterval);
+
+        // Explicitly set IO service factory factory to prevent conflict between MINA and Netty options
+        client.setIoServiceFactoryFactory(new MinaServiceFactoryFactory());
 
         // Start SSH client
         client.start();
 
         // Authenticate and start session
-        this.session = client.connect(username, host, port).verify().getSession();
+        this.session = client.connect(username, host, port)
+                .verify(connectTimeout)
+                .getSession();
         session.addPasswordIdentity(password);
-        session.auth().verify(authTimeout);
+        session.auth()
+                .verify(authTimeout);
 
         // Open command shell channel
         this.channel = session.createChannel(ClientChannel.CHANNEL_SHELL);
@@ -194,14 +168,73 @@ public class Sshc implements gr.iccs.imu.ems.common.client.SshClient<BaguetteCli
         this.out = new PrintStream(pOut, true);
         //this.err = new PrintStream(pErr, true);
 
-        channel.setIn(new NoCloseInputStream(new PipedInputStream(pOut)));
-        channel.setOut(new NoCloseOutputStream(new PipedOutputStream(pIn)));
-        //channel.setErr(new NoCloseOutputStream( new PipedOutputStream( pErr ) ));
+        channel.setIn(new PipedInputStream(pOut));
+        channel.setOut(new PipedOutputStream(pIn));
+        //channel.setErr(new PipedOutputStream(pErr));
 
         channel.open();
 
         log.info("SSH client is ready");
         this.started = true;
+    }
+
+    private static ServerKeyVerifier getCustomServerKeyVerifier(String serverPubkeyFingerprint, PublicKey pubKey) {
+        return (clientSession, remoteAddress, publicKey) -> {
+            // boolean verifyServerKey(ClientSession clientSession, SocketAddress socketAddress, PublicKey publicKey)
+            log.info("verifyServerKey(): remoteAddress: {}", remoteAddress.toString());
+
+            // Check server public key fingerprint matches with the one in configuration
+            if (StringUtils.isNoneBlank(serverPubkeyFingerprint)) {
+                String fingerprint = KeyUtils.getFingerPrint(publicKey);
+                log.debug("verifyServerKey(): publicKey: fingerprint: {}", fingerprint);
+                if (fingerprint != null && KeyUtils.checkFingerPrint(serverPubkeyFingerprint, publicKey).getKey() != null)
+                    log.debug("verifyServerKey(): publicKey: fingerprint: MATCH");
+                else
+                    log.warn("verifyServerKey(): publicKey: fingerprint: NO MATCH");
+            }
+
+            // Check that server public key matches with the one in configuration
+            try {
+                // Compare session provided and configured public keys
+                log.debug("verifyServerKey(): configured server public key: {}", pubKey);
+                log.debug("verifyServerKey():   received server public key: {}", publicKey);
+                boolean match = KeyUtils.compareKeys(pubKey, publicKey);
+                log.debug("verifyServerKey(): Server keys match? {}", match);
+                return match;
+            } catch (Exception e) {
+                log.error("verifyServerKey(): publicKey: EXCEPTION: ", e);
+                return false;
+            }
+        };
+    }
+
+    private static PublicKey getPublicKeyFromString(String serverPubKeyAlgorithm, String serverPubKeyFormat, String serverPubKey) throws IOException {
+        log.debug("getPublicKeyFromString(): serverPubKeyAlgorithm: {}", serverPubKeyAlgorithm);
+        log.debug("getPublicKeyFromString():    serverPubKeyFormat: {}", serverPubKeyFormat);
+        log.debug("getPublicKeyFromString():          serverPubKey:\n{}", serverPubKey);
+
+        // Retrieve configured public key - First implementation
+        PEMParser pemParser = new PEMParser(new StringReader(serverPubKey));
+        PemObject pemObject = pemParser.readPemObject();
+        JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
+        SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(pemObject.getContent());
+        PublicKey pubKey = converter.getPublicKey(publicKeyInfo);
+
+        // Retrieve configured public key - Alternative implementation
+        /*KeyFactory factory = KeyFactory.getInstance(serverPubKeyAlgorithm);
+        PublicKey pubKey;
+        try (StringReader keyReader = new StringReader(serverPubKey);
+             PemReader pemReader = new PemReader(keyReader))
+        {
+            PemObject pemObject = pemReader.readPemObject();
+            byte[] content = pemObject.getContent();
+            X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(content);
+            //or PKCS8EncodedKeySpec pubKeySpec = new PKCS8EncodedKeySpec(content);
+            pubKey = factory.generatePublic(pubKeySpec);
+        }*/
+
+        log.debug("getPublicKeyFromString: Public key: {}", pubKey);
+        return pubKey;
     }
 
     @Override

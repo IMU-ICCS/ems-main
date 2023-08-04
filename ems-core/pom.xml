@@ -59,13 +59,14 @@
         <jasypt.starter.version>3.0.5</jasypt.starter.version>
         <!-- Hibernate validator version -->
         <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
+        <!-- Apache SSHD version -->
+        <apache-sshd.version>2.10.0</apache-sshd.version>
+        <!-- Bouncy Castle version -->
+        <bouncy-castle.version>1.76</bouncy-castle.version>
 
         <!-- Jackson and Snakeyaml - Used in baguette-client-install -->
         <jackson.version>2.15.2</jackson.version>
         <snakeyaml.version>2.0</snakeyaml.version>
-
-        <!-- Bouncy Castle version -->
-        <bouncy-castle.version>1.76</bouncy-castle.version>
     </properties>
 
     <modules>

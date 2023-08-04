@@ -19,20 +19,19 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
-import org.apache.sshd.client.ClientFactoryManager;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ChannelExec;
 import org.apache.sshd.client.channel.ChannelSession;
 import org.apache.sshd.client.channel.ClientChannelEvent;
 import org.apache.sshd.client.config.hosts.HostConfigEntryResolver;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
-import org.apache.sshd.client.scp.ScpClient;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.PropertyResolverUtils;
-import org.apache.sshd.common.keyprovider.KeyPairProvider;
-import org.apache.sshd.common.util.io.NoCloseInputStream;
-import org.apache.sshd.common.util.io.NoCloseOutputStream;
-import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
+import org.apache.sshd.core.CoreModuleProperties;
+import org.apache.sshd.mina.MinaServiceFactoryFactory;
+import org.apache.sshd.scp.client.DefaultScpClientCreator;
+import org.apache.sshd.scp.client.ScpClient;
+import org.apache.sshd.scp.client.ScpClientCreator;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 
@@ -46,8 +45,6 @@ import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPublicKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
@@ -74,6 +71,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     private final long connectTimeout;
     private final long authenticationTimeout;
     private final long heartbeatInterval;
+    private final long heartbeatReplyWait;
     private final boolean simulateConnection;
     private final boolean simulateExecution;
     private final long commandExecutionTimeout;
@@ -87,21 +85,6 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     //private ChannelShell shellChannel;
     private StreamLogger streamLogger;
 
-    /*@Builder
-    public SshClientInstaller(ClientInstallationTask task, long taskCounter, int maxRetries, long connectTimeout, long authenticationTimeout, long heartbeatInterval, boolean simulateConnection, boolean simulateExecution, long commandExecutionTimeout, boolean continueOnFail) {
-        this.task= task;
-        this.taskCounter = taskCounter;
-
-        this.maxRetries = maxRetries>0 ? maxRetries : 5;
-        this.connectTimeout = connectTimeout>0 ? connectTimeout : 60000;
-        this.authenticationTimeout = authenticationTimeout>0 ? authenticationTimeout : 60000;
-        this.heartbeatInterval = heartbeatInterval>0 ? heartbeatInterval : 10000;
-        this.simulateConnection = simulateConnection;
-        this.simulateExecution = simulateExecution;
-        this.commandExecutionTimeout = commandExecutionTimeout;
-        this.continueOnFail = continueOnFail;
-    }*/
-
     @Builder
     public SshClientInstaller(ClientInstallationTask task, long taskCounter, ClientInstallationProperties properties) {
         this.task = task;
@@ -114,6 +97,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         this.connectTimeout = properties.getConnectTimeout()>0 ? properties.getConnectTimeout() : 60000;
         this.authenticationTimeout = properties.getAuthenticateTimeout()>0 ? properties.getAuthenticateTimeout() : 60000;
         this.heartbeatInterval = properties.getHeartbeatInterval()>0 ? properties.getHeartbeatInterval() : 10000;
+        this.heartbeatReplyWait = properties.getHeartbeatReplyWait()>0 ? properties.getHeartbeatReplyWait() : 10 * heartbeatInterval;
         this.simulateConnection = properties.isSimulateConnection();
         this.simulateExecution = properties.isSimulateExecution();
         this.commandExecutionTimeout = properties.getCommandExecutionTimeout()>0 ? properties.getCommandExecutionTimeout() : 120000;
@@ -205,33 +189,42 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         // Create and configure SSH client
         this.sshClient = SshClient.setUpDefaultClient();
         sshClient.setHostConfigEntryResolver(HostConfigEntryResolver.EMPTY);
-        sshClient.setKeyPairProvider(KeyPairProvider.EMPTY_KEYPAIR_PROVIDER);
         sshClient.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
 
         //this.simpleClient = SshClient.wrapAsSimpleClient(sshClient);
         //simpleClient.setConnectTimeout(connectTimeout);
         //simpleClient.setAuthenticationTimeout(authenticationTimeout);
 
-        PropertyResolverUtils.updateProperty(sshClient, ClientFactoryManager.HEARTBEAT_INTERVAL, heartbeatInterval);
-        PropertyResolverUtils.updateProperty(sshClient, ClientFactoryManager.IDLE_TIMEOUT, Long.MAX_VALUE);
-        PropertyResolverUtils.updateProperty(sshClient, ClientFactoryManager.SOCKET_KEEPALIVE, true);
+        // Set a huge idle timeout, keep-alive to true and heartbeat to configured value
+        PropertyResolverUtils.updateProperty(sshClient, CoreModuleProperties.HEARTBEAT_INTERVAL.getName(), heartbeatInterval);      // Prevents server-side connection closing
+        PropertyResolverUtils.updateProperty(sshClient, CoreModuleProperties.HEARTBEAT_REPLY_WAIT.getName(), heartbeatReplyWait);   // Prevents client-side connection closing
+        PropertyResolverUtils.updateProperty(sshClient, CoreModuleProperties.IDLE_TIMEOUT.getName(), Integer.MAX_VALUE);
+        PropertyResolverUtils.updateProperty(sshClient, CoreModuleProperties.SOCKET_KEEPALIVE.getName(), true);               // Socket keep-alive at OS-level
+        log.debug("SshClientInstaller: Set IDLE_TIMEOUT to MAX, SOCKET-KEEP-ALIVE to true, and HEARTBEAT to {}", heartbeatInterval);
+
+        // Explicitly set IO service factory factory to prevent conflict between MINA and Netty options
+        sshClient.setIoServiceFactoryFactory(new MinaServiceFactoryFactory());
 
         // Start client and connect to SSH server
         try {
             sshClient.start();
-            this.session = sshClient.connect(username, host, port).verify().getSession();
+            this.session = sshClient.connect(username, host, port)
+                    .verify(connectTimeout)
+                    .getSession();
             if (StringUtils.isNotBlank(privateKey)) {
                 PrivateKey privKey = getPrivateKey(privateKey);
-                //PublicKey pubKey = getPublicKey(publicKey);
-                PublicKey pubKey = getPublicKey((BCRSAPrivateCrtKey) privKey);
+                //PublicKey pubKey = getPublicKey(publicKeyStr);
+                PublicKey pubKey = getPublicKey(privKey);
                 KeyPair keyPair = new KeyPair(pubKey, privKey);
                 session.addPublicKeyIdentity(keyPair);
             }
             if (StringUtils.isNotBlank(password)) {
                 session.addPasswordIdentity(password);
             }
-            session.auth().verify(authenticationTimeout);
+            session.auth()
+                    .verify(authenticationTimeout);
 
+            // Initialize standard streams' logger
             initStreamLogger();
 
             log.info("SshClientInstaller: Connected to remote host: task #{}: host: {}:{}", taskCounter, host, port);
@@ -256,7 +249,14 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         //PrivateKey privKey = kf.generatePrivate(keySpecPKCS8);
     }
 
-    private PublicKey getPublicKey(String pemStr) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    private PublicKey getPublicKey(PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        KeyFactory factory = KeyFactory.getInstance(privateKey.getAlgorithm());
+        PKCS8EncodedKeySpec pubKeySpec = new PKCS8EncodedKeySpec(privateKey.getEncoded());
+        PublicKey publicKey = factory.generatePublic(pubKeySpec);
+        return publicKey;
+    }
+
+    /*private PublicKey getPublicKey(String pemStr) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         KeyFactory factory = KeyFactory.getInstance("RSA");
         try (StringReader keyReader = new StringReader(pemStr); PemReader pemReader = new PemReader(keyReader)) {
             PemObject pemObject = pemReader.readPemObject();
@@ -265,11 +265,11 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             PublicKey publicKey = factory.generatePublic(pubKeySpec);
             return publicKey;
         }
-        /*X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(
-                Base64.decode(
-                        pemStr.replaceAll("\\n", "").replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "")
-                                .getBytes()));
-        RSAPublicKey pubKey = (RSAPublicKey) factory.generatePublic(keySpecX509);*/
+        //X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(
+        //        Base64.decode(
+        //                pemStr.replaceAll("\\n", "").replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "")
+        //                        .getBytes()));
+        //RSAPublicKey pubKey = (RSAPublicKey) factory.generatePublic(keySpecX509);
     }
 
     private PublicKey getPublicKey(RSAPublicKeySpec rsaPrivateKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -282,7 +282,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         KeyFactory factory = KeyFactory.getInstance("RSA");
         PublicKey publicKey = factory.generatePublic(new RSAPublicKeySpec(rsaPrivateKey.getModulus(), rsaPrivateKey.getPublicExponent()));
         return publicKey;
-    }
+    }*/
 
     private boolean sshDisconnect() throws Exception {
         SshConfig config = task.getSsh();
@@ -328,9 +328,9 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
     private void setChannelStreams(ChannelSession channel) throws IOException {
         initStreamLogger();
-        channel.setIn(new NoCloseInputStream( streamLogger.getIn() ));
-        channel.setOut(new NoCloseOutputStream( streamLogger.getOut() ));
-        channel.setErr(new NoCloseOutputStream( streamLogger.getErr() ));
+        channel.setIn( streamLogger.getIn() );
+        channel.setOut( streamLogger.getOut() );
+        channel.setErr( streamLogger.getErr() );
     }
 
     /*public boolean sshOpenShell() throws IOException {
@@ -406,7 +406,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         Integer exitStatus = null;
         ChannelExec channel = session.createExecChannel(command);
         setChannelStreams(channel);
-        log.debug("SshClientInstaller: task #{}: EXEC: New channel id: {}", taskCounter, channel.getId());
+        log.debug("SshClientInstaller: task #{}: EXEC: New channel id: {}", taskCounter, channel.getChannelId());
         //streamLogger.getInvertedIn().write(command.getBytes());
         streamLogger.logMessage(String.format("EXEC: %s\n", command));
         try {
@@ -415,7 +415,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             session.resetIdleTimeout();
             channel.open().verify(connectTimeout);
             log.trace("SshClientInstaller: task #{}: EXEC: Sending command verified: {}", taskCounter, command);
-            log.debug("SshClientInstaller: task #{}: EXEC: Opened channel id: {}", taskCounter, channel.getId());
+            log.debug("SshClientInstaller: task #{}: EXEC: Opened channel id: {}", taskCounter, channel.getChannelId());
 
             //XXX: TODO: Search remote side output for expected patterns
 
@@ -447,7 +447,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         streamLogger.logMessage(String.format("DOWNLOAD: SCP: %s -> %s\n", remoteFilePath, localFilePath));
         try {
             log.info("SshClientInstaller: Downloading file: task #{}: remote: {} -> local: {}", taskCounter, remoteFilePath, localFilePath);
-            ScpClient scpClient = session.createScpClient();
+            ScpClientCreator creator = new DefaultScpClientCreator();
+            ScpClient scpClient = creator.createScpClient(session);
             scpClient.download(remoteFilePath, localFilePath, ScpClient.Option.PreserveAttributes);
             log.info("SshClientInstaller: File download completed: task #{}: remote: {} -> local: {}", taskCounter, remoteFilePath, localFilePath);
         } catch (Exception ex) {
@@ -468,7 +469,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         try {
             long startTm = System.currentTimeMillis();
             log.info("SshClientInstaller: Uploading file: task #{}: local: {} -> remote: {}", taskCounter, localFilePath, remoteFilePath);
-            ScpClient scpClient = session.createScpClient();
+            ScpClientCreator creator = new DefaultScpClientCreator();
+            ScpClient scpClient = creator.createScpClient(session);
             scpClient.upload(localFilePath, remoteFilePath, ScpClient.Option.PreserveAttributes);
             long endTm = System.currentTimeMillis();
             log.info("SshClientInstaller: File upload completed in {}ms: task #{}: local: {} -> remote: {}", endTm-startTm, taskCounter, localFilePath, remoteFilePath);

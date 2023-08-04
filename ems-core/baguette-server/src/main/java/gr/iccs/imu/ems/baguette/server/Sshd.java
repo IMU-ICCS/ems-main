@@ -14,25 +14,30 @@ import gr.iccs.imu.ems.baguette.server.properties.BaguetteServerProperties;
 import gr.iccs.imu.ems.util.EventBus;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.sshd.client.ClientFactoryManager;
-import org.apache.sshd.common.Factory;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.sshd.common.PropertyResolverUtils;
 import org.apache.sshd.common.config.keys.KeyUtils;
-import org.apache.sshd.common.config.keys.impl.RSAPublicKeyDecoder;
-import org.apache.sshd.server.Command;
-import org.apache.sshd.server.ServerFactoryManager;
+import org.apache.sshd.common.keyprovider.KeyPairProvider;
+import org.apache.sshd.common.session.SessionHeartbeatController;
+import org.apache.sshd.core.CoreModuleProperties;
+import org.apache.sshd.mina.MinaServiceFactoryFactory;
 import org.apache.sshd.server.SshServer;
-import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
-import org.apache.sshd.server.session.ServerSession;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.slf4j.event.Level;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.security.KeyPair;
 import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.*;
+import java.time.Duration;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +50,9 @@ public class Sshd {
     private SshServer sshd;
     private String serverPubkey;
     private String serverPubkeyFingerprint;
+    private String serverPubkeyAlgorithm;
+    private String serverPubkeyFormat;
+    private KeyPairProvider serverKeyProvider;
 
     private boolean heartbeatOn;
     private long heartbeatPeriod;
@@ -63,70 +71,48 @@ public class Sshd {
         // Configure SSH server
         int port = configuration.getServerPort();
         String serverKeyFilePath = configuration.getServerKeyFile();
-        log.info("SSH server: Public IP address {}", configuration.getServerAddress());
-        log.info("SSH server: Starting on port {}", port);
+        log.info("SSH server: Public IP address: {}", configuration.getServerAddress());
+        log.info("SSH server:  Starting on port: {}", port);
+        log.info("SSH server:   Server key file: {}", new File(serverKeyFilePath).getAbsolutePath());
 
+        // Create SSHD and set port
         sshd = SshServer.setUpDefaultServer();
         sshd.setPort(port);
-        File serverKeyFile = new File(serverKeyFilePath);
-        log.info("SSH server: Server key file: {}", serverKeyFile.getAbsolutePath());
-        sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(serverKeyFile));
+
+        // Setup server's key provider
         _loadPubkeyAndFingerprint();
+        sshd.setKeyPairProvider(this.serverKeyProvider);
 
-        sshd.setShellFactory(
-                new Factory<Command>() {
-                    private ServerCoordinator coordinator;
-                    private NodeRegistry nodeRegistry;
+        // Setup server's shell factory (for custom Shell commands)
+        sshd.setShellFactory(channelSession -> {
+            ClientShellCommand csc = new ClientShellCommand(coordinator, configuration.isClientAddressOverrideAllowed(), eventBus, nodeRegistry);
+            //csc.setId( "#-"+System.currentTimeMillis() );
+            log.debug("SSH server: Shell Factory: create invoked : New ClientShellCommand id: {}", csc.getId());
+            return csc;
+        });
 
-                    public Command create() {
-                        ClientShellCommand csc = new ClientShellCommand(this.coordinator, configuration.isClientAddressOverrideAllowed(), eventBus, nodeRegistry);
-                        //csc.setId( "#-"+System.currentTimeMillis() );
-                        log.debug("SSH server: Shell Factory: create invoked : New ClientShellCommand id: {}", csc.getId());
-                        return csc;
-                    }
-
-                    public Command get() {
-                        log.debug("SSH server: Shell Factory: get invoked");
-                        return null;
-                    }
-
-                    public Factory<Command> setCoordinatorAndNodeRegistry(ServerCoordinator coordinator, NodeRegistry nodeRegistry) {
-                        this.coordinator = coordinator;
-                        this.nodeRegistry = nodeRegistry;
-                        return this;
-                    }
-                }
-                .setCoordinatorAndNodeRegistry(coordinator, nodeRegistry)
-        );
-
-        sshd.setPasswordAuthenticator(
-                new PasswordAuthenticator() {
-                    private Map<String, String> credentials;
-
-                    public boolean authenticate(String username, String password, ServerSession session) {
-                        String pwd = Optional.ofNullable(credentials.get(username.trim())).orElse("");
-                        return pwd.equals(password);
-                    }
-
-                    public PasswordAuthenticator setCredentials(Map<String, String> credentials) {
-                        this.credentials = credentials;
-                        return this;
-                    }
-                }
-                .setCredentials(configuration.getCredentials())
-        );
+        // Setup password authenticator
+        sshd.setPasswordAuthenticator((username, password, session) -> {
+            //public boolean authenticate(String username, String password, ServerSession session)
+            String pwd = Optional.ofNullable(configuration.getCredentials().get(username.trim())).orElse("");
+            return pwd.equals(password);
+        });
 
         // Set session timeout
-        PropertyResolverUtils.updateProperty(sshd, ClientFactoryManager.HEARTBEAT_INTERVAL, 60*1000);
-        PropertyResolverUtils.updateProperty(sshd, ServerFactoryManager.IDLE_TIMEOUT, Long.MAX_VALUE);
-        PropertyResolverUtils.updateProperty(sshd, ServerFactoryManager.SOCKET_KEEPALIVE, true);
-        log.debug("SSH server: Set IDLE_TIMEOUT to MAX, and KEEP-ALIVE to true");
+        sshd.setSessionHeartbeat(SessionHeartbeatController.HeartbeatType.IGNORE, Duration.ofMillis(configuration.getHeartbeatPeriod()));
+        //PropertyResolverUtils.updateProperty(sshd, CoreModuleProperties.HEARTBEAT_INTERVAL.getName(), configuration.getHeartbeatPeriod());
+        PropertyResolverUtils.updateProperty(sshd, CoreModuleProperties.IDLE_TIMEOUT.getName(), Long.MAX_VALUE);
+        PropertyResolverUtils.updateProperty(sshd, CoreModuleProperties.SOCKET_KEEPALIVE.getName(), true);
+        log.debug("SSH server: Set IDLE_TIMEOUT to MAX, and KEEP-ALIVE to true, and HEARTBEAT to {}", configuration.getHeartbeatPeriod());
+
+        // Explicitly set IO service factory factory to prevent conflict between MINA and Netty options
+        sshd.setIoServiceFactoryFactory(new MinaServiceFactoryFactory());
 
         // Start SSH server and accept connections
         sshd.start();
         log.info("SSH server: Ready");
 
-        // Start heartbeat service
+        // Start application-level heartbeat service (additional to the SSH and Socket heartbeats)
         if (configuration.isHeartbeatEnabled()) {
             long heartbeatPeriod = configuration.getHeartbeatPeriod();
             startHeartbeat(heartbeatPeriod);
@@ -284,29 +270,51 @@ public class Sshd {
         return serverPubkeyFingerprint;
     }
 
+    public String getPublicKeyAlgorithm() {
+        if (serverPubkey==null) _loadPubkeyAndFingerprint();
+        return serverPubkeyAlgorithm;
+    }
+
+    public String getPublicKeyFormat() {
+        if (serverPubkey==null) _loadPubkeyAndFingerprint();
+        return serverPubkeyFormat;
+    }
+
+    @SneakyThrows
     private synchronized void _loadPubkeyAndFingerprint() {
+        if (serverPubkey!=null) return;
+
         String serverKeyFilePath = configuration.getServerKeyFile();
         log.debug("_loadPubkeyAndFingerprint(): Server Key file: {}", serverKeyFilePath);
         File serverKeyFile = new File(serverKeyFilePath);
-        SimpleGeneratorHostKeyProvider simpleGeneratorHostKeyProvider = new SimpleGeneratorHostKeyProvider(serverKeyFile);
-        simpleGeneratorHostKeyProvider.loadKeys().forEach(kp -> {
-            log.debug("_loadPubkeyAndFingerprint(): KeyPair found: {}", kp.toString());
-            PublicKey serverKey = kp.getPublic();
-            log.debug("_loadPubkeyAndFingerprint(): Pubkey: {}", kp.toString());
-            try {
-                log.debug("_loadPubkeyAndFingerprint(): Decoder class: {}", KeyUtils.getPublicKeyEntryDecoder(serverKey).getClass());
-                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-                ((RSAPublicKeyDecoder) KeyUtils.getPublicKeyEntryDecoder(serverKey)).encodePublicKey(baos, (RSAPublicKey) serverKey);
-                String keyStr = new String(Base64.getEncoder().encode(baos.toByteArray()));
 
-                this.serverPubkey = keyStr;
-                this.serverPubkeyFingerprint = KeyUtils.getFingerPrint(serverKey);
-                log.debug("_loadPubkeyAndFingerprint(): Server public key: \n{}", keyStr);
-                log.debug("_loadPubkeyAndFingerprint(): Fingerprint: {}", serverPubkeyFingerprint);
+        // Create and configure a new SimpleGeneratorHostKeyProvider instance
+        SimpleGeneratorHostKeyProvider simpleGeneratorHostKeyProvider =
+                new SimpleGeneratorHostKeyProvider(serverKeyFile.toPath());
+        //simpleGeneratorHostKeyProvider.setStrictFilePermissions(true);    // 'true' by default
 
-            } catch (Exception ex) {
-                log.error("_loadPubkeyAndFingerprint(): EXCEPTION: ", ex);
-            }
-        });
+        //  Create or load the Baguette server key pair
+        List<KeyPair> keys = simpleGeneratorHostKeyProvider.loadKeys(null);
+        if (keys.size()!=1)
+            throw new IllegalArgumentException("Server key file contains 0 or >1 keys: #keys="+keys.size()+", file="+serverKeyFilePath);
+        KeyPair serverKey = keys.get(0);
+        PublicKey publicKey = serverKey.getPublic();
+
+        // Write Baguette server public key as PEM string
+        StringWriter writer = new StringWriter();
+        JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
+        pemWriter.writeObject(publicKey);
+        pemWriter.flush();
+
+        // Store public key PEM and fingerprint for future use
+        this.serverPubkey = StringEscapeUtils.escapeJson(writer.toString().trim());
+        this.serverPubkeyFormat = publicKey.getFormat();
+        this.serverPubkeyAlgorithm = publicKey.getAlgorithm();
+        this.serverPubkeyFingerprint = KeyUtils.getFingerPrint(publicKey);
+        this.serverKeyProvider = simpleGeneratorHostKeyProvider;
+        log.debug("_loadPubkeyAndFingerprint(): Server public key: \n{}", serverPubkey);
+        log.debug("_loadPubkeyAndFingerprint():       Fingerprint: {}", serverPubkeyFingerprint);
+        log.debug("_loadPubkeyAndFingerprint():         Algorithm: {}", serverPubkeyAlgorithm);
+        log.debug("_loadPubkeyAndFingerprint():            Format: {}", serverPubkeyFormat);
     }
 }

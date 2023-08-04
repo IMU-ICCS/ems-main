@@ -151,6 +151,10 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
 
     public String getServerPubkeyFingerprint() { return server.getPublicKeyFingerprint(); }
 
+    public String getServerPubkeyAlgorithm() { return server.getPublicKeyAlgorithm(); }
+
+    public String getServerPubkeyFormat() { return server.getPublicKeyFormat(); }
+
     public NodeRegistry getNodeRegistry() { return nodeRegistry; }
 
     // Server control methods

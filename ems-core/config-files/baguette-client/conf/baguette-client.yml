@@ -55,7 +55,9 @@ client-id: ${BAGUETTE_CLIENT_ID}
 server-address: ${BAGUETTE_SERVER_ADDRESS}
 server-port: ${BAGUETTE_SERVER_PORT}
 server-pubkey: ${BAGUETTE_SERVER_PUBKEY}
-server-fingerprint: ${BAGUETTE_SERVER_PUBKEY_FINGERPRINT}
+server-pubkey-fingerprint: ${BAGUETTE_SERVER_PUBKEY_FINGERPRINT}
+server-pubkey-algorithm: ${BAGUETTE_SERVER_PUBKEY_ALGORITHM}
+server-pubkey-format: ${BAGUETTE_SERVER_PUBKEY_FORMAT}
 
 server-username: ${BAGUETTE_SERVER_USERNAME}
 server-password: ${BAGUETTE_SERVER_PASSWORD}

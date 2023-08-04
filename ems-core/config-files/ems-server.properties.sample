@@ -417,7 +417,7 @@ baguette.server.registration-window = 30000
 # SSH Server settings
 baguette.server.address = ${EMS_SERVER_ADDRESS}
 baguette.server.port = 2222
-baguette.server.key-file = ${EMS_CONFIG_DIR}/hostkey.ser
+baguette.server.key-file = ${EMS_CONFIG_DIR}/hostkey.pem
 baguette.server.heartbeat-enabled = true
 baguette.server.heartbeat-period = 60000
 

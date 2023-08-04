@@ -77,9 +77,10 @@ public class ClientInstallationProperties implements InitializingBean {
     private long retryDelay = 1000L;
     private double retryBackoffFactor = 1.0;
 
-    private long connectTimeout = 10000;
+    private long connectTimeout = 60000;
     private long authenticateTimeout = 60000;
     private long heartbeatInterval = 60000;
+    private long heartbeatReplyWait = heartbeatInterval;
     private long commandExecutionTimeout = 60000;
 
     private final Map<String, List<String>> instructions = new LinkedHashMap<>();

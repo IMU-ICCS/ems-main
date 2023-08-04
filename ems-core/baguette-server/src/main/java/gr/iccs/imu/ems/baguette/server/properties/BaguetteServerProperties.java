@@ -73,7 +73,7 @@ public class BaguetteServerProperties implements InitializingBean {
     private int port = 2222;
     public int getServerPort() { return port; }
 
-    private String keyFile = "hostkey.ser";
+    private String keyFile = "hostkey.pem";
     public String getServerKeyFile() { return keyFile; }
 
     private boolean heartbeatEnabled;
