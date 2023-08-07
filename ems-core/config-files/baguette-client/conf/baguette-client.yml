@@ -23,6 +23,7 @@ jasypt:
 
 # Baguette Client configuration
 
+baseDir: ${BAGUETTE_CLIENT_BASE_DIR}
 connection-retry-enabled: true
 connection-retry-delay: 10000
 connection-retry-limit: -1

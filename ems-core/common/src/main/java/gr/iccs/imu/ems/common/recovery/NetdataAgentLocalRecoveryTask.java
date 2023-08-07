@@ -42,12 +42,12 @@ public class NetdataAgentLocalRecoveryTask extends ShellRecoveryTask {
         super(eventBus, passwordUtil, taskScheduler, selfHealingProperties);
     }
 
-    public void runNodeRecovery() throws Exception {
+    public void runNodeRecovery(RecoveryContext recoveryContext) throws Exception {
         String netdataRecoveryFile = selfHealingProperties.getRecovery().getFile().get("netdata");
         log.debug("runNodeRecovery: file={}", netdataRecoveryFile);
         if (StringUtils.isNotBlank(netdataRecoveryFile))
-            runNodeRecovery(netdataRecoveryFile);
+            runNodeRecovery(netdataRecoveryFile, recoveryContext);
         else
-            runNodeRecovery(recoveryCommands);
+            runNodeRecovery(recoveryCommands, recoveryContext);
     }
 }

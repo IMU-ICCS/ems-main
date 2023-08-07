@@ -20,8 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -31,25 +29,25 @@ import java.util.List;
 @Component
 public class EmsClientRecoveryTask<P extends SshClientProperties> extends VmNodeRecoveryTask<P> {
     @Getter
-    private final List<RECOVERY_COMMAND> recoveryCommands = Collections.unmodifiableList(Arrays.asList(
+    private final List<RECOVERY_COMMAND> recoveryCommands = List.of(
             new RECOVERY_COMMAND("Initial wait...",
                     "pwd", 0, 0),
             new RECOVERY_COMMAND("Sending baguette client kill command...",
-                    "/opt/baguette-client/bin/kill.sh", 0, 2000),
+                    "${BAGUETTE_CLIENT_BASE_DIR}/bin/kill.sh", 0, 2000),
             new RECOVERY_COMMAND("Sending baguette client start command...",
-                    "/opt/baguette-client/bin/run.sh", 0, 10000)
-    ));
+                    "${BAGUETTE_CLIENT_BASE_DIR}/bin/run.sh", 0, 10000)
+    );
 
     public EmsClientRecoveryTask(@NonNull EventBus<String, Object, Object> eventBus, @NonNull PasswordUtil passwordUtil, @NonNull TaskScheduler taskScheduler, @NonNull CollectorContext<P> collectorContext, @NonNull SelfHealingProperties selfHealingProperties) {
         super(eventBus, passwordUtil, taskScheduler, selfHealingProperties, collectorContext);
     }
 
-    public void runNodeRecovery() throws Exception {
+    public void runNodeRecovery(RecoveryContext recoveryContext) throws Exception {
         String emsRecoveryFile = selfHealingProperties.getRecovery().getFile().get("baguette");
         log.debug("runNodeRecovery: file={}", emsRecoveryFile);
         if (StringUtils.isNotBlank(emsRecoveryFile))
-            runNodeRecovery(emsRecoveryFile);
+            runNodeRecovery(emsRecoveryFile, recoveryContext);
         else
-            runNodeRecovery(recoveryCommands);
+            runNodeRecovery(recoveryCommands, recoveryContext);
     }
 }

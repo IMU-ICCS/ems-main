@@ -51,6 +51,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
     private final EventBus<String,Object,Object> eventBus;
     private final PasswordUtil passwordUtil;
     private final NodeInfoHelper nodeInfoHelper;
+    private final RecoveryContext recoveryContext;
 
     private boolean started;
 
@@ -61,6 +62,10 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
     public void afterPropertiesSet() {
         log.debug("SelfHealingPlugin: properties: {}", properties);
         log.debug("SelfHealingPlugin: selfHealingProperties: {}", selfHealingProperties);
+
+        // Initialize recovery context
+        recoveryContext.initialize(properties);
+        log.warn("SelfHealingPlugin: Recovery context: {}", recoveryContext);
     }
 
     public synchronized void start() {
@@ -143,7 +148,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
                 return;
             }
 
-            createRecoveryTask(nodeId, nodeAddress, EmsClientRecoveryTask.class);
+            createRecoveryTask(nodeId, nodeAddress, recoveryContext, EmsClientRecoveryTask.class);
         } else {
             log.warn("SelfHealingPlugin: processClusterNodeRemovedEvent(): Message is not a {} object. Will ignore it.", ClusterMembershipEvent.class.getSimpleName());
         }
@@ -189,10 +194,10 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
 
         if (isLocalAddress(nodeAddress)) {
             // We are responsible for recovering our local Netdata agent
-            createRecoveryTask(null, "", NetdataAgentLocalRecoveryTask.class);
+            createRecoveryTask(null, "", recoveryContext, NetdataAgentLocalRecoveryTask.class);
         } else {
             // Aggregator is responsible for recovering remote Netdata agents
-            createRecoveryTask(null, nodeAddress, NetdataAgentRecoveryTask.class);
+            createRecoveryTask(null, nodeAddress, recoveryContext, NetdataAgentRecoveryTask.class);
         }
     }
 
@@ -236,7 +241,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
 
     // ------------------------------------------------------------------------
 
-    private void createRecoveryTask(String nodeId, @NonNull String nodeAddress, @NonNull Class<? extends RecoveryTask> recoveryTaskClass) {
+    private void createRecoveryTask(String nodeId, @NonNull String nodeAddress, RecoveryContext recoveryContext, @NonNull Class<? extends RecoveryTask> recoveryTaskClass) {
         // Check if a recovery task has already been scheduled
         NodeKey nodeKey = new NodeKey(nodeAddress, recoveryTaskClass);
         synchronized (waitingTasks) {
@@ -271,7 +276,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
                 () -> {
                     try {
                         log.info("SelfHealingPlugin: Retry #{}: Recovering node: id={}, address={}", retries.get(), nodeId, nodeAddress);
-                        recoveryTask.runNodeRecovery();
+                        recoveryTask.runNodeRecovery(recoveryContext);
                         //NOTE: 'recoveryTask.runNodeRecovery()' must send SELF_HEALING_RECOVERY_COMPLETED or _FAILED event
                     } catch (Exception e) {
                         log.error("SelfHealingPlugin: EXCEPTION while recovering node: node-address={} -- Exception: ", nodeAddress, e);

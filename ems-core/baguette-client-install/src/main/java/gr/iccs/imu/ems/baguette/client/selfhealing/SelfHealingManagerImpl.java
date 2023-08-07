@@ -9,7 +9,9 @@
 
 package gr.iccs.imu.ems.baguette.client.selfhealing;
 
+import gr.iccs.imu.ems.baguette.client.install.ClientInstallationProperties;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
+import gr.iccs.imu.ems.common.recovery.RecoveryContext;
 import gr.iccs.imu.ems.common.selfhealing.SelfHealingManager;
 import lombok.Data;
 import lombok.NonNull;
@@ -25,7 +27,10 @@ import java.util.stream.Collectors;
 @Data
 @Service
 public class SelfHealingManagerImpl implements SelfHealingManager<NodeRegistryEntry>, InitializingBean {
+    private final ClientInstallationProperties clientInstallationProperties;
     private final ServerSelfHealingProperties properties;
+    private final RecoveryContext recoveryContext;
+
     private boolean enabled;
     private MODE mode;
     private Map<String, NodeRegistryEntry> nodes = new LinkedHashMap<>();
@@ -37,6 +42,10 @@ public class SelfHealingManagerImpl implements SelfHealingManager<NodeRegistryEn
         log.info("Self-Healing Manager initialized");
         setEnabled( properties.isEnabled() );
         setMode( properties.getMode() );
+
+        // Initialize recovery context
+        recoveryContext.initialize(clientInstallationProperties, properties);
+        log.warn("Recovery context: {}", recoveryContext);
     }
 
     private void check() {

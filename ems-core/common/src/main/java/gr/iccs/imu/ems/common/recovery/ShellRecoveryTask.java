@@ -39,11 +39,11 @@ public class ShellRecoveryTask extends AbstractRecoveryTask {
         throw new Exception("Method not implemented. Use 'runNodeRecovery(List<RECOVERY_COMMAND>)' instead");
     }
 
-    public void runNodeRecovery() throws Exception {
+    public void runNodeRecovery(RecoveryContext recoveryContext) throws Exception {
         throw new Exception("Method not implemented. Use 'runNodeRecovery(List<RECOVERY_COMMAND>)' instead");
     }
 
-    public void runNodeRecovery(List<RECOVERY_COMMAND> recoveryCommands) throws Exception {
+    public void runNodeRecovery(List<RECOVERY_COMMAND> recoveryCommands, RecoveryContext recoveryContext) throws Exception {
         log.debug("ShellRecoveryTask: runNodeRecovery(): node-info={}", nodeInfo);
 
         // Send recovery start event
@@ -57,8 +57,10 @@ public class ShellRecoveryTask extends AbstractRecoveryTask {
             waitFor(command.getWaitBefore(), command.getName());
 
             // Run command as a local process
+            String commandString = prepareCommandString(command.getCommand(), recoveryContext);
             log.warn("##############  {}...", command.getName());
-            Process process = Runtime.getRuntime().exec(command.getCommand());
+            log.warn("##############  Command: {}", commandString);
+            Process process = Runtime.getRuntime().exec(commandString);
 
             // Redirect SSH output to standard output
             final AtomicBoolean closed = new AtomicBoolean(false);

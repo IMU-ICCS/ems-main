@@ -110,7 +110,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
 
     private String getLowestLevelGroupingName() {
         List<String> list = getGroupingNamesSorted(false, true);
-        return list.size()>0 ? list.get(0) : null;
+        return !list.isEmpty() ? list.get(0) : null;
     }
 
     public BaguetteServerProperties getConfiguration() {

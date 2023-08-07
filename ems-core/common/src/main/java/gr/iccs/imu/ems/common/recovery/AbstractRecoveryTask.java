@@ -16,6 +16,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.StringSubstitutor;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
@@ -43,13 +44,13 @@ public abstract class AbstractRecoveryTask implements RecoveryTask {
     protected Map nodeInfo = Collections.emptyMap();
 
     public abstract List<RECOVERY_COMMAND> getRecoveryCommands();
-    public abstract void runNodeRecovery() throws Exception;
-    public abstract void runNodeRecovery(List<RECOVERY_COMMAND> recoveryCommands) throws Exception;
+    public abstract void runNodeRecovery(RecoveryContext recoveryContext) throws Exception;
+    public abstract void runNodeRecovery(List<RECOVERY_COMMAND> recoveryCommands, RecoveryContext recoveryContext) throws Exception;
 
     protected void waitFor(long millis, String description) {
         if (millis>0) {
             log.warn("##############  Waiting for {}ms after {}...", millis, description);
-            try { Thread.sleep(millis); } catch (InterruptedException e) { }
+            try { Thread.sleep(millis); } catch (InterruptedException ignored) { }
         }
     }
 
@@ -71,5 +72,16 @@ public abstract class AbstractRecoveryTask implements RecoveryTask {
                 },
                 Instant.now()
         );
+    }
+
+    protected String prepareCommandString(String command, RecoveryContext recoveryContext) {
+        log.trace("AbstractRecoveryTask.prepareCommandString: BEGIN: {}", command);
+        command = StringSubstitutor.replaceSystemProperties(command);
+        log.trace("AbstractRecoveryTask.prepareCommandString: AFTER replaceSystemProperties: {}", command);
+        Map<String, String> variablesMap = recoveryContext.getVariablesMap();
+        log.trace("AbstractRecoveryTask.prepareCommandString: VARS: {}", variablesMap);
+        command = StringSubstitutor.replace(command, variablesMap);
+        log.trace("AbstractRecoveryTask.prepareCommandString: END: {}", command);
+        return command;
     }
 }

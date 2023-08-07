@@ -54,11 +54,11 @@ public class VmNodeRecoveryTask <P extends SshClientProperties> extends Abstract
         throw new Exception("Method not implemented. Use 'runNodeRecovery(List<RECOVERY_COMMAND>)' instead");
     }
 
-    public void runNodeRecovery() throws Exception {
+    public void runNodeRecovery(RecoveryContext recoveryContext) throws Exception {
         throw new Exception("Method not implemented. Use 'runNodeRecovery(List<RECOVERY_COMMAND>)' instead");
     }
 
-    public void runNodeRecovery(List<RECOVERY_COMMAND> recoveryCommands) throws Exception {
+    public void runNodeRecovery(List<RECOVERY_COMMAND> recoveryCommands, RecoveryContext recoveryContext) throws Exception {
         log.debug("VmNodeRecoveryTask: runNodeRecovery(): BEGIN: recovery-command: {}", recoveryCommands);
 
         // Connect to Node (VM)
@@ -74,8 +74,12 @@ public class VmNodeRecoveryTask <P extends SshClientProperties> extends Abstract
             if (command==null || StringUtils.isBlank(command.getCommand())) continue;
 
             waitFor(command.getWaitBefore(), command.getName());
+
+            // Send command to node for execution
+            String commandString = prepareCommandString(command.getCommand(), recoveryContext);
             log.warn("##############  {}...", command.getName());
-            sshc.getOut().println(command.getCommand());
+            log.warn("##############  Command: {}", commandString);
+            sshc.getOut().println(commandString);
             waitFor(command.getWaitAfter(), command.getName());
         }
         log.info("VmNodeRecoveryTask: runNodeRecovery(): Executed {} recovery commands", recoveryCommands.size());

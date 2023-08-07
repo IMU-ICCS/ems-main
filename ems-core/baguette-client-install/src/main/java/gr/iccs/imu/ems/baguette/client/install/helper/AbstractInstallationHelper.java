@@ -218,7 +218,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         }
 
         List<String> jsonSets = null;
-        if (instructionsSets.size()>0) {
+        if (!instructionsSets.isEmpty()) {
             // Convert 'instructionsSet' into json string
             Gson gson = new Gson();
             jsonSets = instructionsSets.stream().map(instructionsSet -> gson.toJson(instructionsSet, InstructionsSet.class)).collect(Collectors.toList());

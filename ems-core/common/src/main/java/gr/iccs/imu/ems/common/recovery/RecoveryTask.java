@@ -27,15 +27,15 @@ public interface RecoveryTask {
 
     List<RECOVERY_COMMAND> getRecoveryCommands();
 
-    void runNodeRecovery() throws Exception;
+    void runNodeRecovery(RecoveryContext context) throws Exception;
 
-    void runNodeRecovery(List<RECOVERY_COMMAND> recoveryCommandsList) throws Exception;
+    void runNodeRecovery(List<RECOVERY_COMMAND> recoveryCommandsList, RecoveryContext context) throws Exception;
 
-    default void runNodeRecovery(String recoveryCommandsFile) throws Exception {
+    default void runNodeRecovery(String recoveryCommandsFile, RecoveryContext context) throws Exception {
         try (FileReader reader = new FileReader(Paths.get(recoveryCommandsFile).toFile())) {
             Type listType = new TypeToken<List<RECOVERY_COMMAND>>(){}.getType();
             List<RECOVERY_COMMAND> recoveryCommandsList = new Gson().fromJson(reader, listType);
-            runNodeRecovery(recoveryCommandsList);
+            runNodeRecovery(recoveryCommandsList, context);
         }
     }
 }

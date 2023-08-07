@@ -44,12 +44,12 @@ public class NetdataAgentRecoveryTask<P extends SshClientProperties> extends VmN
         super(eventBus, passwordUtil, taskScheduler, selfHealingProperties, collectorContext);
     }
 
-    public void runNodeRecovery() throws Exception {
+    public void runNodeRecovery(RecoveryContext recoveryContext) throws Exception {
         String netdataRecoveryFile = selfHealingProperties.getRecovery().getFile().get("netdata");
         log.debug("runNodeRecovery: file={}", netdataRecoveryFile);
         if (StringUtils.isNotBlank(netdataRecoveryFile))
-            runNodeRecovery(netdataRecoveryFile);
+            runNodeRecovery(netdataRecoveryFile, recoveryContext);
         else
-            runNodeRecovery(recoveryCommands);
+            runNodeRecovery(recoveryCommands, recoveryContext);
     }
 }
