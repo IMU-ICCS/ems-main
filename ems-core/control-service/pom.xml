@@ -167,7 +167,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
         </dependency>
 
         <!-- See: https://github.com/sevdokimov/log-viewer/blob/master/_docs/embadded-spring-boot.md -->
