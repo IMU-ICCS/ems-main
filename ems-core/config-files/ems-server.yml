@@ -26,6 +26,12 @@ jasypt:
     algorithm: PBEWithMD5AndDES
     ivGeneratorClassname: org.jasypt.iv.NoIvGenerator
 
+### Execution (@EnableAsync) and Scheduling (@EnableScheduling) thread pools
+#spring.task.execution.pool.max-size: 16
+#spring.task.execution.pool.queue-capacity: 100
+#spring.task.execution.pool.keep-alive: '10s'
+#spring.task.scheduling.pool.size: 2
+
 ### Misc
 spring.output.ansi.enabled: ALWAYS
 spring.jackson.default-property-inclusion: non_null

@@ -198,12 +198,6 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             staticResourceCfg.put("logs-path",  staticResourceProperties.getLogsPath());
             controlServiceInfo.put("prop-static-resource", staticResourceCfg);
         }
-        if (controlServiceProperties!=null && controlServiceProperties.getTaskScheduler()!=null) {
-            ControlServiceProperties.TaskSchedulerProperties taskSchedulerProperties = controlServiceProperties.getTaskScheduler();
-            Map<String,Object> taskSchedulerMap = new LinkedHashMap<>();
-            taskSchedulerMap.put("thread-pool-size",  taskSchedulerProperties.getThreadPoolSize());
-            controlServiceInfo.put("prop-task-scheduler", taskSchedulerMap);
-        }
         // Adding Authorization properties has been moved to an EmsInfoPlugin in ems-4-morphemic project
         if (webSecurityProperties!=null) {
             Map<String,Object> authMap = new LinkedHashMap<>();

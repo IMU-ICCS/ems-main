@@ -74,17 +74,9 @@ public class ControlServiceProperties {
     @NestedConfigurationProperty
     private KeystoreAndCertificateProperties ssl;
 
-    private TaskSchedulerProperties taskScheduler = new TaskSchedulerProperties();
-
     @Data
     public static class Preload {
         private String camelModel;
         private String cpModel;
-    }
-
-    @Data
-    public static class TaskSchedulerProperties {
-        @Min(1)
-        private int threadPoolSize = 2;
     }
 }
