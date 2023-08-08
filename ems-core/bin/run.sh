@@ -46,12 +46,6 @@ if [[ -z "$LOG_FILE" ]]; then
     export LOG_FILE
 fi
 
-# Waiting CDO to come up...
-if [[ -z ${EMS_SKIP_WAIT_CDO+x} ]] && [[ -f $EMS_CONFIG_DIR/wait-for-cdo.sh ]]; then
-    echo "Waiting CDO server to start..."
-    $EMS_CONFIG_DIR/wait-for-cdo.sh
-fi
-
 # Set shell encoding to UTF-8 (in order to display banner correctly)
 export LANG=C.UTF-8
 

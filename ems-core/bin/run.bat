@@ -43,12 +43,6 @@ if "%LOG_FILE%"=="" (
     set LOG_FILE=%LOGS_DIR%\ems.log
 )
 
-:: Waiting CDO to come up...
-IF NOT DEFINED EMS_SKIP_WAIT_CDO   IF EXIST %EMS_CONFIG_DIR%\wait-for-cdo.bat (
-    echo "Waiting CDO server to start..."
-    %EMS_CONFIG_DIR%\wait-for-cdo.bat
-)
-
 :: Set shell encoding to UTF-8 (in order to display banner correctly)
 chcp 65001
 
