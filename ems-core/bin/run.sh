@@ -18,21 +18,6 @@ if [[ -z $JARS_DIR ]]; then JARS_DIR=$BASEDIR/control-service/target; export JAR
 if [[ -z $LOGS_DIR ]]; then LOGS_DIR=$BASEDIR/logs; export LOGS_DIR; fi
 if [[ -z $PUBLIC_DIR ]]; then PUBLIC_DIR=$BASEDIR/public_resources; export PUBLIC_DIR; fi
 
-# Import MULE certificate
-#MULE_CERT=$EMS_CONFIG_DIR/mule-server.crt
-#if [[ -f ${MULE_CERT} ]]; then
-#    echo "importing mule certificate"
-#    keytool -noprompt -storepass changeit -import -alias mule -keystore /usr/lib/jvm/java-1.8-openjdk/jre/lib/security/cacerts -file ${MULE_CERT}
-#    echo "importing mule certificate completed"
-#else
-#    echo "mule certificate not found: ${MULE_CERT}"
-#fi
-
-# Initialize keystores and certificate
-# Uncomment next line to generate BrokerCEP keystore, truststore and certificate before EMS server launch
-# Modifying 'initialize-keystores.sh' script you can customize the certificate generation
-#./bin/initialize-keystores.sh
-
 # Read JASYPT password (decrypts encrypted configuration settings)
 #JASYPT_PASSWORD=password
 if [[ -z "$JASYPT_PASSWORD" ]]; then

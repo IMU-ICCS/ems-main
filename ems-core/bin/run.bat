@@ -18,21 +18,6 @@ IF NOT DEFINED JARS_DIR set JARS_DIR=%BASEDIR%\control-service\target
 IF NOT DEFINED LOGS_DIR set LOGS_DIR=%BASEDIR%\logs
 IF NOT DEFINED PUBLIC_DIR set PUBLIC_DIR=%BASEDIR%\public_resources
 
-:: Import MULE certificate
-::set MULE_CERT=%EMS_CONFIG_DIR%\mule-server.crt
-::if exist %MULE_CERT% (
-::    echo importing mule certificate
-::    keytool -noprompt -storepass changeit -import -alias mule -keystore "%JAVA_HOME%\jre\lib\security\cacerts" -file %MULE_CERT%
-::    echo importing mule certificate completed
-::) else (
-::    echo mule certificate not found: %MULE_CERT%
-::)
-
-:: Initialize keystores and certificate
-:: Uncomment next line to generate BrokerCEP keystore, truststore and certificate before EMS server launch
-:: Modifying 'initialize-keystores.bat' script you can customize the certificate generation
-::CALL bin\initialize-keystores.bat
-
 :: Read JASYPT password (decrypts encrypted configuration settings)
 ::set JASYPT_PASSWORD=password
 if "%JASYPT_PASSWORD%"=="" (
