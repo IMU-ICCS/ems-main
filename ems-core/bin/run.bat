@@ -62,6 +62,12 @@ echo Starting EMS server...
 IF NOT DEFINED RESTART_EXIT_CODE set RESTART_EXIT_CODE=99
 :_restart_ems
 
+rem Check if fat-jar exists
+if exist "%JARS_DIR%\control-service.jar" (
+    set "CP=-cp %JARS_DIR%\control-service.jar"
+    set "ESPER_PATH=%JARS_DIR%\esper-7.1.0.jar,"
+)
+
 rem Use when Esper is packaged in control-service.jar
 rem java %EMS_DEBUG_OPTS% %JAVA_OPTS% %JAVA_ADD_OPENS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Djava.security.egd=file:/dev/urandom -jar %JARS_DIR%\control-service.jar -nolog "--spring.config.location=%EMS_CONFIG_LOCATION%" "--logging.config=file:%LOG_CONFIG_FILE%"
 
@@ -70,8 +76,8 @@ java %EMS_DEBUG_OPTS% %JAVA_OPTS% %JAVA_ADD_OPENS% ^
     -Djasypt.encryptor.password=%JASYPT_PASSWORD% ^
     -Djava.security.egd=file:/dev/urandom ^
     -Dscan.packages=%SCAN_PACKAGES% ^
-    -cp %JARS_DIR%\control-service.jar ^
-    "-Dloader.path=%JARS_DIR%\esper-7.1.0.jar,%EXTRA_LOADER_PATHS%" ^
+    %CP% ^
+    "-Dloader.path=%ESPER_PATH%%EXTRA_LOADER_PATHS%" ^
     org.springframework.boot.loader.PropertiesLauncher ^
     -nolog ^
     "--spring.config.location=%EMS_CONFIG_LOCATION%" ^

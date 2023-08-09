@@ -6,10 +6,11 @@
  | |____| |  | |____) | | |___| (_) | | | | |_| | | (_) | |
  |______|_|  |_|_____/   \_____\___/|_| |_|\__|_|  \___/|_|
 
- :: EMS Control ::                       ${application.formatted-version}
+ :: EMS Control ::                        (@project.version@)
  :: Spring Boot ::                       ${spring-boot.formatted-version}
  :: Java (TM)   ::                        (${java.version})
  :: Build Num.  :: @buildNumber@
  :: Build Date  :: @timestamp@
  :: SCM Branch  :: @scmBranch@
- :: Description :: @build-description@
+ :: Image Tag   :: @docker.image.name@:@docker.image.tag@
+ :: Description :: @build.description@

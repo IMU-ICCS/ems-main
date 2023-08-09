@@ -61,6 +61,12 @@ trap 'echo "Signaling EMS to exit"; kill -TERM "${emsPid}"; wait "${emsPid}"; ' 
 
 JAVA_ADD_OPENS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/sun.nio.cs=ALL-UNNAMED --add-opens java.base/java.nio.charset=ALL-UNNAMED"
 
+# Check if fat-jar exists
+if [[ -f "${JARS_DIR}/control-service.jar" ]]; then
+  CP="-cp ${JARS_DIR}/control-service.jar"
+  ESPER_PATH="${JARS_DIR}/esper-7.1.0.jar,"
+fi
+
 java -version
 echo "LANG=$LANG"
 #locale
@@ -79,8 +85,8 @@ while :; do
       -Djasypt.encryptor.password=$JASYPT_PASSWORD \
       -Djava.security.egd=file:/dev/urandom \
       -Dscan.packages=${SCAN_PACKAGES} \
-      -cp ${JARS_DIR}/control-service.jar \
-      -Dloader.path=${JARS_DIR}/esper-7.1.0.jar,${EXTRA_LOADER_PATHS} \
+      ${CP} \
+      -Dloader.path=${ESPER_PATH}${EXTRA_LOADER_PATHS} \
       org.springframework.boot.loader.PropertiesLauncher \
       "--spring.config.location=${EMS_CONFIG_LOCATION}" \
       "--logging.config=file:$LOG_CONFIG_FILE" \

@@ -9,10 +9,9 @@
 #
 
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
-#EMS_CONFIG_DIR=config
 
 #JAVA_OPTS=-Djavax.net.ssl.trustStore=./broker-truststore.p12\ -Djavax.net.ssl.trustStorePassword=melodic\ -Djavax.net.ssl.trustStoreType=pkcs12
 # -Djavax.net.debug=all
 # -Djavax.net.debug=ssl,handshake,record
 
-java $JAVA_OPTS -jar ${BASEDIR}/jars/broker-client-jar-with-dependencies.jar $*
+java $JAVA_OPTS -jar ${BASEDIR}/public_resources/resources/broker-client.jar $*

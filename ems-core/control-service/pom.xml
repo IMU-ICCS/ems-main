@@ -34,9 +34,9 @@
 
         <!-- io.fabricat8 docker-maven-plugin properties -->
         <docker-maven-plugin.version>0.43.2</docker-maven-plugin.version>
-        <docker-maven-plugin.imageName>ems-server</docker-maven-plugin.imageName>
-        <!--<docker-image-tag>${revision}</docker-image-tag>-->
-        <!--<build-description></build-description>-->
+        <docker.image.name>ems-server</docker.image.name>
+        <!--<docker.image.tag>${revision}</docker.image.tag>
+        <build.description></build.description>-->
 
         <!-- EMS server main class -->
         <start-class>gr.iccs.imu.ems.control.ControlServiceApplication</start-class>
@@ -566,15 +566,6 @@
                                     <include>broker-client-jar-with-dependencies.jar</include>
                                     <filtering>false</filtering>
                                 </resource>
-                                <!--
-                                  "gr.iccs.imu.ems.brokerclient.properties" FILE HAS BEEN REMOVED!!
-                                -->
-                                <!--<resource>
-                                    <targetPath>${project.build.directory}/docker/config</targetPath>
-                                    <directory>${project.basedir}/../broker-client</directory>
-                                    <include>gr.iccs.imu.ems.brokerclient.properties</include>
-                                    <filtering>false</filtering>
-                                </resource>-->
                                 <resource>
                                     <targetPath>${project.build.directory}/docker/bin</targetPath>
                                     <directory>${project.basedir}/../bin/</directory>
@@ -608,7 +599,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>properties-maven-plugin</artifactId>
-                        <version>1.1.0</version>
+                        <version>1.2.0</version>
                         <executions>
                             <execution>
                                 <phase>validate</phase>
@@ -626,31 +617,36 @@
                             <properties/>
                         </configuration>
                     </plugin>
-                    <!--<plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <version>3.0.0</version>
-                        <executions>
-                            <execution>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <echo>Print Docker image dev properties</echo>
-                                        <echo>Image Tag: "${docker-image-tag}"</echo>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>-->
+                </plugins>
+            </build>
+        </profile>
 
+        <profile>
+            <id>build-docker-image</id>
+            <activation>
+                <file><exists>.</exists></file>
+            </activation>
+            <build>
+                <plugins>
                     <!-- Rename docker context folder to 'docker-context'. Remove previous if exists. -->
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <version>3.1.0</version>
                         <executions>
+                            <execution>
+                                <id>set-docker-properties</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <exportAntProperties>true</exportAntProperties>
+                                    <target unless="docker.image.tag">
+                                        <property name="docker.image.tag" value="${project.version}"/>
+                                        <property name="build.description" value=""/>
+                                    </target>
+                                </configuration>
+                            </execution>
                             <execution>
                                 <id>delete-old-docker-context</id>
                                 <phase>install</phase>
@@ -660,6 +656,9 @@
                                 <configuration>
                                     <target>
                                         <delete dir="${project.build.directory}/docker-context"/>
+                                        <!--<echo>Print Docker image dev properties</echo>
+                                        <echo>Image Tag: "${docker.image.tag}"</echo>
+                                        <echo>Description: "${build.description}"</echo>-->
                                     </target>
                                 </configuration>
                             </execution>
@@ -695,7 +694,7 @@
                             <useColor>true</useColor>
                             <images>
                                 <image>
-                                    <name>${docker-maven-plugin.imageName}:${docker-image-tag}</name>
+                                    <name>${docker.image.name}:${docker.image.tag}</name>
                                     <build>
                                         <contextDir>${project.build.directory}/docker-context</contextDir>
                                     </build>
