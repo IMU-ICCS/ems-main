@@ -333,17 +333,17 @@ brokercep:
 
   ssl:
     # Key store settings
-    keystore-file: ${EMS_HOME}/config/broker-keystore.p12
+    keystore-file: ${EMS_CONFIG_DIR}/broker-keystore.p12
     keystore-type: ${control.ssl.keystore-type}
     keystore-password: ${control.ssl.keystore-password}
 
     # Trust store settings
-    truststore-file: ${EMS_HOME}/config/broker-truststore.p12
+    truststore-file: ${EMS_CONFIG_DIR}/broker-truststore.p12
     truststore-type: ${control.ssl.truststore-type}
     truststore-password: ${control.ssl.truststore-password}
 
     # Certificate settings
-    certificate-file: ${EMS_HOME}/config/broker.crt
+    certificate-file: ${EMS_CONFIG_DIR}/broker.crt
 
     # EMS key generation settings
     key-entry-generate: ALWAYS
@@ -509,7 +509,7 @@ baguette.client.install:
 
   ### --- EMS server (HTTPS) certificate file (PEM) ---
   #serverCertFileAtServer: ${EMS_CONFIG_DIR}/baguette-client/conf/server.pem
-  serverCertFileAtServer: ${EMS_HOME}/config/server.pem
+  serverCertFileAtServer: ${EMS_CONFIG_DIR}/server.pem
   serverCertFileAtClient: ${baguette.client.install.baseDir}/conf/server.pem
   copyFilesFromServerDir: ${EMS_CONFIG_DIR}/baguette-client/
   copyFilesToClientDir: ${baguette.client.install.baseDir}/

@@ -322,17 +322,17 @@ brokercep.broker-url-for-clients = ${brokercep.broker-protocol}://${EMS_SERVER_A
 # Must be a public IP address
 
 # Key store settings
-brokercep.ssl.keystore-file=${EMS_HOME}/config/broker-keystore.p12
+brokercep.ssl.keystore-file=${EMS_CONFIG_DIR}/broker-keystore.p12
 brokercep.ssl.keystore-type=${control.ssl.keystore-type}
 brokercep.ssl.keystore-password=${control.ssl.keystore-password}
 
 # Trust store settings
-brokercep.ssl.truststore-file=${EMS_HOME}/config/broker-truststore.p12
+brokercep.ssl.truststore-file=${EMS_CONFIG_DIR}/broker-truststore.p12
 brokercep.ssl.truststore-type=${control.ssl.truststore-type}
 brokercep.ssl.truststore-password=${control.ssl.truststore-password}
 
 # Certificate settings
-brokercep.ssl.certificate-file=${EMS_HOME}/config/broker.crt
+brokercep.ssl.certificate-file=${EMS_CONFIG_DIR}/broker.crt
 
 # EMS key generation settings
 brokercep.ssl.key-entry-generate=ALWAYS
@@ -474,7 +474,7 @@ baguette.client.install.installScriptFile=${baguette.client.install.baseDir}/bin
 
 ### --- EMS server (HTTPS) certificate file (PEM) ---
 #baguette.client.install.serverCertFileAtServer=${EMS_CONFIG_DIR}/baguette-client/conf/server.pem
-baguette.client.install.serverCertFileAtServer=${EMS_HOME}/config/server.pem
+baguette.client.install.serverCertFileAtServer=${EMS_CONFIG_DIR}/server.pem
 baguette.client.install.serverCertFileAtClient=${baguette.client.install.baseDir}/conf/server.pem
 baguette.client.install.copyFilesFromServerDir=${EMS_CONFIG_DIR}/baguette-client/
 baguette.client.install.copyFilesToClientDir=${baguette.client.install.baseDir}/
