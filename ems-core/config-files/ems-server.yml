@@ -333,20 +333,20 @@ brokercep:
 
   ssl:
     # Key store settings
-    keystore-file: ${control.ssl.keystore-file}
+    keystore-file: ${EMS_HOME}/config/broker-keystore.p12
     keystore-type: ${control.ssl.keystore-type}
     keystore-password: ${control.ssl.keystore-password}
 
     # Trust store settings
-    truststore-file: ${control.ssl.truststore-file}
+    truststore-file: ${EMS_HOME}/config/broker-truststore.p12
     truststore-type: ${control.ssl.truststore-type}
     truststore-password: ${control.ssl.truststore-password}
 
     # Certificate settings
-    certificate-file: ${control.ssl.certificate-file}
+    certificate-file: ${EMS_HOME}/config/broker.crt
 
     # EMS key generation settings
-    key-entry-generate: NEVER
+    key-entry-generate: ALWAYS
     key-entry-name: ${control.ssl.key-entry-name}
     key-entry-dname: ${control.ssl.key-entry-dname}
     key-entry-ext-san: ${control.ssl.key-entry-ext-san}
@@ -508,14 +508,16 @@ baguette.client.install:
   #clientConfArchiveFile: ${baguette.client.install.baseDir}/baguette-client-conf.tgz
 
   ### --- EMS server (HTTPS) certificate file (PEM) ---
-  serverCertFileAtServer: ${EMS_CONFIG_DIR}/baguette-client/conf/server.pem
+  #serverCertFileAtServer: ${EMS_CONFIG_DIR}/baguette-client/conf/server.pem
+  serverCertFileAtServer: ${EMS_HOME}/config/server.pem
   serverCertFileAtClient: ${baguette.client.install.baseDir}/conf/server.pem
   copyFilesFromServerDir: ${EMS_CONFIG_DIR}/baguette-client/
   copyFilesToClientDir: ${baguette.client.install.baseDir}/
 
   ### --- temp. folders ---
   clientTmpDir: /tmp
-  serverTmpDir: ${LOGS_DIR:${EMS_CONFIG_DIR}/../logs}/tmp
+  #serverTmpDir: ${LOGS_DIR:${EMS_CONFIG_DIR}/../logs}/tmp
+  serverTmpDir: ${EMS_HOME}/tmp
   keepTempFiles: false
 
   ### Simulation settings

@@ -322,20 +322,20 @@ brokercep.broker-url-for-clients = ${brokercep.broker-protocol}://${EMS_SERVER_A
 # Must be a public IP address
 
 # Key store settings
-brokercep.ssl.keystore-file=${control.ssl.keystore-file}
+brokercep.ssl.keystore-file=${EMS_HOME}/config/broker-keystore.p12
 brokercep.ssl.keystore-type=${control.ssl.keystore-type}
 brokercep.ssl.keystore-password=${control.ssl.keystore-password}
 
 # Trust store settings
-brokercep.ssl.truststore-file=${control.ssl.truststore-file}
+brokercep.ssl.truststore-file=${EMS_HOME}/config/broker-truststore.p12
 brokercep.ssl.truststore-type=${control.ssl.truststore-type}
 brokercep.ssl.truststore-password=${control.ssl.truststore-password}
 
 # Certificate settings
-brokercep.ssl.certificate-file = ${control.ssl.certificate-file}
+brokercep.ssl.certificate-file=${EMS_HOME}/config/broker.crt
 
 # EMS key generation settings
-brokercep.ssl.key-entry-generate=NEVER
+brokercep.ssl.key-entry-generate=ALWAYS
 brokercep.ssl.key-entry-name=${control.ssl.key-entry-name}
 brokercep.ssl.key-entry-dname=${control.ssl.key-entry-dname}
 brokercep.ssl.key-entry-ext-san=${control.ssl.key-entry-ext-san}
@@ -473,14 +473,16 @@ baguette.client.install.installScriptFile=${baguette.client.install.baseDir}/bin
 #baguette.client.install.clientConfArchiveFile=${baguette.client.install.baseDir}/baguette-client-conf.tgz
 
 ### --- EMS server (HTTPS) certificate file (PEM) ---
-baguette.client.install.serverCertFileAtServer=${EMS_CONFIG_DIR}/baguette-client/conf/server.pem
+#baguette.client.install.serverCertFileAtServer=${EMS_CONFIG_DIR}/baguette-client/conf/server.pem
+baguette.client.install.serverCertFileAtServer=${EMS_HOME}/config/server.pem
 baguette.client.install.serverCertFileAtClient=${baguette.client.install.baseDir}/conf/server.pem
 baguette.client.install.copyFilesFromServerDir=${EMS_CONFIG_DIR}/baguette-client/
 baguette.client.install.copyFilesToClientDir=${baguette.client.install.baseDir}/
 
 ### --- temp. folders ---
 baguette.client.install.clientTmpDir=/tmp
-baguette.client.install.serverTmpDir=${LOGS_DIR:${EMS_CONFIG_DIR}/../logs}/tmp
+#baguette.client.install.serverTmpDir=${LOGS_DIR:${EMS_CONFIG_DIR}/../logs}/tmp
+baguette.client.install.serverTmpDir=${EMS_HOME}/tmp
 baguette.client.install.keepTempFiles=false
 
 ### Simulation settings
