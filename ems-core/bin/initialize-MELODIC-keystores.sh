@@ -12,7 +12,7 @@ PREVWORKDIR=`pwd`
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd ${BASEDIR}
 
-if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=${BASEDIR}/config; export MELODIC_CONFIG_DIR; fi
+if [[ -z $EMS_CONFIG_DIR ]]; then EMS_CONFIG_DIR=${BASEDIR}/config; export EMS_CONFIG_DIR; fi
 
 # Get IP addresses
 echo Resolving Public IP addresses...
@@ -45,7 +45,7 @@ echo PUBLIC_IP=${PUBLIC_IP}
 
 
 # Get cached IP address from previous run (if any)
-CACHED_IP_FILE=${MELODIC_CONFIG_DIR}/MY_IP
+CACHED_IP_FILE=${EMS_CONFIG_DIR}/MY_IP
 touch ${CACHED_IP_FILE}
 CACHED_IP=`cat ${CACHED_IP_FILE}`
 #echo "Cached IP address=${CACHED_IP}"
@@ -66,8 +66,8 @@ echo ${PUBLIC_IP} > ${CACHED_IP_FILE}
 
 
 # Prepare keystore base directory and truststore file
-KEYSTORE_BASE_DIR=${MELODIC_CONFIG_DIR}/certs
-TRUSTSTORE_DIR=${MELODIC_CONFIG_DIR}/common
+KEYSTORE_BASE_DIR=${EMS_CONFIG_DIR}/certs
+TRUSTSTORE_DIR=${EMS_CONFIG_DIR}/common
 TRUSTSTORE_FILE=${TRUSTSTORE_DIR}/melodic-truststore.p12
 
 mkdir -p ${KEYSTORE_BASE_DIR}

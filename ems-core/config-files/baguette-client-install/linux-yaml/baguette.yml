@@ -95,7 +95,7 @@ instructions:
     match: false
   - description: Copy-and-process configuration to target
     taskType: FILE
-    localFileName: '${MELODIC_CONFIG_DIR}/baguette-client/'
+    localFileName: '${EMS_CONFIG_DIR}/baguette-client/'
     fileName: '${BAGUETTE_CLIENT_BASE_DIR}'
     executable: false
     exitCode: 0

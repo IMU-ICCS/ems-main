@@ -371,10 +371,10 @@ export default {
             if (this.$root[this.restCallRootId]) {
                 let restCall = this.$root[this.restCallRootId];
                 if (type==='CamelModel') {
-                    restCall.switchToForm('new-camel', { 'applicationId': path });
+                    restCall.switchToForm('new-app-model', { 'applicationId': path });
                 } else
                 if (type==='ConstraintProblem') {
-                    restCall.switchToForm('new-cp', { 'cp-model-id': path });
+                    restCall.switchToForm('new-cp-model', { 'cp-model-id': path });
                 } else
                     console.log('Ignoring type: '+type);
             }

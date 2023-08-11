@@ -27,7 +27,7 @@
     <logger name="org.springframework" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
     </logger>
-    <logger name="eu.melodic.event" level="INFO" additivity="false">
+    <logger name="gr.iccs.imu.ems" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
     </logger>
 </configuration>

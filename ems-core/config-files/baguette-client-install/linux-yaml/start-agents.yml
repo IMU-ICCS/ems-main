@@ -34,7 +34,7 @@ instructions:
     message: "Netdata is already running"
   - description: "Copy Netdata Prometheus plugin configuration to node's /tmp directory"
     taskType: FILE
-    localFileName: "${MELODIC_CONFIG_DIR}/baguette-client-install/netdata/go.d/prometheus.conf"
+    localFileName: "${EMS_CONFIG_DIR}/baguette-client-install/netdata/go.d/prometheus.conf"
     fileName: "/tmp"
     executable: false
     exitCode: 0

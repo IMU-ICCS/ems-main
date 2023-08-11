@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>eu.melodic.event</groupId>
+        <groupId>gr.iccs.imu.ems</groupId>
         <artifactId>ems-core</artifactId>
         <version>${revision}</version>
     </parent>
@@ -22,7 +22,7 @@
     <dependencies>
         <!-- EMS dependencies -->
         <dependency>
-            <groupId>eu.melodic.event</groupId>
+            <groupId>gr.iccs.imu.ems</groupId>
             <artifactId>util</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -59,7 +59,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.8.1</version>
         </dependency>
 
         <!-- Apache Commons CSV -->
@@ -84,7 +83,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>eu.melodic.event.brokerclient.BrokerClientApp</mainClass>
+                            <mainClass>gr.iccs.imu.ems.brokerclient.BrokerClientApp</mainClass>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>

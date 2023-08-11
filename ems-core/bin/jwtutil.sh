@@ -12,12 +12,12 @@
 PREVWORKDIR=`pwd`
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 cd ${BASEDIR}
-if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=$BASEDIR/config-files; export MELODIC_CONFIG_DIR; fi
+if [[ -z $EMS_CONFIG_DIR ]]; then EMS_CONFIG_DIR=$BASEDIR/config-files; export EMS_CONFIG_DIR; fi
 if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=$BASEDIR/config-files; export PAASAGE_CONFIG_DIR; fi
 if [[ -z $JARS_DIR ]]; then JARS_DIR=$BASEDIR/control-service/target; export JARS_DIR; fi
 
-if [[ -z EMS_SECRETS_FILE ]]; then EMS_SECRETS_FILE=$MELODIC_CONFIG_DIR/secrets.properties; export EMS_SECRETS_FILE; fi
-if [[ -z EMS_CONFIG_LOCATION ]]; then EMS_CONFIG_LOCATION=optional:file:$MELODIC_CONFIG_DIR/ems-server.yml,optional:file:$MELODIC_CONFIG_DIR/ems-server.properties,optional:file:$MELODIC_CONFIG_DIR/ems.yml,optional:file:$MELODIC_CONFIG_DIR/ems.properties,optional:file:$EMS_SECRETS_FILE; export EMS_CONFIG_LOCATION; fi
+if [[ -z EMS_SECRETS_FILE ]]; then EMS_SECRETS_FILE=$EMS_CONFIG_DIR/secrets.properties; export EMS_SECRETS_FILE; fi
+if [[ -z EMS_CONFIG_LOCATION ]]; then EMS_CONFIG_LOCATION=optional:file:$EMS_CONFIG_DIR/ems-server.yml,optional:file:$EMS_CONFIG_DIR/ems-server.properties,optional:file:$EMS_CONFIG_DIR/ems.yml,optional:file:$EMS_CONFIG_DIR/ems.properties,optional:file:$EMS_SECRETS_FILE; export EMS_CONFIG_LOCATION; fi
 
 # Read JASYPT password (decrypts encrypted configuration settings)
 #JASYPT_PASSWORD=password
@@ -26,7 +26,7 @@ if [[ -z "$JASYPT_PASSWORD" ]]; then
     read -s JASYPT_PASSWORD
 fi
 
-java -Djasypt.encryptor.password=$JASYPT_PASSWORD  -cp ${JARS_DIR}/control-service.jar -Dloader.main=eu.melodic.event.control.util.jwt.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.eu.melodic.event.util=ERROR "-Dspring.config.location=$EMS_CONFIG_LOCATION" org.springframework.boot.loader.PropertiesLauncher $*
+java -Djasypt.encryptor.password=$JASYPT_PASSWORD  -cp ${JARS_DIR}/control-service.jar -Dloader.main=gr.iccs.imu.ems.control.util.jwt.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.gr.iccs.imu.ems.util=ERROR "-Dspring.config.location=$EMS_CONFIG_LOCATION" org.springframework.boot.loader.PropertiesLauncher $*
 exitcode=$?
 
 cd $PREVWORKDIR

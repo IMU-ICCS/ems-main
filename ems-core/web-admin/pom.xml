@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>eu.melodic.event</groupId>
+        <groupId>gr.iccs.imu.ems</groupId>
         <artifactId>ems-core</artifactId>
         <version>${revision}</version>
     </parent>
@@ -35,10 +35,11 @@
             </activation>
             <build>
                 <plugins>
+
                     <!-- Remove previous files from /public_resources -->
                     <plugin>
                         <artifactId>maven-clean-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>3.3.1</version>
                         <executions>
                             <execution>
                                 <id>remove-dist</id>
@@ -54,6 +55,13 @@
                                     <directory>${project.basedir}/dist</directory>
                                     <includes>
                                         <include>**/*</include>
+                                    </includes>
+                                    <followSymlinks>false</followSymlinks>
+                                </fileset>
+                                <fileset>
+                                    <directory>${project.basedir}</directory>
+                                    <includes>
+                                        <include>.env</include>
                                     </includes>
                                     <followSymlinks>false</followSymlinks>
                                 </fileset>
@@ -102,7 +110,6 @@
                         <executions>
                             <execution>
                                 <id>create-env-file</id>
-                                <!-- here the phase you need -->
                                 <phase>generate-resources</phase>
                                 <goals>
                                     <goal>copy-resources</goal>
@@ -125,7 +132,7 @@
                         <!-- See: https://www.futurespace.es/en/crear-un-proyecto-spring-boot-vue-js/ -->
                         <groupId>com.github.eirslett</groupId>
                         <artifactId>frontend-maven-plugin</artifactId>
-                        <version>1.12.0</version>
+                        <version>1.13.4</version>
                         <executions>
                             <!-- Install our node and npm version to run npm/node scripts-->
                             <execution>
@@ -162,6 +169,7 @@
                             </execution>
                         </executions>
                     </plugin>
+
                 </plugins>
             </build>
         </profile>

@@ -338,7 +338,7 @@
     <div class="row">
         <div class="col-6">
             <Card bodyClasses="p-0"
-                  header="&nbsp;Client Locations (with Leaflet)"
+                  header="&nbsp;Client Locations"
                   icon="fas fa-map"
                   :hasCollapse="true" :hasMaximize="true" :hasRemove="true"
             >
@@ -379,15 +379,21 @@
 
         <div class="col-6">
             <Card bodyClasses="p-0"
-                  header="&nbsp;Client Locations (with JVectormap)"
-                  icon="fas fa-map"
-                  footer="..."
                   :hasCollapse="true" :hasMaximize="true" :hasRemove="true"
             >
-                <JVectorMap height="425px"
-                            :options="{ /*backgroundColor:'navy'*/ }"
-                            :markers="clientMarkers"
-                ></JVectorMap>
+                <template v-slot:header>
+                    <div class="float-left" style="width: 20px;">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h5 class="card-title m-0">&nbsp;Latest EMS server events</h5>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <button class="btn btn-outline-primary btn-xs" :class="{ 'btn-primary': latestEventsMode=='metric' }"
+                        @click="latestEventsMode='metric'">Metric</button>
+                    <button class="btn btn-outline-primary btn-xs" :class="{ 'btn-primary': latestEventsMode=='bus' }"
+                        @click="latestEventsMode='bus'">Internal Bus</button>
+                </template>
+
+                <LatestEvents :emsData="modelValue" :mode="latestEventsMode" :height="415"/>
             </Card>
         </div>
         <!-- /.col-6 -->
@@ -410,9 +416,9 @@ import 'vue3-blocks-tree/dist/vue3-blocks-tree.css';
 
 import ActionsList from './widgets/node-actions-list';
 
-import JVectorMap from '@/components/jvectormap/jvectormap.vue';
-
 import LeafletMap from '@/components/leaflet-map/leaflet-map.vue';
+
+import LatestEvents from './widgets/latest-events.vue';
 
 import countryCoords from './country-coordinates.js';
 
@@ -422,7 +428,7 @@ const TIME_WINDOW_LENGTH = 5*60;  // seconds
 
 export default {
     name: 'Admin Dashboard',
-    components: { Card, Sparkline, VueBlocksTree, JVectorMap, LeafletMap, ActionsList },
+    components: { Card, Sparkline, VueBlocksTree, LatestEvents, LeafletMap, ActionsList },
     props: {
         modelValue: Object,
         clientStats: Object,
@@ -449,7 +455,8 @@ export default {
             dataWindow: 60,
             defaultChartGridValues: {
                 l0: [0, 0]
-            }
+            },
+            latestEventsMode: 'metric'
         };
     },
     watch: {
@@ -776,7 +783,7 @@ export default {
         },
 
         updateClusterStats() {
-            if (!this.treeData) return;
+            if (!this.treeData || !this.treeData.children) return;
             for (const zoneObj of this.treeData.children) {
                 let zoneId = zoneObj.id;
                 if (!this.clientStatsTimeseries[zoneId]) {

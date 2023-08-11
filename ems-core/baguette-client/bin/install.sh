@@ -34,7 +34,7 @@ mkdir -p $CONF_DIRECTORY/
 mkdir -p $LOGS_DIRECTORY/
 
 echo ""
-echo "** EMS Baguette Client - MELODIC PROJECT FP7 EU ...... **"
+echo "** EMS Baguette Client **"
 echo "** Copyright ICCS-NTUA (C) 2016-2019, http://imu.iccs.gr **"
 echo ""
 date -Iseconds

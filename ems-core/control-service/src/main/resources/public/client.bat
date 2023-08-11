@@ -8,7 +8,7 @@
 :: https://www.mozilla.org/en-US/MPL/2.0/
 ::
 
-rem set MELODIC_CONFIG_DIR=.
+rem set EMS_CONFIG_DIR=.
 
 setlocal
 rem set JAVA_OPTS= -Djavax.net.ssl.trustStore=..\config-files\broker-truststore.p12 ^

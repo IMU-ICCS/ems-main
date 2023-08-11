@@ -21,7 +21,12 @@
                                     :aria-describedby="'restEndpointHelp_'+uid"
                                     v-on:change="changeForm"
                             >
-                                <option v-for="opt in options" v-bind:value="opt.id" :key="opt.id">{{opt.text}}</option>
+                                <optgroup v-for="optGroup in options" :label="optGroup.text" :key="optGroup.id" :disabled="optGroup.disabled">
+                                    <option v-for="opt in optGroup.options" v-bind:value="opt.id" :key="opt.id"
+                                            :disabled="opt.disabled || opt.text==='-'"
+                                            :style="opt.text==='-' ? 'font-size: 1px; background-color: #F1F1F1;' : ''"
+                                    >{{opt.text}}</option>
+                                </optgroup>
                             </select>
                             <!--<small :id="'restEndpointHelp_'+uid" class="form-text text-muted">Select an EMS Rest API endpoint to call.</small>-->
                         </div>
@@ -154,8 +159,10 @@ export default {
         };
     },
     mounted: function() {
-        this.changeForm({ target: { value: 'new-camel' }});
+        this.changeForm({ target: { value: 'new-app-model' }});
         this.$root[this.rootId] = this;
+
+        this.waitForEmsDataAndUpdateOptions();
     },
     computed: {
         username() {
@@ -171,6 +178,57 @@ export default {
         }
     },
     methods: {
+        waitForEmsDataAndUpdateOptions() {
+            if (this.sseRef && this.sseRef.trim()!=='')
+            if (this.$root.$refs[this.sseRef])
+            if (this.$root.$refs[this.sseRef].modelValue)
+            if (this.$root.$refs[this.sseRef].modelValue.data)
+            if (this.$root.$refs[this.sseRef].modelValue.data.ems)
+            if (this.$root.$refs[this.sseRef].modelValue.data.ems['.version']) {
+                try {
+                    let v = parseInt(this.$root.$refs[this.sseRef].modelValue.data.ems['.version']);
+                    if (v>0) {
+                        this.updateRestCallOptions();
+                        return;
+                    }
+                } catch (e) {
+                    console.error('rest-call: waitForEmsDataAndUpdateOptions: EXCEPTION: ', e);
+                }
+            }
+            setTimeout(this.waitForEmsDataAndUpdateOptions, 1000);
+        },
+        updateRestCallOptions() {
+            // If additional REST Call commands and forms are provided,
+            // merge them with the default...
+            if (this.sseRef && this.sseRef.trim()!=='' && this.$root.$refs[this.sseRef]) {
+                let emsSse = this.$root.$refs[this.sseRef];
+                if (emsSse.modelValue && emsSse.modelValue.data && emsSse.modelValue.data.ems) {
+                    let emsData = emsSse.modelValue.data.ems;
+                    let newForms = { ...emsData['.rest-call-forms'], ...FORM_SPECS };
+                    let newCmds = [ ...emsData['.rest-call-commands'], ...FORM_TYPE_OPTIONS ];
+
+                    // Sort command/option groups using priority
+                    newCmds.sort((a,b) => parseInt(a.priority??'0') - parseInt(b.priority??'0'));
+                    // Sort commands/options per groups using priority
+                    newCmds.forEach(grp => grp.options.sort((a,b) => parseInt(a.priority??'0') - parseInt(b.priority??'0')) );
+
+                    // Convert 'disabled' properties to boolean
+                    newCmds.forEach(grp => grp.disabled = /^true$/i.test(grp.disabled));
+                    newCmds.flatMap(grp => grp.options).forEach(opt => opt.disabled = /^true$/i.test(opt.disabled));
+
+                    if ((newForms && newCmds) && (newForms!=null && newCmds!=null)) {
+                        this.form = newForms;
+                        this.options = newCmds;
+                        return newCmds;
+                    }
+                }
+            }
+            // Default options and forms
+            this.form = FORM_SPECS;
+            this.options = FORM_TYPE_OPTIONS;
+            return FORM_TYPE_OPTIONS;
+        },
+
         switchToForm(form, data) {
             if (!confirm('Update REST call pane?')) return;
 
@@ -187,12 +245,10 @@ export default {
         },
         changeForm(e) {
             let selId = e.target.value;
-            for (let opt of this.options) {
-                if (opt.id===selId) {
-                    this.formSelected = opt.form;
-                    this.formData.endpoint = opt.url;
-                    break;
-                }
+            let opt = this.options.flatMap(grp=>grp.options).find((opt) => opt.id===selId);
+            if (opt) {
+                this.formSelected = opt.form;
+                this.formData.endpoint = opt.url;
             }
             this.$nextTick(() => {
                 $('#formType_'+this.uid).val(selId);
@@ -256,7 +312,7 @@ export default {
             // Get request payload
             let taPayload = $('#restRequestPayload_'+this.uid);
             let type = $('#formType_'+this.uid).val();
-            let opt = this.options.find((opt) => opt.id===type);
+            let opt = this.options.flatMap(grp=>grp.options).find((opt) => opt.id===type);
             if (! this.needsRequestBody(opt.method)) {
                 return null;
             }
@@ -283,7 +339,7 @@ export default {
         },
         updateEndpoint() {
             let type = $('#formType_'+this.uid).val();
-            let source = this.options.find((opt) => opt.id===type).url;
+            let source = this.options.flatMap(grp=>grp.options).find((opt) => opt.id===type).url;
             let suffix = '_'+this.uid;
             $.each(this.formData, function (k, v) {
                 let kk = k.endsWith(suffix) ? k.replace(suffix,'') : k;
@@ -295,7 +351,7 @@ export default {
         updateDataFromPayload() {
             let taPayload = $('#restRequestPayload_'+this.uid);
             let type = $('#formType_'+this.uid).val();
-            let opt = this.options.find((opt) => opt.id===type);
+            let opt = this.options.flatMap(grp=>grp.options).find((opt) => opt.id===type);
             let fields = this.form[opt.form].fields;
             let s = taPayload.val();
             let obj = s.trim()==='' ? {} : JSON.parse(s);
@@ -331,7 +387,7 @@ export default {
         restCall() {
             let _form = $('#formType_'+this.uid).val();
             if (!_form || _form==='') return;
-            let _opt = this.options.find(opt => opt.id===_form);
+            let _opt = this.options.flatMap(grp=>grp.options).find(opt => opt.id===_form);
             //console.log('##### ', _opt);
 
             this.showRestCallResult = false;
@@ -349,7 +405,7 @@ export default {
             this.$nextTick(() => {
                 $('#restCallResult').html('<span style="color: grey;"><i class="fas fa-spinner fa-spin"></i> Contacting EMS server...</span>');
                 $.ajax({
-                    url: url,
+                    url: url.replace(/\/+$/, ''),
                     type: method,
                     contentType: 'application/json',
                     data: body,

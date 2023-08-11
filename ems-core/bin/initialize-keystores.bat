@@ -12,7 +12,7 @@ setlocal
 set PWD=%cd%
 cd %~dp0..
 set BASEDIR=%cd%
-IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\config-files
+IF NOT DEFINED EMS_CONFIG_DIR set EMS_CONFIG_DIR=%BASEDIR%\config-files
 IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\config-files
 
 :: Get IP addresses
@@ -60,9 +60,9 @@ set START_DATE=-1d
 set VALIDITY=3650
 set DN=CN=ems,OU=Information Management Unit (IMU),O=Institute of Communication and Computer Systems (ICCS),L=Athens,ST=Attika,C=GR
 set EXT_SAN=SAN=dns:localhost,ip:127.0.0.1,ip:%{DEFAULT_IP}%,ip:%{PUBLIC_IP}%
-set KEYSTORE=%MELODIC_CONFIG_DIR%\broker-keystore.p12
-set TRUSTSTORE=%MELODIC_CONFIG_DIR%\broker-truststore.p12
-set CERTIFICATE=%MELODIC_CONFIG_DIR%\broker.crt
+set KEYSTORE=%EMS_CONFIG_DIR%\broker-keystore.p12
+set TRUSTSTORE=%EMS_CONFIG_DIR%\broker-truststore.p12
+set CERTIFICATE=%EMS_CONFIG_DIR%\broker.crt
 set KEYSTORE_TYPE=PKCS12
 set KEYSTORE_PASS=melodic
 

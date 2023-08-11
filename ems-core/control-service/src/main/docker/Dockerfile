@@ -7,50 +7,69 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-FROM eclipse-temurin:17.0.5_8-jre
-#FROM vegardit/graalvm-maven:latest-java17
+ARG BUILDER_IMAGE=eclipse-temurin:17.0.8_7-jre
+ARG RUN_IMAGE=eclipse-temurin:17.0.8_7-jre
 
+# ----------------- Builder image -----------------
+FROM $BUILDER_IMAGE as ems-server-builder
+#FROM vegardit/graalvm-maven:latest-java17
+WORKDIR /app
+COPY jars/control-service.jar .
+RUN java -Djarmode=layertools -jar control-service.jar extract
+
+# -----------------   Run image   -----------------
+FROM $RUN_IMAGE
+
+# Setup environment
 ENV BASEDIR /opt/ems-server
-ENV MELODIC_CONFIG_DIR ${BASEDIR}/config
-ENV PAASAGE_CONFIG_DIR ${BASEDIR}/config
+ENV EMS_HOME ${BASEDIR}
+ENV EMS_CONFIG_DIR ${BASEDIR}/config
 
 ENV BIN_DIR ${BASEDIR}/bin
 ENV CONFIG_DIR ${BASEDIR}/config
-ENV JARS_DIR ${BASEDIR}/jars
 ENV LOGS_DIR ${BASEDIR}/logs
 ENV PUBLIC_DIR ${BASEDIR}/public_resources
 
-WORKDIR ${BASEDIR}
+# Install required and optional packages
 RUN apt-get update && apt-get install -y \
     dumb-init \
     netcat \
     vim \
     iputils-ping \
-#    libfreetype6 fontconfig fonts-dejavu \
     && rm -rf /var/lib/apt/lists/*
 
+# Add an EMS user
+ARG EMS_USER=emsuser
+RUN mkdir ${EMS_HOME} ; \
+    addgroup ${EMS_USER} ; \
+    adduser --home ${EMS_HOME} --no-create-home --ingroup ${EMS_USER} --disabled-password ${EMS_USER} ; \
+    chown ${EMS_USER}:${EMS_USER} ${EMS_HOME}
+
+USER ${EMS_USER}
+WORKDIR ${BASEDIR}
+
 # Download a JRE suitable for running EMS clients, and
-# offer it for download during EMS client installations
-ENV JRE_LINUX_PACKAGE zulu17.38.21-ca-jre17.0.5-linux_x64.tar.gz
+# offer it for download
+ENV JRE_LINUX_PACKAGE zulu17.44.15-ca-jre17.0.8-linux_x64.tar.gz
 RUN mkdir -p ${PUBLIC_DIR}/resources
 RUN curl https://cdn.azul.com/zulu/bin/${JRE_LINUX_PACKAGE} --output ${PUBLIC_DIR}/resources/${JRE_LINUX_PACKAGE}
 
-ADD bin ${BIN_DIR}
-ADD jars ${JARS_DIR}
-ADD config ${CONFIG_DIR}
-ADD public_resources ${PUBLIC_DIR}
+# Copy resource files to image
+ADD --chown=${EMS_USER}:${EMS_USER} bin ${BIN_DIR}
+ADD --chown=${EMS_USER}:${EMS_USER} config ${CONFIG_DIR}
+ADD --chown=${EMS_USER}:${EMS_USER} public_resources ${PUBLIC_DIR}
 
 RUN mkdir ${LOGS_DIR}
-RUN bash -c 'chmod +rx ${BIN_DIR}/*.sh'
+RUN chmod +rx ${BIN_DIR}/*.sh
 
-# RUN ln -s ${JARS_DIR}/broker-client-jar-with-dependencies.jar ${PUBLIC_DIR}/broker-client.jar
-# RUN ln -s ${CONFIG_DIR}/eu.melodic.event.brokerclient.properties ${PUBLIC_DIR}/eu.melodic.event.brokerclient.properties
-# RUN ln -s ${BIN_DIR}/client.sh ${PUBLIC_DIR}/client.sh
-# RUN ln -s ${LOGS_DIR} ${PUBLIC_DIR}/logs
+# Copy files from builder container
+COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/dependencies          ${BASEDIR}
+COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/spring-boot-loader    ${BASEDIR}
+COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/snapshot-dependencies ${BASEDIR}
+COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/application           ${BASEDIR}
 
-# RUN adduser --system --home ${BASEDIR} --no-create-home --shell /bin/false --group emsuser
-# RUN chown -R emsuser:emsuser ${BASEDIR}
-# USER emsuser
+# Copy ESPER dependencies
+COPY --chown=${EMS_USER}:${EMS_USER} jars/esper*.jar ${BASEDIR}/BOOT-INF/lib/
 
 EXPOSE 2222
 EXPOSE 8111

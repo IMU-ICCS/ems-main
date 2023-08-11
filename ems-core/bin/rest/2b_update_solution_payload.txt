@@ -1,3 +1,0 @@
-{
-    "cp-model-id": "/FCRnew_cpModelTest"
-}
