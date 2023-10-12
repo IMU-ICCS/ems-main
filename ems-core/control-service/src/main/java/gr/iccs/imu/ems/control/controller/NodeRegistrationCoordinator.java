@@ -191,6 +191,27 @@ public class NodeRegistrationCoordinator implements InitializingBean {
         return response;
     }
 
+    public String reinstallNode(String ipAddress, TranslationContext translationContext) throws Exception {
+        // Get node info using IP address
+        NodeRegistryEntry nodeInfo = baguetteServer.getNodeRegistry().getNodeByAddress(ipAddress);
+        log.info("NodeRegistrationCoordinator.reinstallNode(): Info for node at: ip-address={}, Node Info:\n{}",
+                ipAddress, nodeInfo);
+        if (nodeInfo==null) {
+            log.warn("NodeRegistrationCoordinator.reinstallNode(): Not found pre-registered node with ip-address: {}", ipAddress);
+            return "NODE NOT FOUND: "+ipAddress;
+        }
+
+        // Continue processing according to ExecutionWare type
+        String response;
+        log.info("NodeRegistrationCoordinator.reinstallNode(): ExecutionWare: {}", properties.getExecutionware());
+        if (properties.getExecutionware() == ControlServiceProperties.ExecutionWare.CLOUDIATOR) {
+            response = getClientInstallationInstructions(nodeInfo);
+        } else {
+            response = createClientReinstallTask(nodeInfo, translationContext);
+        }
+        return response;
+    }
+
     void updateRegistrationInfo(Map<String, String> nodeMap, String baseUrl) {
         // Set OS info
         String os = StringUtils.isNotBlank(nodeMap.get("operatingSystem.name"))
@@ -282,6 +303,21 @@ public class NodeRegistrationCoordinator implements InitializingBean {
         installationTask.setCallback(callback);
         ClientInstaller.instance().addTask(installationTask);
         log.debug("NodeRegistrationCoordinator.createClientInstallationTask(): New installation-task: {}", installationTask);
+
+        return "OK";
+    }
+
+    public String createClientReinstallTask(NodeRegistryEntry entry, TranslationContext translationContext) throws Exception {
+        return createClientReinstallTask(entry, translationContext, null);
+    }
+
+    public String createClientReinstallTask(NodeRegistryEntry entry, TranslationContext translationContext, Callable<String> callback) throws Exception {
+        ClientInstallationTask reinstallTask = InstallationHelperFactory.getInstance()
+                .createInstallationHelper(entry)
+                .createClientReinstallTask(entry, translationContext);
+        reinstallTask.setCallback(callback);
+        ClientInstaller.instance().addTask(reinstallTask);
+        log.debug("NodeRegistrationCoordinator.createClientReinstallTask(): New reinstall-task: {}", reinstallTask);
 
         return "OK";
     }

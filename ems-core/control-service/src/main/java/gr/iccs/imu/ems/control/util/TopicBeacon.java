@@ -218,12 +218,23 @@ public class TopicBeacon implements InitializingBean {
 
         if (coordinator.getBaguetteServer().isServerRunning()) {
             for (ClientShellCommand csc : ClientShellCommand.getActive()) {
+                // Get client id and address
+                String clientId = csc.getClientId();
+                String clientIpAddress = csc.getClientIpAddress();
+                if (StringUtils.isBlank(clientId) || StringUtils.isBlank(clientIpAddress)) {
+                    log.error("Topic Beacon: Ignoring CSC without Id or IP address: {}", csc);
+                    continue;
+                }
+
+                // Get client statistics
                 Map<String, Object> stats = csc.getClientStatistics();
+                if (stats==null) {
+                    log.debug("Topic Beacon: No metrics for: instance={}, ip-address={}", clientId, clientIpAddress);
+                    continue;
+                }
+
+                // Transmit client statistics
                 try {
-                    String clientId = csc.getClientId();
-                    String clientIpAddress = csc.getClientIpAddress();
-                    if (StringUtils.isBlank(clientId) || StringUtils.isBlank(clientIpAddress))
-                        continue;
                     long timestamp = Long.parseLong(StringUtils.defaultIfBlank(
                             stats.getOrDefault("_received_at_server_timestamp", "").toString().trim(),
                             "-1"

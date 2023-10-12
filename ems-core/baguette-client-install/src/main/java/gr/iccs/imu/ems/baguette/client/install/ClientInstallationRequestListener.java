@@ -34,6 +34,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static gr.iccs.imu.ems.baguette.client.install.ClientInstallationTask.TASK_TYPE;
+
 /**
  * Installation Event Listener
  */
@@ -102,35 +104,61 @@ public class ClientInstallationRequestListener implements InitializingBean {
 
     private MessageListener getMessageListener() {
         return message -> {
+            String requestType;
             String requestId = null;
+            TASK_TYPE taskType = TASK_TYPE.OTHER;
             try {
                 // Extract request from JMS message
                 Map<String, String> request = extractRequest(message);
                 log.debug("InstallationEventListener: Got a client installation request: {}", request);
-                if (request==null)
-                    throw new IllegalArgumentException("Could not extract request data");
-                requestId = request.get("requestId").trim();
+                if (request==null) {
+                    clientInstaller.sendErrorClientInstallationReport(TASK_TYPE.OTHER,
+                            "INVALID-REQUEST", "ERROR: Invalid request. Could not extract request data");
+                    return;
+                }
 
-                // Check incoming request
-                List<String> errors = new ArrayList<>();
-                if (StringUtils.isBlank(request.get("requestId"))) errors.add("requestId");
-                if (StringUtils.isBlank(request.get("requestType"))) errors.add("requestType");
-                if (StringUtils.isBlank(request.get("deviceOs"))) errors.add("deviceOs");
-                if (StringUtils.isBlank(request.get("deviceIpAddress"))) errors.add("deviceIpAddress");
-                if (StringUtils.isBlank(request.get("deviceUsername"))) errors.add("deviceUsername");
-                if (StringUtils.isBlank(request.get("devicePassword")) && StringUtils.isBlank(request.get("devicePublicKey")))
-                    errors.add("Both devicePublicKey and devicePublicKey");
-                if (! errors.isEmpty()) {
-                    String errorMessage = "Missing fields: " + String.join(", ", errors);
-                    throw new IllegalArgumentException(errorMessage);
+                // Get request type
+                requestType = request.get("requestType");
+                if (StringUtils.isBlank(requestType)) {
+                    clientInstaller.sendErrorClientInstallationReport(TASK_TYPE.OTHER,
+                            "MISSING-REQUEST-TYPE", "ERROR: Invalid request. Missing requestType field");
+                    return;
+                }
+                requestType = requestType.trim();
+
+                // If not an UPDATE request run extra checks
+                if (! "UPDATE".equalsIgnoreCase(requestType)) {
+                    // Get request Id
+                    requestId = request.getOrDefault("requestId", "").trim();
+
+                    // Check incoming request
+                    List<String> errors = new ArrayList<>();
+                    if (StringUtils.isBlank(request.get("requestId"))) errors.add("requestId");
+                    if (StringUtils.isBlank(request.get("deviceOs"))) errors.add("deviceOs");
+                    if (StringUtils.isBlank(request.get("deviceIpAddress"))) errors.add("deviceIpAddress");
+                    if (StringUtils.isBlank(request.get("deviceUsername"))) errors.add("deviceUsername");
+                    if (StringUtils.isBlank(request.get("devicePassword"))
+                            && StringUtils.isBlank(request.get("devicePublicKey"))) errors.add("Both devicePublicKey and devicePublicKey");
+                    if (!errors.isEmpty()) {
+                        String errorMessage = "Missing fields: " + String.join(", ", errors);
+                        clientInstaller.sendErrorClientInstallationReport(TASK_TYPE.OTHER,
+                                "REQUEST-WITH-ERRORS", "ERROR: "+errorMessage);
+                        return;
+                    }
                 }
 
                 // Process request based on its type
-                String requestType = request.get("requestType").trim();
-                switch (requestType) {
-                    case "DIAGNOSTICS" -> processDiagnosticsRequest(request);
-                    case "VM" -> processOnboardingRequest(request);
-                    case "REMOVE" -> processRemoveRequest(request);
+                if ("VM".equalsIgnoreCase(requestType)) requestType = TASK_TYPE.INSTALL.name();
+                if ("REMOVE".equalsIgnoreCase(requestType)) requestType = TASK_TYPE.UNINSTALL.name();
+                if ("UPDATE".equalsIgnoreCase(requestType)) requestType = TASK_TYPE.INFO.name();
+
+                taskType = TASK_TYPE.valueOf(requestType);
+                switch (taskType) {
+                    case DIAGNOSTICS -> processDiagnosticsRequest(request);
+                    case INSTALL -> processOnboardingRequest(request);
+                    case REINSTALL -> processReinstallRequest(request);
+                    case UNINSTALL -> processRemoveRequest(request);
+                    case INFO -> processUpdateRequest(request);
                     default -> throw new IllegalArgumentException("Unsupported request type: "+requestType);
                 };
 
@@ -138,9 +166,11 @@ public class ClientInstallationRequestListener implements InitializingBean {
                 log.error("InstallationEventListener: ERROR: ", e);
                 try {
                     if (StringUtils.isNotBlank(requestId))
-                        clientInstaller.sendErrorClientInstallationReport(requestId, "ERROR: "+e.getMessage());
+                        clientInstaller.sendErrorClientInstallationReport(
+                                taskType, requestId, "ERROR: "+e.getMessage());
                     else
-                        clientInstaller.sendErrorClientInstallationReport("UNKNOWN-REQUEST-ID", "ERROR: "+e.getMessage()+"\n"+message);
+                        clientInstaller.sendErrorClientInstallationReport(
+                                TASK_TYPE.OTHER, "UNKNOWN-REQUEST-ID", "ERROR: "+e.getMessage()+"\n"+message);
                 } catch (Throwable t) {
                     log.info("InstallationEventListener: EXCEPTION while sending Client installation report for incoming request: request={}, Exception: ", message, t);
                 }
@@ -175,7 +205,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
         // Create client installation task
         ClientInstallationTask newTask = ClientInstallationTask.builder()
                 .id(request.get("requestId"))
-                .taskType(ClientInstallationTask.TASK_TYPE.DIAGNOSTIC)
+                .taskType(ClientInstallationTask.TASK_TYPE.DIAGNOSTICS)
                 .requestId(request.get("requestId"))
                 .type(request.get("requestType"))
                 .nodeId(request.get("deviceId"))
@@ -214,7 +244,8 @@ public class ClientInstallationRequestListener implements InitializingBean {
         String requestId = request.getOrDefault("requestId", "").trim();
         log.info("InstallationEventListener: New node ONBOARDING request with Id: {}", requestId);
         if (StringUtils.isBlank(requestId)) {
-            clientInstaller.sendErrorClientInstallationReport("MISSING-REQUEST-ID", "INVALID REQUEST. MISSING REQUEST ID");
+            clientInstaller.sendErrorClientInstallationReport(
+                    TASK_TYPE.INSTALL, "MISSING-REQUEST-ID", "INVALID REQUEST. MISSING REQUEST ID");
             return;
         }
 
@@ -223,14 +254,79 @@ public class ClientInstallationRequestListener implements InitializingBean {
             nodeRegistration.registerNode(null, convertToNodeInfoMap(request), new TranslationContext(requestId));
         } catch (Exception e) {
             log.warn("InstallationEventListener: EXCEPTION while executing ONBOARDING request with Id: {}\n", requestId, e);
-            clientInstaller.sendErrorClientInstallationReport(requestId, "ERROR: "+e.getMessage());
+            clientInstaller.sendErrorClientInstallationReport(
+                    TASK_TYPE.INSTALL, requestId, "ERROR: "+e.getMessage());
+        }
+    }
+
+    private void processReinstallRequest(Map<String,String> request) throws Exception {
+        String requestId = request.getOrDefault("requestId", "").trim();
+        String deviceId = request.getOrDefault("deviceId", "").trim();
+        String ipAddress = request.getOrDefault("deviceIpAddress", "").trim();
+        log.info("InstallationEventListener: REINSTALL request with device Id: {}, ip-address={}", deviceId, ipAddress);
+        if (StringUtils.isBlank(deviceId)) {
+            clientInstaller.sendErrorClientInstallationReport(
+                    TASK_TYPE.REINSTALL, "MISSING-DEVICE-ID", "INVALID REQUEST. MISSING DEVICE ID");
+            return;
+        }
+        if (StringUtils.isBlank(ipAddress)) {
+            clientInstaller.sendErrorClientInstallationReport(
+                    TASK_TYPE.REINSTALL, deviceId, "INVALID REQUEST. MISSING DEVICE IP ADDRESS");
+            return;
+        }
+
+        try {
+            log.debug("InstallationEventListener: Reinstalling node due to REINSTALL request with Id: {}", deviceId);
+            nodeRegistration.reinstallNode(ipAddress, new TranslationContext(requestId));
+        } catch (Exception e) {
+            log.warn("InstallationEventListener: EXCEPTION while executing REINSTALL request with Id: {}\n", deviceId, e);
+            clientInstaller.sendErrorClientInstallationReport(
+                    TASK_TYPE.REINSTALL, deviceId, "ERROR: "+e.getMessage());
+        }
+    }
+
+    private void processRemoveRequest(Map<String,String> request) throws Exception {
+        String requestId = request.getOrDefault("requestId", "").trim();
+        String deviceId = request.getOrDefault("deviceId", "").trim();
+        String nodeAddress = request.getOrDefault("deviceIpAddress", "").trim();
+        log.info("InstallationEventListener: New node REMOVE request with Id: {}, address={}", deviceId, nodeAddress);
+        if (StringUtils.isBlank(deviceId)) {
+            clientInstaller.sendErrorClientInstallationReport(
+                    TASK_TYPE.UNINSTALL, "MISSING-REQUEST-ID", "INVALID REQUEST. MISSING DEVICE ID");
+            return;
+        }
+        if (StringUtils.isBlank(nodeAddress)) {
+            clientInstaller.sendErrorClientInstallationReport(
+                    TASK_TYPE.UNINSTALL, deviceId, "INVALID REQUEST. MISSING IP ADDRESS");
+            return;
+        }
+
+        try {
+            log.debug("InstallationEventListener: Off-boarding node due to REMOVE request with Id: {}, requestId={}", deviceId, requestId);
+            nodeRegistration.unregisterNode(nodeAddress, new TranslationContext(requestId));
+        } catch (Exception e) {
+            log.warn("InstallationEventListener: EXCEPTION while executing REMOVE request with Id: {}\n", deviceId, e);
+            clientInstaller.sendErrorClientInstallationReport(
+                    TASK_TYPE.UNINSTALL, deviceId, "ERROR: "+e.getMessage());
+        }
+    }
+
+    private void processUpdateRequest(Map<String,String> request) throws Exception {
+        log.info("InstallationEventListener: UPDATE request");
+        try {
+            log.debug("InstallationEventListener: Requesting UPDATE");
+            nodeRegistration.requestUpdate();
+        } catch (Exception e) {
+            log.warn("InstallationEventListener: EXCEPTION while executing UPDATE:\n", e);
+            clientInstaller.sendErrorClientInstallationReport(
+                    TASK_TYPE.INFO, null, "ERROR: "+e.getMessage());
         }
     }
 
     private Map<String, Object> convertToNodeInfoMap(Map<String, String> request) {
         log.trace("InstallationEventListener.convertToNodeInfoMap(): BEGIN: request: {}", request);
         String requestId = request.get("requestId");
-        String nodeId = request.get("requestId");
+        String nodeId = request.get("deviceId");
         String nodeOs = request.get("deviceOs");
         String nodeAddress = request.get("deviceIpAddress");
         String nodeType = request.get("deviceType");
@@ -266,27 +362,5 @@ public class ClientInstallationRequestListener implements InitializingBean {
         ));
         log.trace("InstallationEventListener.convertToNodeInfoMap(): END: nodeMap: {}", nodeMap);
         return nodeMap;
-    }
-
-    private void processRemoveRequest(Map<String,String> request) throws Exception {
-        String requestId = request.getOrDefault("requestId", "").trim();
-        String nodeAddress = request.getOrDefault("deviceIpAddress", "").trim();
-        log.info("InstallationEventListener: New node REMOVE request with Id: {}, address={}", requestId, nodeAddress);
-        if (StringUtils.isBlank(requestId)) {
-            clientInstaller.sendErrorClientInstallationReport("MISSING-REQUEST-ID", "INVALID REQUEST. MISSING REQUEST ID");
-            return;
-        }
-        if (StringUtils.isBlank(nodeAddress)) {
-            clientInstaller.sendErrorClientInstallationReport(requestId, "INVALID REQUEST. MISSING IP ADDRESS");
-            return;
-        }
-
-        try {
-            log.debug("InstallationEventListener: Off-boarding node due to REMOVE request with Id: {}", requestId);
-            nodeRegistration.unregisterNode(nodeAddress, new TranslationContext(requestId));
-        } catch (Exception e) {
-            log.warn("InstallationEventListener: EXCEPTION while executing REMOVE request with Id: {}\n", requestId, e);
-            clientInstaller.sendErrorClientInstallationReport(requestId, "ERROR: "+e.getMessage());
-        }
     }
 }

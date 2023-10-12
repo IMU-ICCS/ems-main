@@ -24,6 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class NodeRegistrationHelper implements InitializingBean, INodeRegistration {
     private final NodeRegistrationCoordinator nodeRegistrationCoordinator;
+    private final TopicBeacon topicBeacon;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -38,9 +39,22 @@ public class NodeRegistrationHelper implements InitializingBean, INodeRegistrati
     }
 
     @Override
+    public String reinstallNode(String ipAddress, TranslationContext translationContext) throws Exception {
+        log.debug("NodeRegistrationHelper: Invoking reinstallNode: baseUrl={}, TC={}",
+                ipAddress, translationContext);
+        return nodeRegistrationCoordinator.reinstallNode(ipAddress, translationContext);
+    }
+
+    @Override
     public String unregisterNode(String nodeAddress, TranslationContext translationContext) throws Exception {
         log.debug("NodeRegistrationHelper: Invoking unregisterNode: node-address={}, TC={}",
                 nodeAddress, translationContext);
         return nodeRegistrationCoordinator.unregisterNode(nodeAddress, translationContext);
+    }
+
+    @Override
+    public void requestUpdate() throws Exception {
+        log.info("NodeRegistrationHelper: Invoking transmitInfo");
+        topicBeacon.transmitInfo();
     }
 }

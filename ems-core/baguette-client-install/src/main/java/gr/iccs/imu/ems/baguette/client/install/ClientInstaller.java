@@ -33,6 +33,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static gr.iccs.imu.ems.baguette.client.install.ClientInstallationTask.TASK_TYPE;
+
 /**
  * Client installer
  */
@@ -128,7 +130,7 @@ public class ClientInstaller implements InitializingBean {
             return executeVmOrBaremetalTask(task, taskCounter);
         } else
         //if ("DIAGNOSTICS".equalsIgnoreCase(task.getType())) {
-        if (task.getTaskType()==ClientInstallationTask.TASK_TYPE.DIAGNOSTIC) {
+        if (task.getTaskType()==TASK_TYPE.DIAGNOSTICS) {
             return executeDiagnosticsTask(task, taskCounter);
         } else {
             log.error("ClientInstaller: UNSUPPORTED TASK TYPE: {}", task.getType());
@@ -181,13 +183,13 @@ public class ClientInstaller implements InitializingBean {
         }
 
         // Pre-register Node to baguette Server Coordinator
-        if (task.getTaskType()==ClientInstallationTask.TASK_TYPE.INSTALL) {
+        if (task.getTaskType()==TASK_TYPE.INSTALL) {
             log.debug("ClientInstaller: POST-INSTALLATION: Node is being pre-registered: {}", entry);
             baguetteServer.getNodeRegistry().getCoordinator().preregister(entry);
         }
 
         // Un-register Node from baguette Server Coordinator
-        if (task.getTaskType()==ClientInstallationTask.TASK_TYPE.UNINSTALL) {
+        if (task.getTaskType()==TASK_TYPE.UNINSTALL) {
             ClientShellCommand csc = ClientShellCommand.getActiveByIpAddress(entry.getIpAddress());
             log.debug("ClientInstaller: POST-INSTALLATION: CSC of node to be unregistered: {}", csc);
             if (csc!=null) {
@@ -251,19 +253,25 @@ public class ClientInstaller implements InitializingBean {
                 null, properties.getClientInstallationReportsTopic(), executionReport, true);
     }
 
-    public void sendErrorClientInstallationReport(String requestId, String resultStr) throws JMSException {
-        log.trace("ClientInstaller: Preparing ERROR execution report event for request: result={}, requestId={}", resultStr, requestId);
+    public void sendErrorClientInstallationReport(@NonNull TASK_TYPE requestType, String requestOrDeviceId, String resultStr) throws JMSException {
+        log.trace("ClientInstaller: Preparing ERROR execution report event for request: result={}, requestId={}", resultStr, requestOrDeviceId);
+        String requestId = requestType==TASK_TYPE.INSTALL || requestType==TASK_TYPE.DIAGNOSTICS ? requestOrDeviceId : null;
+        String deviceId = requestType==TASK_TYPE.REINSTALL || requestType==TASK_TYPE.UNINSTALL ? requestOrDeviceId : null;
         LinkedHashMap<String, Object> executionReport = new LinkedHashMap<>(
-                createReportEvent(requestId, null, resultStr, Collections.emptyMap()));
-        log.info("ClientInstaller: Sending ERROR execution report for request: destination={}, report={}",
+                createReportEvent(requestType,
+                        requestId, deviceId, null, resultStr, Collections.emptyMap()));
+        log.info("ClientInstaller: Sending ERROR execution report: destination={}, report={}",
                 properties.getClientInstallationReportsTopic(), executionReport);
         brokerCepService.publishSerializable(
                 null, properties.getClientInstallationReportsTopic(), executionReport, true);
     }
 
     private Map<String, Object> createReportEventFromExecutionResults(long taskCnt, @NonNull ClientInstallationTask task, String resultStr) {
+        // Get execution results
         Map<String, String> data = task.getNodeRegistryEntry().getPreregistration();
         log.trace("ClientInstaller: createReportEventFromExecutionResults: Task #{}: Execution data:\n{}", taskCnt, data);
+
+        // Copy node info from execution results
         Map<String, Object> nodeInfoMap = new LinkedHashMap<>();
         properties.getClientInstallationReportNodeInfoPatterns().forEach(pattern -> {
             log.trace("ClientInstaller: createReportEventFromExecutionResults: Task #{}:Applying pattern: {}", taskCnt, pattern);
@@ -273,17 +281,26 @@ public class ClientInstaller implements InitializingBean {
                     .forEach(key -> nodeInfoMap.put(key, data.get(key)));
         });
         log.debug("ClientInstaller: createReportEventFromExecutionResults: Task #{}: Node info collected: {}", taskCnt, nodeInfoMap);
-        String requestId = StringUtils.defaultIfBlank(task.getRequestId(), task.getId());
-        return createReportEvent(requestId, task.getNodeRegistryEntry().getReference(), resultStr, nodeInfoMap);
+
+        // Create and send report event
+        TASK_TYPE requestType = task.getTaskType();
+        String requestId = task.getRequestId();
+        String deviceId = task.getNodeId();
+        return createReportEvent(
+                requestType, requestId, deviceId, task.getNodeRegistryEntry().getReference(), resultStr, nodeInfoMap);
     }
 
-    private static Map<String, Object> createReportEvent(@NonNull String requestId,
+    private static Map<String, Object> createReportEvent(@NonNull TASK_TYPE requestType,
+                                                         String requestId,
+                                                         String deviceId,
                                                          String reference,
                                                          @NonNull String statusStr,
                                                          Map<String, Object> nodeInfoMap)
     {
         return Map.of(
-                "requestId", requestId,
+                "requestType", requestType.name(),
+                "requestId", Objects.requireNonNullElse(requestId, ""),
+                "deviceId", Objects.requireNonNullElse(deviceId, ""),
                 "reference", Objects.requireNonNullElse(reference, ""),
                 "status", statusStr,
                 "nodeInfo", nodeInfoMap!=null ? nodeInfoMap : Collections.emptyMap(),

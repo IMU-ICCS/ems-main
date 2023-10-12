@@ -69,6 +69,15 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
     }
 
     @Override
+    public ClientInstallationTask createClientReinstallTask(NodeRegistryEntry entry, TranslationContext translationContext) throws IOException {
+        // Get EMS client reinstall instructions for VM node
+        List<InstructionsSet> instructionsSetList =
+                prepareInstallationInstructionsForOs(entry);
+
+        return createClientTask(ClientInstallationTask.TASK_TYPE.REINSTALL, entry, translationContext, instructionsSetList);
+    }
+
+    @Override
     public ClientInstallationTask createClientUninstallTask(NodeRegistryEntry entry, TranslationContext translationContext) throws Exception {
         // Clear any cached 'instruction-files' override (from a previous run)
         entry.getPreregistration().remove("instruction-files");

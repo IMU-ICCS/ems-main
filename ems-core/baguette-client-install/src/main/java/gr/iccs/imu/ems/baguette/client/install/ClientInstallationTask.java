@@ -24,7 +24,7 @@ import java.util.concurrent.Callable;
 @Data
 @Builder
 public class ClientInstallationTask {
-    public enum TASK_TYPE { INSTALL, UNINSTALL, DIAGNOSTIC, OTHER }
+    public enum TASK_TYPE { INSTALL, REINSTALL, UNINSTALL, INFO, DIAGNOSTICS, OTHER }
 
     private final String id;
     private final TASK_TYPE taskType;

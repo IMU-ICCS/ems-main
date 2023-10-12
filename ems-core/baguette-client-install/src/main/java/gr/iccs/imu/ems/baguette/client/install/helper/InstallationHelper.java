@@ -33,5 +33,6 @@ public interface InstallationHelper {
         return createClientInstallationTask(entry, null);
     }
     ClientInstallationTask createClientInstallationTask(NodeRegistryEntry entry, TranslationContext translationContext) throws Exception;
+    ClientInstallationTask createClientReinstallTask(NodeRegistryEntry entry, TranslationContext translationContext) throws Exception;
     ClientInstallationTask createClientUninstallTask(NodeRegistryEntry entry, TranslationContext translationContext) throws Exception;
 }

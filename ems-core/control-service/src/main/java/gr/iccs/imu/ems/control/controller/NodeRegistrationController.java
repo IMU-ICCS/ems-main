@@ -17,6 +17,7 @@ import gr.iccs.imu.ems.control.properties.ControlServiceProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -116,27 +117,15 @@ public class NodeRegistrationController {
         log.info("NodeRegistrationController.baguetteNodeReinstall(): Invoked");
         log.info("NodeRegistrationController.baguetteNodeReinstall(): Node IP address: {}", ipAddress);
 
-        // Get node info using IP address
-        BaguetteServer baguette = coordinator.getBaguetteServer();
-        NodeRegistryEntry nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
-        log.info("NodeRegistrationController.baguetteNodeReinstall(): Info for node at: ip-address={}, Node Info:\n{}",
-                ipAddress, nodeInfo);
-        if (nodeInfo==null) {
-            log.warn("NodeRegistrationController.baguetteNodeReinstall(): Not found pre-registered node with ip-address: {}", ipAddress);
-            return "NODE NOT FOUND: "+ipAddress;
+        if (StringUtils.isBlank(ipAddress)) {
+            log.warn("NodeRegistrationController.baguetteNodeReinstall(): IP address is blank: {}", ipAddress);
+            return "ERROR: Blank IP address";
         }
 
-        // Continue processing according to ExecutionWare type
-        String response;
-        log.info("NodeRegistrationController.baguetteNodeReinstall(): ExecutionWare: {}", properties.getExecutionware());
-        if (properties.getExecutionware() == ControlServiceProperties.ExecutionWare.CLOUDIATOR) {
-            response = nodeRegistrationCoordinator.getClientInstallationInstructions(nodeInfo);
-        } else {
-            response = nodeRegistrationCoordinator.createClientInstallationTask(nodeInfo,
-                    coordinator.getTranslationContextOfAppModel(coordinator.getCurrentAppModelId()));
-        }
+        String response = nodeRegistrationCoordinator.reinstallNode(ipAddress,
+                coordinator.getTranslationContextOfAppModel(coordinator.getCurrentAppModelId()));
 
-        log.info("NodeRegistrationController.baguetteNodeReinstall(): node ip-address: {}, response: {}", ipAddress, response);
+        log.info("NodeRegistrationController.baguetteNodeReinstall(): Node reinstall response: ip-address: {}, response: {}", ipAddress, response);
         return response;
     }
 

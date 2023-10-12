@@ -16,4 +16,6 @@ import java.util.Map;
 public interface INodeRegistration {
     String registerNode(String baseUrl, Map<String,Object> nodeInfo, TranslationContext translationContext) throws Exception;
     String unregisterNode(String nodeAddress, TranslationContext translationContext) throws Exception;
+    String reinstallNode(String ipAddress, TranslationContext translationContext) throws Exception;
+    void requestUpdate() throws Exception;
 }
