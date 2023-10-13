@@ -104,16 +104,15 @@ public class ClientInstallationRequestListener implements InitializingBean {
 
     private MessageListener getMessageListener() {
         return message -> {
+            Map<String, String> request = null;
             String requestType;
-            String requestId = null;
-            TASK_TYPE taskType = TASK_TYPE.OTHER;
             try {
                 // Extract request from JMS message
-                Map<String, String> request = extractRequest(message);
+                request = extractRequest(message);
                 log.debug("InstallationEventListener: Got a client installation request: {}", request);
                 if (request==null) {
                     clientInstaller.sendErrorClientInstallationReport(TASK_TYPE.OTHER,
-                            "INVALID-REQUEST", "ERROR: Invalid request. Could not extract request data");
+                            null, "ERROR: Invalid request. Could not extract request data");
                     return;
                 }
 
@@ -121,16 +120,13 @@ public class ClientInstallationRequestListener implements InitializingBean {
                 requestType = request.get("requestType");
                 if (StringUtils.isBlank(requestType)) {
                     clientInstaller.sendErrorClientInstallationReport(TASK_TYPE.OTHER,
-                            "MISSING-REQUEST-TYPE", "ERROR: Invalid request. Missing requestType field");
+                            request, "ERROR: Invalid request. Missing requestType field");
                     return;
                 }
                 requestType = requestType.trim();
 
                 // If not an UPDATE request run extra checks
                 if (! "UPDATE".equalsIgnoreCase(requestType)) {
-                    // Get request Id
-                    requestId = request.getOrDefault("requestId", "").trim();
-
                     // Check incoming request
                     List<String> errors = new ArrayList<>();
                     if (StringUtils.isBlank(request.get("requestId"))) errors.add("requestId");
@@ -141,8 +137,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
                             && StringUtils.isBlank(request.get("devicePublicKey"))) errors.add("Both devicePublicKey and devicePublicKey");
                     if (!errors.isEmpty()) {
                         String errorMessage = "Missing fields: " + String.join(", ", errors);
-                        clientInstaller.sendErrorClientInstallationReport(TASK_TYPE.OTHER,
-                                "REQUEST-WITH-ERRORS", "ERROR: "+errorMessage);
+                        clientInstaller.sendErrorClientInstallationReport(TASK_TYPE.OTHER, request, "ERROR: "+errorMessage);
                         return;
                     }
                 }
@@ -152,7 +147,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
                 if ("REMOVE".equalsIgnoreCase(requestType)) requestType = TASK_TYPE.UNINSTALL.name();
                 if ("UPDATE".equalsIgnoreCase(requestType)) requestType = TASK_TYPE.INFO.name();
 
-                taskType = TASK_TYPE.valueOf(requestType);
+                TASK_TYPE taskType = TASK_TYPE.valueOf(requestType);
                 switch (taskType) {
                     case DIAGNOSTICS -> processDiagnosticsRequest(request);
                     case INSTALL -> processOnboardingRequest(request);
@@ -165,12 +160,8 @@ public class ClientInstallationRequestListener implements InitializingBean {
             } catch (Throwable e) {
                 log.error("InstallationEventListener: ERROR: ", e);
                 try {
-                    if (StringUtils.isNotBlank(requestId))
-                        clientInstaller.sendErrorClientInstallationReport(
-                                taskType, requestId, "ERROR: "+e.getMessage());
-                    else
-                        clientInstaller.sendErrorClientInstallationReport(
-                                TASK_TYPE.OTHER, "UNKNOWN-REQUEST-ID", "ERROR: "+e.getMessage()+"\n"+message);
+                    clientInstaller.sendErrorClientInstallationReport(
+                            TASK_TYPE.OTHER, request, "ERROR: "+e.getMessage()+"\n"+message);
                 } catch (Throwable t) {
                     log.info("InstallationEventListener: EXCEPTION while sending Client installation report for incoming request: request={}, Exception: ", message, t);
                 }
@@ -245,7 +236,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
         log.info("InstallationEventListener: New node ONBOARDING request with Id: {}", requestId);
         if (StringUtils.isBlank(requestId)) {
             clientInstaller.sendErrorClientInstallationReport(
-                    TASK_TYPE.INSTALL, "MISSING-REQUEST-ID", "INVALID REQUEST. MISSING REQUEST ID");
+                    TASK_TYPE.INSTALL, request, "INVALID REQUEST. MISSING REQUEST ID");
             return;
         }
 
@@ -255,7 +246,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
         } catch (Exception e) {
             log.warn("InstallationEventListener: EXCEPTION while executing ONBOARDING request with Id: {}\n", requestId, e);
             clientInstaller.sendErrorClientInstallationReport(
-                    TASK_TYPE.INSTALL, requestId, "ERROR: "+e.getMessage());
+                    TASK_TYPE.INSTALL, request, "ERROR: "+e.getMessage());
         }
     }
 
@@ -266,12 +257,12 @@ public class ClientInstallationRequestListener implements InitializingBean {
         log.info("InstallationEventListener: REINSTALL request with device Id: {}, ip-address={}", deviceId, ipAddress);
         if (StringUtils.isBlank(deviceId)) {
             clientInstaller.sendErrorClientInstallationReport(
-                    TASK_TYPE.REINSTALL, "MISSING-DEVICE-ID", "INVALID REQUEST. MISSING DEVICE ID");
+                    TASK_TYPE.REINSTALL, request, "INVALID REQUEST. MISSING DEVICE ID");
             return;
         }
         if (StringUtils.isBlank(ipAddress)) {
             clientInstaller.sendErrorClientInstallationReport(
-                    TASK_TYPE.REINSTALL, deviceId, "INVALID REQUEST. MISSING DEVICE IP ADDRESS");
+                    TASK_TYPE.REINSTALL, request, "INVALID REQUEST. MISSING DEVICE IP ADDRESS");
             return;
         }
 
@@ -281,7 +272,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
         } catch (Exception e) {
             log.warn("InstallationEventListener: EXCEPTION while executing REINSTALL request with Id: {}\n", deviceId, e);
             clientInstaller.sendErrorClientInstallationReport(
-                    TASK_TYPE.REINSTALL, deviceId, "ERROR: "+e.getMessage());
+                    TASK_TYPE.REINSTALL, request, "ERROR: "+e.getMessage());
         }
     }
 
@@ -292,12 +283,12 @@ public class ClientInstallationRequestListener implements InitializingBean {
         log.info("InstallationEventListener: New node REMOVE request with Id: {}, address={}", deviceId, nodeAddress);
         if (StringUtils.isBlank(deviceId)) {
             clientInstaller.sendErrorClientInstallationReport(
-                    TASK_TYPE.UNINSTALL, "MISSING-REQUEST-ID", "INVALID REQUEST. MISSING DEVICE ID");
+                    TASK_TYPE.UNINSTALL, request, "INVALID REQUEST. MISSING DEVICE ID");
             return;
         }
         if (StringUtils.isBlank(nodeAddress)) {
             clientInstaller.sendErrorClientInstallationReport(
-                    TASK_TYPE.UNINSTALL, deviceId, "INVALID REQUEST. MISSING IP ADDRESS");
+                    TASK_TYPE.UNINSTALL, request, "INVALID REQUEST. MISSING IP ADDRESS");
             return;
         }
 
@@ -307,7 +298,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
         } catch (Exception e) {
             log.warn("InstallationEventListener: EXCEPTION while executing REMOVE request with Id: {}\n", deviceId, e);
             clientInstaller.sendErrorClientInstallationReport(
-                    TASK_TYPE.UNINSTALL, deviceId, "ERROR: "+e.getMessage());
+                    TASK_TYPE.UNINSTALL, request, "ERROR: "+e.getMessage());
         }
     }
 
@@ -319,7 +310,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
         } catch (Exception e) {
             log.warn("InstallationEventListener: EXCEPTION while executing UPDATE:\n", e);
             clientInstaller.sendErrorClientInstallationReport(
-                    TASK_TYPE.INFO, null, "ERROR: "+e.getMessage());
+                    TASK_TYPE.INFO, request, "ERROR: "+e.getMessage());
         }
     }
 

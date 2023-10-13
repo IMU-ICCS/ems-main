@@ -253,17 +253,27 @@ public class ClientInstaller implements InitializingBean {
                 null, properties.getClientInstallationReportsTopic(), executionReport, true);
     }
 
-    public void sendErrorClientInstallationReport(@NonNull TASK_TYPE requestType, String requestOrDeviceId, String resultStr) throws JMSException {
-        log.trace("ClientInstaller: Preparing ERROR execution report event for request: result={}, requestId={}", resultStr, requestOrDeviceId);
-        String requestId = requestType==TASK_TYPE.INSTALL || requestType==TASK_TYPE.DIAGNOSTICS ? requestOrDeviceId : null;
-        String deviceId = requestType==TASK_TYPE.REINSTALL || requestType==TASK_TYPE.UNINSTALL ? requestOrDeviceId : null;
+    public void sendErrorClientInstallationReport(@NonNull TASK_TYPE requestType, Map<String,String> request, String resultStr) throws JMSException {
+        sendErrorClientInstallationReport(requestType, request, null, resultStr);
+    }
+
+    public void sendErrorClientInstallationReport(@NonNull TASK_TYPE requestType, Map<String,String> request, String reference, String resultStr) throws JMSException {
+        log.trace("ClientInstaller: Preparing ERROR execution report event for request: result={}, request={}", resultStr, request);
+        String requestId = getOrDefault(request, "requestId", "MISSING-REQUEST-ID");
+        String deviceId  = getOrDefault(request, "deviceId", "MISSING-DEVICE-ID");
+        String ipAddress = getOrDefault(request, "deviceIpAddress", "MISSING-DEVICE-ADDRESS");
         LinkedHashMap<String, Object> executionReport = new LinkedHashMap<>(
                 createReportEvent(requestType,
-                        requestId, deviceId, null, resultStr, Collections.emptyMap()));
+                        requestId, deviceId, ipAddress, reference, resultStr, Collections.emptyMap()));
         log.info("ClientInstaller: Sending ERROR execution report: destination={}, report={}",
                 properties.getClientInstallationReportsTopic(), executionReport);
         brokerCepService.publishSerializable(
                 null, properties.getClientInstallationReportsTopic(), executionReport, true);
+    }
+
+    private String getOrDefault(Map<String,String> map, String key, String defaultValue) {
+        if (map==null) return defaultValue;
+        return map.getOrDefault(key, defaultValue);
     }
 
     private Map<String, Object> createReportEventFromExecutionResults(long taskCnt, @NonNull ClientInstallationTask task, String resultStr) {
@@ -287,12 +297,13 @@ public class ClientInstaller implements InitializingBean {
         String requestId = task.getRequestId();
         String deviceId = task.getNodeId();
         return createReportEvent(
-                requestType, requestId, deviceId, task.getNodeRegistryEntry().getReference(), resultStr, nodeInfoMap);
+                requestType, requestId, deviceId, task.getAddress(), task.getNodeRegistryEntry().getReference(), resultStr, nodeInfoMap);
     }
 
     private static Map<String, Object> createReportEvent(@NonNull TASK_TYPE requestType,
                                                          String requestId,
                                                          String deviceId,
+                                                         String ipAddress,
                                                          String reference,
                                                          @NonNull String statusStr,
                                                          Map<String, Object> nodeInfoMap)
@@ -301,6 +312,7 @@ public class ClientInstaller implements InitializingBean {
                 "requestType", requestType.name(),
                 "requestId", Objects.requireNonNullElse(requestId, ""),
                 "deviceId", Objects.requireNonNullElse(deviceId, ""),
+                "deviceIpAddress", Objects.requireNonNullElse(ipAddress, ""),
                 "reference", Objects.requireNonNullElse(reference, ""),
                 "status", statusStr,
                 "nodeInfo", nodeInfoMap!=null ? nodeInfoMap : Collections.emptyMap(),
