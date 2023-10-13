@@ -126,7 +126,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
                 requestType = requestType.trim();
 
                 // If not an UPDATE request run extra checks
-                if (! "UPDATE".equalsIgnoreCase(requestType)) {
+                if (! "INFO".equalsIgnoreCase(requestType)) {
                     // Check incoming request
                     List<String> errors = new ArrayList<>();
                     if (StringUtils.isBlank(request.get("requestId"))) errors.add("requestId");
