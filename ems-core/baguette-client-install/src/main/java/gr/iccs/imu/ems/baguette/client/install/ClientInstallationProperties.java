@@ -41,6 +41,8 @@ public class ClientInstallationProperties implements InitializingBean {
     private String clientInstallationRequestsTopic = "ems.client.installation.requests";
     private String clientInstallationReportsTopic = "ems.client.installation.reports";
     private List<Pattern> clientInstallationReportNodeInfoPatterns = new ArrayList<>();
+    private String clientInfoRequestsTopic = "ems.client.info.requests";
+    private String clientInfoReportsTopic = "ems.client.info.reports";
 
     private String baseDir;                     // EMS client home directory
     private String rootCmd;                     // Root command (e.g. 'sudo', or 'echo ${NODE_SSH_PASSWORD} | sudo -S ')

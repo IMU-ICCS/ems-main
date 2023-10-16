@@ -214,13 +214,17 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitBasicMetrics() {
+        log.trace("Topic Beacon: transmitBasicMetrics: BEGIN: topics={}", properties.getBasicMetricsTopics());
         if (emptyIfNull(properties.getBasicMetricsTopics()).isEmpty()) return;
 
+        log.trace("Topic Beacon: transmitBasicMetrics: Baguette Server is running: {}", coordinator.getBaguetteServer().isServerRunning());
         if (coordinator.getBaguetteServer().isServerRunning()) {
+            log.trace("Topic Beacon: transmitBasicMetrics: Num of Active CSC's: {}", ClientShellCommand.getActive());
             for (ClientShellCommand csc : ClientShellCommand.getActive()) {
                 // Get client id and address
                 String clientId = csc.getClientId();
                 String clientIpAddress = csc.getClientIpAddress();
+                log.debug("Topic Beacon: transmitBasicMetrics: Processing CSC: client-id={}, ip-address={}", clientId, clientIpAddress);
                 if (StringUtils.isBlank(clientId) || StringUtils.isBlank(clientIpAddress)) {
                     log.error("Topic Beacon: Ignoring CSC without Id or IP address: {}", csc);
                     continue;
@@ -228,6 +232,7 @@ public class TopicBeacon implements InitializingBean {
 
                 // Get client statistics
                 Map<String, Object> stats = csc.getClientStatistics();
+                log.debug("Topic Beacon: transmitBasicMetrics: CSC statistics: client-id={}, ip-address={}, stats={}", clientId, clientIpAddress, stats);
                 if (stats==null) {
                     log.debug("Topic Beacon: No metrics for: instance={}, ip-address={}", clientId, clientIpAddress);
                     continue;
@@ -243,7 +248,7 @@ public class TopicBeacon implements InitializingBean {
                     stats.put("ipAddress", clientIpAddress);
                     stats.put("receivedAtServer", Instant.ofEpochMilli(timestamp).toString());
                     log.debug("Topic Beacon: Transmitting Basic Metrics for: instance={}, ip-address={}, message={}, topics={}",
-                            clientId, clientIpAddress, stats, properties.getInstanceTopics());
+                            clientId, clientIpAddress, stats, properties.getBasicMetricsTopics());
                     sendEventToTopics(stats, properties.getBasicMetricsTopics());
                 } catch (Exception e) {
                     log.error("Topic Beacon: Transmitting Basic Metrics for: EXCEPTION while preparing basic metrics for client: id={}, ip-address={}, metrics={}\n",
@@ -251,6 +256,7 @@ public class TopicBeacon implements InitializingBean {
                 }
             }
         }
+        log.trace("Topic Beacon: transmitBasicMetrics: END");
     }
 
     // ------------------------------------------------------------------------

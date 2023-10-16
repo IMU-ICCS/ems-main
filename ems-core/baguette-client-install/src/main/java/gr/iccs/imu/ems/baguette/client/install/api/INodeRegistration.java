@@ -9,6 +9,7 @@
 
 package gr.iccs.imu.ems.baguette.client.install.api;
 
+import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
 import gr.iccs.imu.ems.translate.TranslationContext;
 
 import java.util.Map;
@@ -17,5 +18,6 @@ public interface INodeRegistration {
     String registerNode(String baseUrl, Map<String,Object> nodeInfo, TranslationContext translationContext) throws Exception;
     String unregisterNode(String nodeAddress, TranslationContext translationContext) throws Exception;
     String reinstallNode(String ipAddress, TranslationContext translationContext) throws Exception;
-    void requestUpdate() throws Exception;
+    NodeRegistryEntry requestNodeDetails(String nodeAddress) throws Exception;
+    void requestInfo() throws Exception;
 }

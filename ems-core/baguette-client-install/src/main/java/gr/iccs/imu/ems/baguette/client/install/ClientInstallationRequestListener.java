@@ -95,9 +95,21 @@ public class ClientInstallationRequestListener implements InitializingBean {
                 ? connectionFactory.createConnection(brokerCepService.getBrokerUsername(), brokerCepService.getBrokerPassword())
                 : connectionFactory.createConnection());
         Session session = connection.createSession(true, 0);
-        MessageConsumer consumer = session.createConsumer(
-                new ActiveMQTopic(properties.getClientInstallationRequestsTopic()));
-        consumer.setMessageListener(getMessageListener());
+
+        List<String> topics = Arrays.asList(
+                properties.getClientInstallationRequestsTopic(),
+                properties.getClientInfoRequestsTopic()
+        );
+        log.debug("InstallationEventListener: Will subscribe to topics: {}", topics);
+
+        MessageListener listener = getMessageListener();
+        for (String topic : topics) {
+            MessageConsumer consumer = session.createConsumer(
+                    new ActiveMQTopic( topic ));
+            consumer.setMessageListener(listener);
+            log.debug("InstallationEventListener: Subscribed to topic: {}", topic);
+        }
+
         connection.start();
         log.debug("InstallationEventListener: STARTED");
     }
@@ -125,8 +137,10 @@ public class ClientInstallationRequestListener implements InitializingBean {
                 }
                 requestType = requestType.trim();
 
-                // If not an UPDATE request run extra checks
-                if (! "INFO".equalsIgnoreCase(requestType)) {
+                // If not an INFO or NODE_DETAILS request run extra checks
+                if (! TASK_TYPE.INFO.name().equalsIgnoreCase(requestType) &&
+                    ! TASK_TYPE.NODE_DETAILS.name().equalsIgnoreCase(requestType))
+                {
                     // Check incoming request
                     List<String> errors = new ArrayList<>();
                     if (StringUtils.isBlank(request.get("requestId"))) errors.add("requestId");
@@ -153,7 +167,8 @@ public class ClientInstallationRequestListener implements InitializingBean {
                     case INSTALL -> processOnboardingRequest(request);
                     case REINSTALL -> processReinstallRequest(request);
                     case UNINSTALL -> processRemoveRequest(request);
-                    case INFO -> processUpdateRequest(request);
+                    case NODE_DETAILS -> processNodeDetailsRequest(request);
+                    case INFO -> processInfoRequest(request);
                     default -> throw new IllegalArgumentException("Unsupported request type: "+requestType);
                 };
 
@@ -302,13 +317,66 @@ public class ClientInstallationRequestListener implements InitializingBean {
         }
     }
 
-    private void processUpdateRequest(Map<String,String> request) throws Exception {
-        log.info("InstallationEventListener: UPDATE request");
+    private void processNodeDetailsRequest(Map<String,String> request) throws Exception {
+        String nodeAddress = request.getOrDefault("deviceIpAddress", "").trim();
+        log.info("InstallationEventListener: New node NODE_DETAILS request with: address={}", nodeAddress);
+        if (StringUtils.isBlank(nodeAddress)) {
+            clientInstaller.sendErrorClientInstallationReport(
+                    TASK_TYPE.NODE_DETAILS, request, "INVALID REQUEST. MISSING IP ADDRESS");
+            return;
+        }
+
+        log.info("InstallationEventListener: Processing NODE_DETAILS request");
         try {
-            log.debug("InstallationEventListener: Requesting UPDATE");
-            nodeRegistration.requestUpdate();
+            log.debug("InstallationEventListener: Requesting NODE_DETAILS");
+            NodeRegistryEntry entry = nodeRegistration.requestNodeDetails(nodeAddress);
+            log.trace("InstallationEventListener: NODE_DETAILS: entry={}", entry);
+
+            if (entry!=null) {
+                // Get node details from NodeRegistry
+                Map<String, Object> response = clientInstaller.createReportEventFromNodeData(
+                        -1, TASK_TYPE.NODE_DETAILS, "", "",
+                        entry.getIpAddress(), entry.getReference(), entry.getPreregistration(), "SUCCESS");
+                log.debug("InstallationEventListener: NODE_DETAILS response (1): {}", response);
+
+                // ...make response map mutable
+                response = new LinkedHashMap<>(response);
+
+                // ...include additional fields
+                Map<String, String> preregData = entry.getPreregistration();
+                response.put("os", preregData.getOrDefault("NODE_OPERATINGSYSTEM", ""));
+                response.put("name", preregData.getOrDefault("NODE_NAME", ""));
+                response.put("username", preregData.getOrDefault("NODE_SSH_USERNAME", ""));
+                response.put("password", preregData.getOrDefault("NODE_SSH_PASSWORD", ""));
+                response.put("key", preregData.getOrDefault("NODE_SSH_KEY", ""));
+
+                response.put("requestId", "");
+                response.put("state", entry.getState()!=null ? entry.getState().name() : "");
+                log.debug("InstallationEventListener: NODE_DETAILS response (2): {}", response);
+
+                // Send NODE_DETAILS response
+                log.trace("InstallationEventListener: Sending NODE_DETAILS response: {}", response);
+                clientInstaller.publishReport(new LinkedHashMap<>(response));
+
+                log.debug("InstallationEventListener: Sent NODE_DETAILS response: {}", response);
+            } else {
+                clientInstaller.sendErrorClientInstallationReport(
+                        TASK_TYPE.NODE_DETAILS, request, "ERROR: No node found in NodeRegistry with IP address: "+nodeAddress);
+            }
         } catch (Exception e) {
-            log.warn("InstallationEventListener: EXCEPTION while executing UPDATE:\n", e);
+            log.warn("InstallationEventListener: EXCEPTION while retrieving NODE_DETAILS:\n", e);
+            clientInstaller.sendErrorClientInstallationReport(
+                    TASK_TYPE.INFO, request, "ERROR: "+e.getMessage());
+        }
+    }
+
+    private void processInfoRequest(Map<String,String> request) throws Exception {
+        log.info("InstallationEventListener: INFO request");
+        try {
+            log.debug("InstallationEventListener: Requesting INFO");
+            nodeRegistration.requestInfo();
+        } catch (Exception e) {
+            log.warn("InstallationEventListener: EXCEPTION while executing INFO:\n", e);
             clientInstaller.sendErrorClientInstallationReport(
                     TASK_TYPE.INFO, request, "ERROR: "+e.getMessage());
         }

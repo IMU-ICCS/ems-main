@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import javax.jms.JMSException;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -249,8 +250,7 @@ public class ClientInstaller implements InitializingBean {
                 createReportEventFromExecutionResults(taskCnt, task, resultStr));
         log.info("ClientInstaller: Sending SUCCESS execution report for Task #{}: destination={}, report={}",
                 taskCnt, properties.getClientInstallationReportsTopic(), executionReport);
-        brokerCepService.publishSerializable(
-                null, properties.getClientInstallationReportsTopic(), executionReport, true);
+        publishReport(executionReport);
     }
 
     public void sendErrorClientInstallationReport(@NonNull TASK_TYPE requestType, Map<String,String> request, String resultStr) throws JMSException {
@@ -267,8 +267,7 @@ public class ClientInstaller implements InitializingBean {
                         requestId, deviceId, ipAddress, reference, resultStr, Collections.emptyMap()));
         log.info("ClientInstaller: Sending ERROR execution report: destination={}, report={}",
                 properties.getClientInstallationReportsTopic(), executionReport);
-        brokerCepService.publishSerializable(
-                null, properties.getClientInstallationReportsTopic(), executionReport, true);
+        publishReport(executionReport);
     }
 
     private String getOrDefault(Map<String,String> map, String key, String defaultValue) {
@@ -276,28 +275,49 @@ public class ClientInstaller implements InitializingBean {
         return map.getOrDefault(key, defaultValue);
     }
 
+    public void publishReport(Serializable report) throws JMSException {
+        brokerCepService.publishSerializable(
+                null, properties.getClientInstallationReportsTopic(), report, true);
+    }
+
     private Map<String, Object> createReportEventFromExecutionResults(long taskCnt, @NonNull ClientInstallationTask task, String resultStr) {
+        log.trace("ClientInstaller: createReportEventFromExecutionResults: Task #{}: ARGS: result={}, task={}", taskCnt, resultStr, task);
+
         // Get execution results
         Map<String, String> data = task.getNodeRegistryEntry().getPreregistration();
         log.trace("ClientInstaller: createReportEventFromExecutionResults: Task #{}: Execution data:\n{}", taskCnt, data);
 
+        // Create report event
+        TASK_TYPE requestType = task.getTaskType();
+        String requestId = task.getRequestId();
+        String deviceId = task.getNodeId();
+        return createReportEventFromNodeData(taskCnt, requestType, requestId, deviceId,
+                task.getAddress(), task.getNodeRegistryEntry().getReference(), data, resultStr);
+    }
+
+    public Map<String, Object> createReportEventFromNodeData(long taskCnt,
+                                                             TASK_TYPE requestType,
+                                                             String requestId,
+                                                             String deviceId,
+                                                             String ipAddress,
+                                                             String reference,
+                                                             Map<String, String> data,
+                                                             String resultStr)
+    {
         // Copy node info from execution results
         Map<String, Object> nodeInfoMap = new LinkedHashMap<>();
         properties.getClientInstallationReportNodeInfoPatterns().forEach(pattern -> {
-            log.trace("ClientInstaller: createReportEventFromExecutionResults: Task #{}:Applying pattern: {}", taskCnt, pattern);
+            log.trace("ClientInstaller: createReportEventFromNodeData: Task #{}: Applying pattern: {}", taskCnt, pattern);
             data.keySet().stream()
                     //.peek(key->log.trace("                ---->  Checking:  key={}, match={}", key, pattern.matcher(key).matches()))
                     .filter(key -> pattern.matcher(key).matches())
                     .forEach(key -> nodeInfoMap.put(key, data.get(key)));
         });
-        log.debug("ClientInstaller: createReportEventFromExecutionResults: Task #{}: Node info collected: {}", taskCnt, nodeInfoMap);
+        log.debug("ClientInstaller: createReportEventFromNodeData: Task #{}: Node info collected: {}", taskCnt, nodeInfoMap);
 
         // Create and send report event
-        TASK_TYPE requestType = task.getTaskType();
-        String requestId = task.getRequestId();
-        String deviceId = task.getNodeId();
         return createReportEvent(
-                requestType, requestId, deviceId, task.getAddress(), task.getNodeRegistryEntry().getReference(), resultStr, nodeInfoMap);
+                requestType, requestId, deviceId, ipAddress, reference, resultStr, nodeInfoMap);
     }
 
     private static Map<String, Object> createReportEvent(@NonNull TASK_TYPE requestType,
