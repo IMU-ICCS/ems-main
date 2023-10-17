@@ -117,7 +117,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
     private MessageListener getMessageListener() {
         return message -> {
             Map<String, String> request = null;
-            String requestType;
+            TASK_TYPE requestType = TASK_TYPE.OTHER;
             try {
                 // Extract request from JMS message
                 request = extractRequest(message);
@@ -129,21 +129,30 @@ public class ClientInstallationRequestListener implements InitializingBean {
                 }
 
                 // Get request type
-                requestType = request.get("requestType");
-                if (StringUtils.isBlank(requestType)) {
+                String requestTypeStr = request.get("requestType");
+                if (StringUtils.isBlank(requestTypeStr)) {
                     clientInstaller.sendErrorClientInstallationReport(TASK_TYPE.OTHER,
                             request, "ERROR: Invalid request. Missing requestType field");
                     return;
                 }
-                requestType = requestType.trim();
+                try {
+                    if ("VM".equalsIgnoreCase(requestTypeStr)) requestTypeStr = TASK_TYPE.INSTALL.name();
+                    if ("REMOVE".equalsIgnoreCase(requestTypeStr)) requestTypeStr = TASK_TYPE.UNINSTALL.name();
+                    if ("UPDATE".equalsIgnoreCase(requestTypeStr)) requestTypeStr = TASK_TYPE.INFO.name();
+                    requestType = TASK_TYPE.valueOf(requestTypeStr.trim().toUpperCase());
+                } catch (Exception e) {
+                    clientInstaller.sendErrorClientInstallationReport(TASK_TYPE.OTHER,
+                            request, "ERROR: Invalid request. Invalid requestType field value: "+requestTypeStr);
+                    return;
+                }
 
                 // If not an INFO or NODE_DETAILS request run extra checks
-                if (! TASK_TYPE.INFO.name().equalsIgnoreCase(requestType) &&
-                    ! TASK_TYPE.NODE_DETAILS.name().equalsIgnoreCase(requestType))
-                {
+                if (TASK_TYPE.INFO != requestType && TASK_TYPE.NODE_DETAILS != requestType) {
                     // Check incoming request
                     List<String> errors = new ArrayList<>();
-                    if (StringUtils.isBlank(request.get("requestId"))) errors.add("requestId");
+                    if (StringUtils.isBlank(request.get("requestId")) &&
+                            (TASK_TYPE.DIAGNOSTICS==requestType || TASK_TYPE.INSTALL==requestType))
+                        errors.add("requestId");
                     if (StringUtils.isBlank(request.get("deviceOs"))) errors.add("deviceOs");
                     if (StringUtils.isBlank(request.get("deviceIpAddress"))) errors.add("deviceIpAddress");
                     if (StringUtils.isBlank(request.get("deviceUsername"))) errors.add("deviceUsername");
@@ -151,18 +160,13 @@ public class ClientInstallationRequestListener implements InitializingBean {
                             && StringUtils.isBlank(request.get("devicePublicKey"))) errors.add("Both devicePublicKey and devicePublicKey");
                     if (!errors.isEmpty()) {
                         String errorMessage = "Missing fields: " + String.join(", ", errors);
-                        clientInstaller.sendErrorClientInstallationReport(TASK_TYPE.OTHER, request, "ERROR: "+errorMessage);
+                        clientInstaller.sendErrorClientInstallationReport(requestType, request, "ERROR: "+errorMessage);
                         return;
                     }
                 }
 
                 // Process request based on its type
-                if ("VM".equalsIgnoreCase(requestType)) requestType = TASK_TYPE.INSTALL.name();
-                if ("REMOVE".equalsIgnoreCase(requestType)) requestType = TASK_TYPE.UNINSTALL.name();
-                if ("UPDATE".equalsIgnoreCase(requestType)) requestType = TASK_TYPE.INFO.name();
-
-                TASK_TYPE taskType = TASK_TYPE.valueOf(requestType);
-                switch (taskType) {
+                switch (requestType) {
                     case DIAGNOSTICS -> processDiagnosticsRequest(request);
                     case INSTALL -> processOnboardingRequest(request);
                     case REINSTALL -> processReinstallRequest(request);
@@ -176,7 +180,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
                 log.error("InstallationEventListener: ERROR: ", e);
                 try {
                     clientInstaller.sendErrorClientInstallationReport(
-                            TASK_TYPE.OTHER, request, "ERROR: "+e.getMessage()+"\n"+message);
+                            requestType, request, "ERROR: "+e.getMessage()+"\n"+message);
                 } catch (Throwable t) {
                     log.info("InstallationEventListener: EXCEPTION while sending Client installation report for incoming request: request={}, Exception: ", message, t);
                 }
