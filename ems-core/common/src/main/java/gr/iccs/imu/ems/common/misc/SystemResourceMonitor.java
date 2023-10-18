@@ -25,11 +25,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.*;
 
 @Slf4j
 @Service
@@ -83,6 +84,21 @@ public class SystemResourceMonitor implements Runnable, InitializingBean {
         future = null;
         topicsCache.clear();
         log.info("SystemResourceMonitor stopped");
+    }
+
+    public boolean runImmediatelyBlocking(long timeoutMillis) {
+        if (!enabled) return false;
+        try {
+            ScheduledFuture<?> f = scheduler.schedule(this, Instant.now());
+            if (timeoutMillis < 0)
+                f.get();
+            else
+                f.get(timeoutMillis, TimeUnit.MILLISECONDS);
+            return f.isDone() && !f.isCancelled();
+        } catch (ExecutionException | InterruptedException | TimeoutException | CancellationException e) {
+            log.warn("SystemResourceMonitor: EXCEPTION: ", e);
+            return false;
+        }
     }
 
     public void run() {

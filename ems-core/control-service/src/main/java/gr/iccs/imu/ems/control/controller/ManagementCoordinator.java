@@ -219,4 +219,9 @@ public class ManagementCoordinator {
         // Log success
         return eventLogEnd(method, EVENT_LOG_OK);
     }
+
+    public String clientStats(String clientId) {
+        String command = "COLLECT-STATS";
+        return clientCommandSend(clientId, command);
+    }
 }

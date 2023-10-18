@@ -654,6 +654,8 @@ public class CommandExecutor {
             log.info("Cluster: configuration:\n{}", clusterManagerProperties);
         } else if ("GET-STATS".equals(cmd)) {
             getStatistics(args[1]);
+        } else if ("COLLECT-STATS".equals(cmd)) {
+            collectStatistics();
         } else if ("SEND-STATS".equals(cmd)) {
             if (args.length < 2) {
                 log.warn("Too few arguments");
@@ -1258,6 +1260,29 @@ public class CommandExecutor {
         Map<String,Object> statsMap = brokerCepService.getBrokerCepStatistics();
         log.debug("Statistics: {}", statsMap);
         if (out!=null) out.println("-INPUT:"+inputUuid+":"+SerializationUtil.serializeToString(statsMap));
+    }
+
+    private void collectStatistics() {
+        try {
+            // Run system metrics collection script
+            log.debug("Running system metrics collection...");
+            boolean result = systemResourceMonitor.runImmediatelyBlocking(-1);  // >=0: timeout in millis; <0: wait forever
+            log.debug("Running system metrics collection... {}", result ? "done" : "cancel/timeout");
+
+            // Collect metrics
+            Map<String, Object> statsMap = brokerCepService.getBrokerCepStatistics();
+            log.debug("BCEP Statistics: {}", statsMap);
+            Map<String, Object> sysMap = systemResourceMonitor.getLatestMeasurements();
+            log.debug("System Statistics: {}", sysMap);
+
+            // Prepare and send response
+            Map<String, Object> clientStats = new HashMap<>();
+            if (statsMap!=null) clientStats.putAll(statsMap);
+            if (sysMap!=null) clientStats.putAll(sysMap);
+            if (out!=null) out.println("-STATS:" + SerializationUtil.serializeToString(statsMap));
+        } catch (Exception ex) {
+            log.error("Exception while getting Statistics to server: ", ex);
+        }
     }
 
     @SneakyThrows

@@ -12,6 +12,7 @@ package gr.iccs.imu.ems.control.util;
 import gr.iccs.imu.ems.baguette.client.install.api.INodeRegistration;
 import gr.iccs.imu.ems.baguette.server.NodeRegistry;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
+import gr.iccs.imu.ems.control.controller.ManagementCoordinator;
 import gr.iccs.imu.ems.control.controller.NodeRegistrationCoordinator;
 import gr.iccs.imu.ems.translate.TranslationContext;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class NodeRegistrationHelper implements InitializingBean, INodeRegistration {
     private final NodeRegistrationCoordinator nodeRegistrationCoordinator;
+    private final ManagementCoordinator managementCoordinator;
     private final NodeRegistry nodeRegistry;
     private final TopicBeacon topicBeacon;
 
@@ -64,6 +66,7 @@ public class NodeRegistrationHelper implements InitializingBean, INodeRegistrati
     @Override
     public void requestInfo() throws Exception {
         log.info("NodeRegistrationHelper: Invoking transmitInfo");
+        managementCoordinator.clientStats("*");
         topicBeacon.transmitInfo();
     }
 }

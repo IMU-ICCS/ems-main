@@ -62,6 +62,13 @@ public class ManagementController {
         return coordinator.clientCommandSend(clientId, command);
     }
 
+    @RequestMapping(value = { "/client/stats", "/client/stats/{clientId}" }, method = GET)
+    public String clientStats(@PathVariable Optional<String> clientIdOpt) {
+        String clientId = clientIdOpt.orElse("*");
+        log.info("ManagementController.clientStats(): PARAMS: client={}", clientId);
+        return coordinator.clientStats(clientId);
+    }
+
     @RequestMapping(value = "/cluster/command/{clusterId}/{command:.+}", method = GET)
     public String clusterCommand(@PathVariable String clusterId, @PathVariable String command) {
         log.info("ManagementController.clusterCommand(): PARAMS: cluster={}, command={}", clusterId, command);
@@ -134,6 +141,7 @@ public class ManagementController {
     @RequestMapping(value = { "/beacon", "/beacon/transmit" }, method = GET)
     public void beaconTransmit() throws JMSException {
         log.info("ManagementController.beaconTransmit(): Invoked");
+        coordinator.clientStats("*");
         topicBeacon.transmitInfo();
     }
 
