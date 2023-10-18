@@ -112,7 +112,7 @@ public class NodeRegistryEntry {
         _canUpdateEntry(newState);
         if (clear) map.clear();
         map.put(key, val!=null ? val.toString() : defVal);
-        setState(STATE.IGNORE_NODE);
+        setState(newState);
         return this;
     }
 
