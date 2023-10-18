@@ -26,7 +26,7 @@ instructions:
     retries: 5
   - description: "Stop Netdata"
     taskType: CMD
-    command: "echo ${NODE_SSH_PASSWORD} | sudo -S -- sh -c 'killall netdata"
+    command: "echo ${NODE_SSH_PASSWORD} | sudo -S -- sh -c 'killall netdata' "
     executable: false
     exitCode: 0
     match: false
