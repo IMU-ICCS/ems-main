@@ -7,8 +7,8 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-ARG BUILDER_IMAGE=eclipse-temurin:17.0.8_7-jre-alpine
-ARG RUN_IMAGE=eclipse-temurin:17.0.8_7-jre-alpine
+ARG BUILDER_IMAGE=eclipse-temurin:17.0.8.1_1-jre-alpine
+ARG RUN_IMAGE=eclipse-temurin:17.0.8.1_1-jre-alpine
 
 # ----------------- Builder image -----------------
 FROM $BUILDER_IMAGE as ems-server-builder
@@ -31,17 +31,17 @@ ENV LOGS_DIR ${BASEDIR}/logs
 ENV PUBLIC_DIR ${BASEDIR}/public_resources
 
 # Install required and optional packages
-RUN apk update && apk add \
-    dumb-init curl bash \
-    netcat-openbsd \
-    vim \
-    iputils-ping
+RUN apk update && \
+    apk add curl bash netcat-openbsd vim iputils-ping
+RUN wget -O /usr/local/bin/dumb-init \
+          https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64 && \
+    chmod +x /usr/local/bin/dumb-init
 
 # Add an EMS user
 ARG EMS_USER=emsuser
-RUN mkdir ${EMS_HOME} ; \
-    addgroup ${EMS_USER} ; \
-    adduser --home ${EMS_HOME} --no-create-home --ingroup ${EMS_USER} --disabled-password ${EMS_USER} ; \
+RUN mkdir ${EMS_HOME} && \
+    addgroup ${EMS_USER} && \
+    adduser --home ${EMS_HOME} --no-create-home --ingroup ${EMS_USER} --disabled-password ${EMS_USER} && \
     chown ${EMS_USER}:${EMS_USER} ${EMS_HOME}
 
 USER ${EMS_USER}
@@ -50,8 +50,8 @@ WORKDIR ${BASEDIR}
 # Download a JRE suitable for running EMS clients, and
 # offer it for download
 ENV JRE_LINUX_PACKAGE zulu17.44.15-ca-jre17.0.8-linux_x64.tar.gz
-RUN mkdir -p ${PUBLIC_DIR}/resources
-RUN curl https://cdn.azul.com/zulu/bin/${JRE_LINUX_PACKAGE} --output ${PUBLIC_DIR}/resources/${JRE_LINUX_PACKAGE}
+RUN mkdir -p ${PUBLIC_DIR}/resources && \
+    curl https://cdn.azul.com/zulu/bin/${JRE_LINUX_PACKAGE} --output ${PUBLIC_DIR}/resources/${JRE_LINUX_PACKAGE}
 
 # Copy resource files to image
 ADD --chown=${EMS_USER}:${EMS_USER} bin ${BIN_DIR}

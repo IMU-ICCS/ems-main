@@ -7,8 +7,8 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-ARG BUILDER_IMAGE=eclipse-temurin:17.0.8_7-jre
-ARG RUN_IMAGE=eclipse-temurin:17.0.8_7-jre
+ARG BUILDER_IMAGE=eclipse-temurin:17.0.8.1_1-jre
+ARG RUN_IMAGE=eclipse-temurin:17.0.8.1_1-jre
 
 # ----------------- Builder image -----------------
 FROM $BUILDER_IMAGE as ems-server-builder
@@ -31,18 +31,18 @@ ENV LOGS_DIR ${BASEDIR}/logs
 ENV PUBLIC_DIR ${BASEDIR}/public_resources
 
 # Install required and optional packages
-RUN apt-get update && apt-get install -y \
-    dumb-init \
-    netcat \
-    vim \
-    iputils-ping \
-    && rm -rf /var/lib/apt/lists/*
+RUN wget --progress=dot:giga -O /usr/local/bin/dumb-init \
+          https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64 && \
+    chmod +x /usr/local/bin/dumb-init
+#RUN apt-get update \
+#    && apt-get install -y netcat vim iputils-ping \
+#    && rm -rf /var/lib/apt/lists/*
 
 # Add an EMS user
 ARG EMS_USER=emsuser
-RUN mkdir ${EMS_HOME} ; \
-    addgroup ${EMS_USER} ; \
-    adduser --home ${EMS_HOME} --no-create-home --ingroup ${EMS_USER} --disabled-password ${EMS_USER} ; \
+RUN mkdir ${EMS_HOME} && \
+    addgroup ${EMS_USER} && \
+    adduser --home ${EMS_HOME} --no-create-home --ingroup ${EMS_USER} --disabled-password ${EMS_USER} && \
     chown ${EMS_USER}:${EMS_USER} ${EMS_HOME}
 
 USER ${EMS_USER}
@@ -59,8 +59,8 @@ ADD --chown=${EMS_USER}:${EMS_USER} bin ${BIN_DIR}
 ADD --chown=${EMS_USER}:${EMS_USER} config ${CONFIG_DIR}
 ADD --chown=${EMS_USER}:${EMS_USER} public_resources ${PUBLIC_DIR}
 
-RUN mkdir ${LOGS_DIR}
-RUN chmod +rx ${BIN_DIR}/*.sh
+RUN mkdir ${LOGS_DIR} && \
+    chmod +rx ${BIN_DIR}/*.sh
 
 # Copy files from builder container
 COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/dependencies          ${BASEDIR}
