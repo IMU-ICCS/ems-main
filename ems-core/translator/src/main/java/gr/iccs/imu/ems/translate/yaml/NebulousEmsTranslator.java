@@ -16,6 +16,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.Yaml;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Slf4j
 @Service
@@ -41,23 +46,56 @@ public class NebulousEmsTranslator implements Translator, InitializingBean {
 		}
 
 		log.info("NebulousEmsTranslator: Parsing metric model file: {}", metricModelPath);
+		Object modelObj;
 		try {
-			/*final File modelFile = Paths.get(properties.getModelDir(), metricModelPath).toFile();
-			log.info("NebulousEmsTranslator: Actual metric model path: {}", modelFile);
-			final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-			metricModel = new MetricModel(modelFile, mapper.readTree(modelFile));*/
+			// -- Load model ------------------------------------------------------
+			Path inputFile = Paths.get(metricModelPath);
+			String yamlStr = Files.readString(inputFile);
+
+			// Parsing YAML file with SnakeYAML, since Jackson Parser does not support Anchors and references
+			Yaml yaml = new Yaml();
+			modelObj = yaml.loadAs(yamlStr, Object.class);
+			log.trace("NebulousEmsTranslator: YAML model contents:\n{}", modelObj);
 		} catch (Exception e) {
 			throw new NebulousEmsTranslationException("Error while parsing metric model YAML file: "+metricModelPath, e);
 		}
-//		log.info("NebulousEmsTranslator: Metric model root: {}", metricModel);
+		log.info("NebulousEmsTranslator: Metric model root: {}", modelObj);
 
 		log.info("NebulousEmsTranslator: Translating metric model: {}", metricModelPath);
-//		TranslationContext _TC = translate(metricModel);
+		TranslationContext _TC = translate(modelObj, metricModelPath);
 		log.info("NebulousEmsTranslator: Translating metric model completed: {}", metricModelPath);
 		return null;
 	}
 
 	// ================================================================================================================
 	// Private methods
+
+	private TranslationContext translate(Object modelObj, String modelName) {
+		log.debug("NebulousEmsTranslator.translate():  BEGIN: metric-model={}", modelObj);
+
+		// initialize data structures
+		TranslationContext _TC = new TranslationContext(modelName);
+
+		// Analyze metric model
+		log.info("NebulousEmsTranslator.translate():  Analyzing model...");
+		MetricModelAnalyzer modelAnalyzer = applicationContext.getBean(MetricModelAnalyzer.class);
+		modelAnalyzer.analyzeModel(_TC, modelObj);
+		log.debug("NebulousEmsTranslator.translate():  Analyzing model... done");
+
+		// transform graph
+//		log.info("NebulousEmsTranslator.translate():  Transforming DAG...");
+//		GraphTransformer transformer = applicationContext.getBean(GraphTransformer.class);
+//		transformer.transformGraph(_TC.getDAG());
+//		log.debug("NebulousEmsTranslator.translate():  Transforming DAG... done");
+
+		// generate EPL rules
+//		log.info("NebulousEmsTranslator.translate():  Generating EPL rules...");
+//		RuleGenerator generator = applicationContext.getBean(RuleGenerator.class);
+//		generator.generateRules(_TC);
+//		log.debug("NebulousEmsTranslator.translate():  Generating EPL rules... done");
+
+		log.debug("NebulousEmsTranslator.translate():  END: result={}", _TC);
+		return _TC;
+	}
 
 }

@@ -17,6 +17,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.nio.file.Paths;
+
 /*
  * Run the 'TranslatorApplication' from command line
  *
@@ -24,16 +26,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *      mvn clean package
  *      mvn dependency:copy-dependencies
  *
- * 2) Start CDO server and set its address (+ other settings) in CDO client config:
- *      File: eu.paasage.mddb.cdo.client.properties
- *      Property: host
- *
- * 3) Set environment variables:
- *      PAASAGE_CONFIG_DIR=....
+ * 2) Set environment variables:
  *      EMS_CONFIG_DIR=....
  *      SPRING_CONFIG_LOCATION=classpath:rule-templates.yml,file:${EMS_CONFIG_DIR}/ems-server.yml
  *
- * 4) Run the application:
+ * 3) Run the application:
  *    Windows:
  *      java -cp target\classes;target\dependency\* gr.iccs.imu.ems.translate.TranslatorApplication ...<<MODEL_NAME>>...
  *    Linux:
@@ -57,11 +54,12 @@ public class TranslatorApplication implements CommandLineRunner {
         if (!standalone) return;    // Execute only if called by 'main()'
 
         log.info("Testing MODEL-to-EPL Translator");
-        log.info("Args: {}", java.util.Arrays.asList(args));
-//        log.info("Properties: {}", properties);
-//        log.info("Rule Templates: {}", ruleTemplates);
+        log.info("Base dir: {}", Paths.get("").toFile().getAbsolutePath());
 
-        String modelPath = (args.length > 0 && !args[0].trim().isEmpty()) ? args[0].trim() : "surveillance_app_SAMPLE_metric_model.yml";
+        log.info("Args: {}", java.util.Arrays.asList(args));
+        String modelPath = (args.length > 0 && !args[0].trim().isEmpty())
+                ? args[0].trim() : "ems-main/surveillance_app_SAMPLE_metric_model.yml";
+
         log.info("App-model: {}", modelPath);
         TranslationContext _TC = translator.translate(modelPath);
         log.info("TC: {}", _TC);
