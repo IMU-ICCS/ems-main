@@ -26,6 +26,12 @@
     </properties>
 
     <dependencies>
+        <!-- Gson -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+
         <!-- EMS dependencies -->
         <dependency>
             <groupId>gr.iccs.imu.ems</groupId>
