@@ -73,7 +73,7 @@ jwt.secret=ENC(I0mRWgH2FVDDNs4OBcdh7Z+o3lOQDa3ztaEtmnXT2HN0aClkChp/lqm9zM5HyTk0s
 ### NOTE: More authorization settings in 'authorization-client.properties'
 
 authorization.enabled = false
-#authorization.paths-protected = /camelModel*, /cpModel*, /ems/**, /baguette/**, /event/**, /monitors
+#authorization.paths-protected = /appModel*, /cpModel*, /ems/**, /baguette/**, /event/**, /monitors
 #authorization.paths-excluded =
 
 
@@ -118,9 +118,9 @@ control.upperware-grouping = GLOBAL
 control.tc-load-file = ${EMS_TC_LOAD_FILE:${EMS_TC_FILE:${LOGS_DIR:${EMS_CONFIG_DIR}/../logs}/_TC.json}}
 control.tc-save-file = ${EMS_TC_SAVE_FILE:${EMS_TC_FILE:${LOGS_DIR:${EMS_CONFIG_DIR}/../logs}/_TC.json}}
 
-### Process CAMEL and CP models on start-up
-### Process CAMEL model on start-up
-control.preload.camel-model = ${EMS_PRELOAD_CAMEL_MODEL:}
+### Process App and CP models on start-up
+### Process App model on start-up
+control.preload.app-model = ${EMS_PRELOAD_APP_MODEL:}
 
 ### Use CP model on start-up
 control.preload.cp-model = ${EMS_PRELOAD_CP_MODEL:}
@@ -566,7 +566,7 @@ self.healing.recovery.file.netdata=
 
 
 ################################################################################
-###                 EMS - CAMEL-to-EPL Translator properties                 ###
+###                 EMS - MODEL-to-EPL Translator properties                 ###
 ################################################################################
 
 ### Translator configuration

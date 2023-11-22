@@ -73,7 +73,7 @@ jwt:
 ### NOTE: More authorization settings in 'authorization-client.properties'
 authorization:
   enabled: false
-  #paths-protected: [ '/camelModel*', '/cpModel*', '/ems/**', '/baguette/**', '/event/**', '/monitors' ]
+  #paths-protected: [ '/appModel*', '/cpModel*', '/ems/**', '/baguette/**', '/event/**', '/monitors' ]
   #paths-excluded: []
 
 
@@ -121,10 +121,10 @@ control:
   tc-load-file: ${EMS_TC_LOAD_FILE:${EMS_TC_FILE:${LOGS_DIR:${EMS_CONFIG_DIR}/../logs}/_TC.json}}
   tc-save-file: ${EMS_TC_SAVE_FILE:${EMS_TC_FILE:${LOGS_DIR:${EMS_CONFIG_DIR}/../logs}/_TC.json}}
 
-  ### Process CAMEL and CP models on start-up
+  ### Process App and CP models on start-up
   preload:
-    ### CAMEL model to process on start-up
-    camel-model: ${EMS_PRELOAD_CAMEL_MODEL:}
+    ### App model to process on start-up
+    app-model: ${EMS_PRELOAD_APP_MODEL:}
     ### CP model to process on start-up
     cp-model: ${EMS_PRELOAD_CP_MODEL:}
 
@@ -623,7 +623,7 @@ self.healing:
 
 
 ################################################################################
-###                 EMS - CAMEL-to-EPL Translator properties                 ###
+###                 EMS - MODEL-to-EPL Translator properties                 ###
 ################################################################################
 
 ### Translator configuration
