@@ -10,7 +10,7 @@
 # Sample metric model for discussion with consortium
 # Based on surveillance app demo
 
-apiVersion: nebulous/v11
+apiVersion: nebulous/v1
 kind: MetricModel
 metadata:
   name: face-detection-deployment

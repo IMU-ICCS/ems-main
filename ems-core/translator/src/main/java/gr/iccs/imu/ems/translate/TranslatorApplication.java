@@ -43,6 +43,7 @@ public class TranslatorApplication implements CommandLineRunner {
 
     private static boolean standalone = false;
     private final NebulousEmsTranslator translator;
+    private final TranslationContextPrinter printer;
 
     public static void main(String[] args) {
         standalone = true;
@@ -62,6 +63,7 @@ public class TranslatorApplication implements CommandLineRunner {
 
         log.info("App-model: {}", modelPath);
         TranslationContext _TC = translator.translate(modelPath);
-        log.info("TC: {}", _TC);
+        //log.info("TC: {}", _TC);
+        printer.printResults(_TC, modelPath+"-export");
     }
 }

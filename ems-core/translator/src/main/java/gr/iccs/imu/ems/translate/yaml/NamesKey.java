@@ -27,4 +27,8 @@ public class NamesKey {
         if (StringUtils.isBlank(s)) return false;
         return s.contains(".");
     }
+
+    public String name() {
+        return parent+"."+child;
+    }
 }

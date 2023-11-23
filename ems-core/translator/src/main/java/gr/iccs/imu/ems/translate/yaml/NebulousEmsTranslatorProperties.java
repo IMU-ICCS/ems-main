@@ -31,6 +31,8 @@ public class NebulousEmsTranslatorProperties implements InitializingBean {
         log.debug("NebulousEmsTranslatorProperties: {}", this);
     }
 
+    private boolean skipModelValidation;
+
     // Translator parameters
     private String modelDir = "/models";
 

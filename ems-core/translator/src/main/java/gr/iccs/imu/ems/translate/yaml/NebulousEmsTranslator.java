@@ -28,7 +28,6 @@ import java.nio.file.Paths;
 public class NebulousEmsTranslator implements Translator, InitializingBean {
 
 	private final ApplicationContext applicationContext;
-	private final NebulousEmsTranslatorProperties properties;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -56,21 +55,22 @@ public class NebulousEmsTranslator implements Translator, InitializingBean {
 			Yaml yaml = new Yaml();
 			modelObj = yaml.loadAs(yamlStr, Object.class);
 			log.trace("NebulousEmsTranslator: YAML model contents:\n{}", modelObj);
-		} catch (Exception e) {
-			throw new NebulousEmsTranslationException("Error while parsing metric model YAML file: "+metricModelPath, e);
-		}
-		log.info("NebulousEmsTranslator: Metric model root: {}", modelObj);
 
-		log.info("NebulousEmsTranslator: Translating metric model: {}", metricModelPath);
-		TranslationContext _TC = translate(modelObj, metricModelPath);
-		log.info("NebulousEmsTranslator: Translating metric model completed: {}", metricModelPath);
-		return null;
+			// -- Translate model ---------------------------------------------
+			log.info("NebulousEmsTranslator: Translating metric model: {}", metricModelPath);
+			TranslationContext _TC = translate(modelObj, metricModelPath);
+			log.info("NebulousEmsTranslator: Translating metric model completed: {}", metricModelPath);
+
+			return _TC;
+		} catch (Exception e) {
+			throw new NebulousEmsTranslationException("Error while translating metric model file: "+metricModelPath, e);
+		}
 	}
 
 	// ================================================================================================================
 	// Private methods
 
-	private TranslationContext translate(Object modelObj, String modelName) {
+	private TranslationContext translate(Object modelObj, String modelName) throws Exception {
 		log.debug("NebulousEmsTranslator.translate():  BEGIN: metric-model={}", modelObj);
 
 		// initialize data structures
@@ -79,7 +79,7 @@ public class NebulousEmsTranslator implements Translator, InitializingBean {
 		// Analyze metric model
 		log.info("NebulousEmsTranslator.translate():  Analyzing model...");
 		MetricModelAnalyzer modelAnalyzer = applicationContext.getBean(MetricModelAnalyzer.class);
-		modelAnalyzer.analyzeModel(_TC, modelObj);
+		modelAnalyzer.analyzeModel(_TC, modelObj, modelName);
 		log.debug("NebulousEmsTranslator.translate():  Analyzing model... done");
 
 		// transform graph

@@ -24,4 +24,11 @@ public enum ComparisonOperatorType {
 
     private final String name;
     private final String operator;
+
+    public static ComparisonOperatorType byOperator(String s) {
+        for (ComparisonOperatorType e : values())
+            if (e.operator.equals(s))
+                return e;
+        throw new IllegalArgumentException("No "+EQUAL.getClass().getName()+" with operator: "+s);
+    }
 }

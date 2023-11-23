@@ -23,6 +23,7 @@
         <!-- Dependencies versions -->
         <jgrapht.version>1.5.2</jgrapht.version>
         <graphviz-java.version>0.18.1</graphviz-java.version>
+        <schematron.version>7.1.2</schematron.version>
     </properties>
 
     <dependencies>
@@ -59,6 +60,35 @@
 
         <!--  SCHEMATRON DEPENDENCIES - TO BE ADDED -->
 
+        <!-- https://mvnrepository.com/artifact/com.helger.schematron/ph-schematron-api -->
+        <dependency>
+            <groupId>com.helger.schematron</groupId>
+            <artifactId>ph-schematron-api</artifactId>
+            <version>${schematron.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.helger.schematron/ph-schematron-xslt -->
+        <dependency>
+            <groupId>com.helger.schematron</groupId>
+            <artifactId>ph-schematron-xslt</artifactId>
+            <version>${schematron.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.helger.schematron/ph-schematron-pure -->
+        <dependency>
+            <groupId>com.helger.schematron</groupId>
+            <artifactId>ph-schematron-pure</artifactId>
+            <version>${schematron.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.helger.schematron/ph-schematron-validator -->
+        <dependency>
+            <groupId>com.helger.schematron</groupId>
+            <artifactId>ph-schematron-validator</artifactId>
+            <version>${schematron.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-mongodb</artifactId>
+        </dependency>
+
         <!-- ===================================================================== -->
 
         <!-- EMS dependencies -->
@@ -66,7 +96,7 @@
             <groupId>gr.iccs.imu.ems</groupId>
             <artifactId>broker-cep</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
+<!--XXX:TODO:            <scope>provided</scope>-->
         </dependency>
 
         <!-- Spring-boot dependencies -->
