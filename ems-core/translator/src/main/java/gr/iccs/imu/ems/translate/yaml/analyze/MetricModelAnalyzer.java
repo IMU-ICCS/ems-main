@@ -72,23 +72,13 @@ public class MetricModelAnalyzer {
         log.debug("    Scope names: {}", scopeNamesList);
 
         // Check name uniqueness
-        List<String> all = new ArrayList<>(componentNamesList);
-        all.addAll(scopeNamesList);
-        log.trace("      ALL names: {}", all);
-        List<String> duplicateNames = all.stream()
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-                .entrySet().stream()
-                .filter(e -> e.getValue() > 1)
-                .map(Map.Entry::getKey)
-                .toList();
-        if (! duplicateNames.isEmpty()) {
-            log.error("Duplicate names: {}", duplicateNames);
-            throw createException("Naming conflicts exist for: "+duplicateNames);
-        }
+        checkNameUniqueness(componentNamesList, scopeNamesList);
+
         Set<String> componentNames = new LinkedHashSet<>(componentNamesList);
         Set<String> scopeNames = new LinkedHashSet<>(scopeNamesList);
 
         // ----- Build component-to-scope mapping -----
+        //XXX:TODO:  .... do we need this?
         Map<String, Set<String>> componentToScopeMap = new LinkedHashMap<>();
         ctx.read("$.spec.scopes.*", List.class).stream().filter(Objects::nonNull).forEach(scope -> {
             String sloName = JsonPath.read(scope, "$.name").toString();
@@ -122,7 +112,8 @@ public class MetricModelAnalyzer {
         // ----- Build artifact directory -----
 
         // ----- Define additional translation structures and cache them in _TC -----
-        _TC.setExtensionContext(new $());
+        _TC.setExtensionContext(new AdditionalTranslationContextData());
+
         Map<String, Object> parentSpecs = $$(_TC).parentSpecs;
         Map<NamesKey, Object> allMetrics = $$(_TC).allMetrics;
         Map<NamesKey, Object> allConstraints = $$(_TC).allConstraints;
@@ -209,29 +200,16 @@ public class MetricModelAnalyzer {
     }
 
     // ------------------------------------------------------------------------
-    //  Analysis helper methods
+    //  Additional translation data structures and shorthand retrieval method
     // ------------------------------------------------------------------------
 
-    private Object addContainerNameAndMakeMutable(Object o, String parentName) {
-        if (o instanceof Map m) {
-            Map newM = new LinkedHashMap<>();
-            newM.put(CONTAINER_NAME_KEY, parentName);
-            String myName0 = getSpecName(o);
-            String myName = parentName != null ? parentName /*+ "." + myName0*/ : myName0;
-            m.forEach((k,v) -> newM.put(k, addContainerNameAndMakeMutable(v, myName)));
-            return newM;
-        }
-        if (o instanceof List l) {
-            List newL = new LinkedList();
-            l.forEach(v -> newL.add(addContainerNameAndMakeMutable(v, parentName)));
-            return newL;
-        }
-        return o;
+    private AdditionalTranslationContextData $$(TranslationContext _TC) {
+        return _TC.$(AdditionalTranslationContextData.class);
     }
 
     @Data
     @Accessors(fluent = true)
-    private static class $ {
+    private static class AdditionalTranslationContextData {
         private final Map<String, Object> parentSpecs = new LinkedHashMap<>();          // i.e. all component and scope specs
         private final Map<NamesKey, Object> allSLOs = new LinkedHashMap<>();
         private final Map<NamesKey, Object> allConstraints = new LinkedHashMap<>();
@@ -240,9 +218,42 @@ public class MetricModelAnalyzer {
         private final Map<NamesKey, Constraint> constraintsUsed = new LinkedHashMap<>();
         private final Map<NamesKey, Object> constants = new LinkedHashMap<>();
     }
-    
-    private $ $$(TranslationContext _TC) {
-        return _TC.$($.class);
+
+    // ------------------------------------------------------------------------
+    //  Analysis helper methods
+    // ------------------------------------------------------------------------
+
+    private static void checkNameUniqueness(List<String> componentNamesList, List<String> scopeNamesList) {
+        List<String> all = new ArrayList<>(componentNamesList);
+        all.addAll(scopeNamesList);
+        log.trace("      ALL names: {}", all);
+        List<String> duplicateNames = all.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .entrySet().stream()
+                .filter(e -> e.getValue() > 1)
+                .map(Map.Entry::getKey)
+                .toList();
+        if (! duplicateNames.isEmpty()) {
+            log.error("Duplicate names: {}", duplicateNames);
+            throw createException("Naming conflicts exist for: "+duplicateNames);
+        }
+    }
+
+    private Object addContainerNameAndMakeMutable(Object o, String parentName) {
+        if (o instanceof Map m) {
+            Map<String, Object> newM = new LinkedHashMap<>();
+            newM.put(CONTAINER_NAME_KEY, parentName);
+            String myName0 = getSpecName(o);
+            String myName = parentName != null ? parentName : myName0;
+            m.forEach((k,v) -> newM.put(k.toString(), addContainerNameAndMakeMutable(v, myName)));
+            return newM;
+        } else
+        if (o instanceof List l) {
+            List<Object> newL = new LinkedList<>();
+            l.forEach(v -> newL.add(addContainerNameAndMakeMutable(v, parentName)));
+            return newL;
+        }
+        return o;
     }
 
     // ------------------------------------------------------------------------
