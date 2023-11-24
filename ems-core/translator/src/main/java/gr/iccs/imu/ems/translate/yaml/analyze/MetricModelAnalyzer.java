@@ -15,6 +15,7 @@ import com.jayway.jsonpath.ParseContext;
 import gr.iccs.imu.ems.brokercep.cep.MathUtil;
 import gr.iccs.imu.ems.translate.Grouping;
 import gr.iccs.imu.ems.translate.TranslationContext;
+import gr.iccs.imu.ems.translate.dag.DAGNode;
 import gr.iccs.imu.ems.translate.model.*;
 import gr.iccs.imu.ems.translate.yaml.NebulousEmsTranslatorProperties;
 import lombok.Data;
@@ -180,7 +181,8 @@ public class MetricModelAnalyzer {
         //...also check about ObjectContexts....
 
         // ----- Infer metric groupings (levels) -----
-        //inferGroupings();
+        log.debug("Inferring and setting groupings");
+        inferGroupings(_TC);
 
         // ----- Build each component's SLO set (including those in the scopes it participates) -----
 
@@ -861,6 +863,73 @@ public class MetricModelAnalyzer {
         //XXX:TODO: ... add Monitor, add Component-Sensor pair
 
         return sensor;
+    }
+
+    // ------------------------------------------------------------------------
+    //  Grouping inference methods
+    // ------------------------------------------------------------------------
+
+    private void inferGroupings(TranslationContext _TC) {
+        Grouping topLevelGrouping = Grouping.GLOBAL;
+        Grouping leafGrouping = Grouping.PER_INSTANCE;
+
+        _TC.getDAG().traverseDAG(node -> {
+            NamedElement elem = node.getElement();
+            if (elem!=null) {
+                inferElementGrouping(_TC, topLevelGrouping, leafGrouping, node);
+            }
+        });
+    }
+
+    private static void inferElementGrouping(TranslationContext _TC, Grouping topLevelGrouping, Grouping leafGrouping, DAGNode node) {
+        // Check if grouping has already been set
+        if (node.getGrouping()!=null) return;
+
+        // Get node model element
+        NamedElement elem = node.getElement();
+        if (elem==null) return;                     // Root node?
+
+        // Infer element grouping
+        Object groupingObj;
+        if (elem instanceof ServiceLevelObjective || elem instanceof Constraint) {
+            groupingObj = topLevelGrouping;
+        } else if (elem instanceof Sensor || elem instanceof RawMetricContext) {
+            groupingObj = leafGrouping;
+        } else {
+            // Infer parents' groupings
+            Set<DAGNode> parents = _TC.getDAG().getParentNodes(node);
+            parents.forEach(p -> inferElementGrouping(_TC, topLevelGrouping, leafGrouping, p));
+
+            // Get the lowest parents grouping
+            List<Grouping> parentGroupings = parents.stream()
+                    .filter(p -> p.getElement()!=null)
+                    .map(DAGNode::getGrouping)
+                    .collect(Collectors.toSet()).stream()
+                    .filter(Objects::nonNull)
+                    .sorted().toList();
+            if (! parentGroupings.isEmpty())
+                groupingObj = parentGroupings.get(0);
+            else
+                groupingObj = topLevelGrouping;
+
+            // Get grouping in element specification (if provided)
+            if (elem.getObject() instanceof Map m) {
+                Object gObj = m.get("grouping");
+                if (gObj == null)
+                    gObj = m.get("level");
+                if (gObj != null) {
+                    Grouping specGrouping = Grouping.valueOf( gObj.toString().trim().toUpperCase() );
+                    if (specGrouping.ordinal() >= leafGrouping.ordinal()) {
+                        if (specGrouping.ordinal() < Grouping.valueOf(groupingObj.toString().toUpperCase()).ordinal()) {
+                            groupingObj = specGrouping;
+                        }
+                    } else {
+                        groupingObj = leafGrouping;
+                    }
+                }
+            }
+        }
+        node.setGrouping(Grouping.valueOf(groupingObj.toString().toUpperCase()));
     }
 
 }
