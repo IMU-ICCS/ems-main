@@ -467,7 +467,7 @@ public class TranslationContext implements Serializable {
         );
     }
 
-    public void addLogicalConstraint(LogicalConstraint logicalConstraint, List<DAGNode> nodeList) {
+    public void addLogicalConstraint(LogicalConstraint logicalConstraint) {
         String name = logicalConstraint.getName();
 
         // Check there is a logical operator
@@ -478,7 +478,7 @@ public class TranslationContext implements Serializable {
         // Check there are child constraints
         List<String> childConstraintNames = logicalConstraint.getConstraints()
                 .stream().map(NamedElement::getName).toList();
-        if (childConstraintNames.size()==0)
+        if (childConstraintNames.isEmpty())
             throw new IllegalArgumentException("Logical Constraint '"+name+"' has no child constraints");
 
         // Add logical constraint information

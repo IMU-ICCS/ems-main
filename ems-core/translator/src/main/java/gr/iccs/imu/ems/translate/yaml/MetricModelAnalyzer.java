@@ -111,16 +111,23 @@ public class MetricModelAnalyzer {
         });
         log.debug("Component-to-Scope map: {}", componentToScopeMap);
 
+        // ----- Set container name and make mutable all 'spec' elements (and sub-elements) -----
+        Map<String, Object> modelRoot = asMap(ctx.read("$"));
+        Object specNode = modelRoot.get("spec");
+        specNode = addContainerNameAndMakeMutable(specNode, null);
+        modelRoot.put("spec", specNode);
+
         // ----- Build artifact directory -----
 
-        // ----- Define transient translation structures and cache them in _TC -----
+        // ----- Define additional translation structures and cache them in _TC -----
         _TC.setExtensionContext(new $());
         Map<String, Object> parentSpecs = $$(_TC).parentSpecs;
         Map<NamesKey, Object> allMetrics = $$(_TC).allMetrics;
+        Map<NamesKey, Object> allConstraints = $$(_TC).allConstraints;
         Map<NamesKey, Object> allSLOs = $$(_TC).allSLOs;
 
-        // ----- Build of flat lists of metrics, and SLOs, and check their specs -----
-        ctx.read("$.spec.*.*", List.class).stream().filter(Objects::nonNull).forEach(spec -> {
+        // ----- Build of flat lists of metrics, constraints and SLOs, and check their specs -----
+        asList(JsonPath.read(modelRoot, "$.spec.*.*")).stream().filter(Objects::nonNull).forEach(spec -> {
             String parentName = getSpecName(spec);
             if (StringUtils.isBlank(parentName)) throw createException("Component or Scope with no name: " + spec);
             parentSpecs.computeIfAbsent(parentName, (key)->spec);
@@ -134,6 +141,17 @@ public class MetricModelAnalyzer {
                 allSLOs.put(NamesKey.create(parentName, sloName), sloSpec);
             });
 
+            // Constraints flat list building
+            slos.stream().filter(Objects::nonNull).forEach(sloSpec -> {
+                String sloName = getSpecName(sloSpec);
+                if (StringUtils.isBlank(sloName)) throw createException("SLO spec with no name: " + sloSpec);
+
+                NamesKey sloNamesKey = NamesKey.create(parentName, sloName);
+                Map<String, Object> constraintSpec = asMap(asMap(sloSpec).get("constraint"));
+                NamesKey constraintNamesKey = createNamesKey(sloNamesKey, sloName);
+                allConstraints.put(constraintNamesKey, constraintSpec);
+            });
+
             // Metrics flat list building
             List<Object> metrics = JsonPath.read(spec, "$[?(@.metrics!=null)].metrics.*");
             metrics.stream().filter(Objects::nonNull).forEach(metricSpec -> {
@@ -141,14 +159,14 @@ public class MetricModelAnalyzer {
                 if (StringUtils.isBlank(metricName)) throw createException("Metric spec with no name: " + metricSpec);
                 NamesKey namesKey = NamesKey.create(parentName, metricName);
                 allMetrics.put(namesKey, metricSpec);
-                asMap(metricSpec).put(CONTAINER_NAME_KEY, parentName);
             });
         });
-        log.debug("All Metrics: {}", allMetrics);
-        log.debug("   All SLOs: {}", allSLOs);
+        log.debug("    All Metrics: {}", allMetrics);
+        log.debug("All Constraints: {}", allConstraints);
+        log.debug("       All SLOs: {}", allSLOs);
 
         // ----- Build of constants lists -----
-        ctx.read("$.spec.*.*.metrics.*[?(@.type=='constant')]", List.class).stream().filter(Objects::nonNull).forEach(spec -> {
+        asList(JsonPath.read(modelRoot, "$.spec.*.*.metrics.*[?(@.type=='constant')]")).stream().filter(Objects::nonNull).forEach(spec -> {
             processConstant(_TC, asMap(spec), getContainerName(spec));
         });
 
@@ -188,13 +206,36 @@ public class MetricModelAnalyzer {
         log.debug("MetricModelAnalyzer.analyzeModel(): END: metric-model: {}", metricModel);
     }
 
+    // ------------------------------------------------------------------------
+    //  Methods for expanding shorthand expressions
+    // ------------------------------------------------------------------------
+
+    private Object addContainerNameAndMakeMutable(Object o, String parentName) {
+        if (o instanceof Map m) {
+            Map newM = new LinkedHashMap<>();
+            newM.put(CONTAINER_NAME_KEY, parentName);
+            String myName0 = getSpecName(o);
+            String myName = parentName != null ? parentName /*+ "." + myName0*/ : myName0;
+            m.forEach((k,v) -> newM.put(k, addContainerNameAndMakeMutable(v, myName)));
+            return newM;
+        }
+        if (o instanceof List l) {
+            List newL = new LinkedList();
+            l.forEach(v -> newL.add(addContainerNameAndMakeMutable(v, parentName)));
+            return newL;
+        }
+        return o;
+    }
+
     @Data
     @Accessors(fluent = true)
     private static class $ {
-        private final Map<String, Object> parentSpecs = new LinkedHashMap<>();
+        private final Map<String, Object> parentSpecs = new LinkedHashMap<>();          // i.e. all component and scope specs
         private final Map<NamesKey, Object> allSLOs = new LinkedHashMap<>();
+        private final Map<NamesKey, Object> allConstraints = new LinkedHashMap<>();
         private final Map<NamesKey, Object> allMetrics = new LinkedHashMap<>();
         private final Map<NamesKey, MetricContext> metricsUsed = new LinkedHashMap<>();
+        private final Map<NamesKey, Constraint> constraintsUsed = new LinkedHashMap<>();
         private final Map<NamesKey, Object> constants = new LinkedHashMap<>();
     }
     
@@ -373,14 +414,24 @@ public class MetricModelAnalyzer {
 
     private final static String DEFAULT_CONSTRAINT_NAME_SUFFIX = "_CONSTRAINT";
 
-    private void decomposeConstraint(@NonNull TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
+    private Constraint decomposeConstraint(@NonNull TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
         // Get constraint type
         String type = getSpecField(constraintSpec, "type");
         if (StringUtils.isBlank(type))
             throw createException("Constraint without 'type': "+constraintSpec);
 
+        String constraintName = getSpecName(constraintSpec);
+        if (StringUtils.isBlank(constraintName))
+            constraintName = parentNamesKey.child + DEFAULT_CONSTRAINT_NAME_SUFFIX;
+        NamesKey constraintNamesKey = createNamesKey(parentNamesKey, constraintName);
+        if ($$(_TC).constraintsUsed.containsKey(constraintNamesKey)) {
+            Constraint cachedConstraint = $$(_TC).constraintsUsed.get(constraintNamesKey);
+            _TC.getDAG().addNode(parent, cachedConstraint);
+            return cachedConstraint;
+        }
+
         // Delegate constraint decomposition based on type
-        switch (type) {
+        Constraint constraintNode = switch (type) {
             case "metric" ->
                     decomposeMetricConstraint(_TC, constraintSpec, parentNamesKey, parent);
             case "logical" ->
@@ -391,7 +442,10 @@ public class MetricModelAnalyzer {
                     decomposeMetricVariableConstraint(_TC, constraintSpec, parentNamesKey, parent);
             default ->
                     throw createException("Constraint 'type' not supported: " + constraintSpec);
-        }
+        };
+        $$(_TC).constraintsUsed.put(constraintNamesKey, constraintNode);
+
+        return constraintNode;
     }
 
     private MetricConstraint decomposeMetricConstraint(@NonNull TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
@@ -408,7 +462,7 @@ public class MetricModelAnalyzer {
 
         // Further field checks
         if (! $$(_TC).allMetrics.containsKey(metricNamesKey))
-            throw createException("Unspecified metric '"+metricNamesKey+"' found in metric constraint: "+ constraintSpec);
+            throw createException("Unspecified metric '"+metricNamesKey.name()+"' found in metric constraint: "+ constraintSpec);
 
         if (! isComparisonOperator(comparisonOperator))
             throw createException("Unknown comparison operator '"+comparisonOperator+"' in metric constraint: "+ constraintSpec);
@@ -433,11 +487,44 @@ public class MetricModelAnalyzer {
         return metricConstraint;
     }
 
-    private void decomposeLogicalConstraint(TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
-        throw new RuntimeException("NOT YET IMPLEMENTED: decomposeLogicalConstraint");
+    private LogicalConstraint decomposeLogicalConstraint(TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
+        // Get needed fields
+        String constraintName = getSpecName(constraintSpec);
+        String logicalOperator = getMandatorySpecField(constraintSpec, "operator", "Logical Constraint without 'operator': ");
+        List<Object> composingConstraints = asList(constraintSpec.get("constraints"));
+
+        if (StringUtils.isBlank(constraintName))
+            constraintName = parentNamesKey.child + DEFAULT_CONSTRAINT_NAME_SUFFIX;
+        NamesKey constraintNamesKey = createNamesKey(parentNamesKey, constraintName);
+
+        // Further field checks
+        if (! isLogicalOperator(logicalOperator))
+            throw createException("Unknown logical operator '"+logicalOperator+"' in metric constraint: "+ constraintSpec);
+        if (composingConstraints==null || composingConstraints.isEmpty())
+            throw createException("At least one composing constraint must be provided in logical constraint: "+ constraintSpec);
+
+        // Update TC
+        LogicalConstraint logicalConstraint = LogicalConstraint.builder()
+                .name(constraintNamesKey.name())
+                .object(constraintSpec)
+                .logicalOperator(LogicalOperatorType.valueOf(logicalOperator.trim().toUpperCase()))
+                .build();
+        _TC.getDAG().addNode(parent, logicalConstraint);
+
+        // Decompose composing constraints
+//XXX:TODO: ++++++++++++++++
+        /*List<Constraint> composingConstraintsList = new ArrayList<>();
+        for (Object cc : composingConstraints) {
+        }
+        logicalConstraint.setConstraints(composingConstraintsList);
+
+        // Complete TC update
+        _TC.addLogicalConstraint(logicalConstraint);*/
+
+        return logicalConstraint;
     }
 
-    private void decomposeConditionalConstraint(TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
+    private IfThenConstraint decomposeConditionalConstraint(TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
         throw new RuntimeException("NOT YET IMPLEMENTED: decomposeConditionalConstraint");
     }
 
@@ -905,7 +992,7 @@ public class MetricModelAnalyzer {
     }
 
     private NamesKey getNamesKey(@NonNull Object spec, @NonNull String name) {
-        return NamesKey.create(getSpecField(asMap(spec), CONTAINER_NAME_KEY), name);
+        return NamesKey.create(getContainerName(spec), name);
     }
 
     private String getContainerName(@NonNull Object spec) {
@@ -1046,6 +1133,8 @@ public class MetricModelAnalyzer {
 
     private final static List<String> COMPARISON_OPERATORS =
             List.of("<", "<=", "=<", ">", ">=", "=<", "=", "<>", "!=");
+    private final static List<String> LOGICAL_OPERATORS =
+            List.of("and", "or");
 
     private boolean isExpression(String s) {
         return ! isConstant(s);
@@ -1067,6 +1156,10 @@ public class MetricModelAnalyzer {
 
     private boolean isComparisonOperator(String s) {
         return COMPARISON_OPERATORS.contains(s);
+    }
+
+    private boolean isLogicalOperator(String s) {
+        return LOGICAL_OPERATORS.contains(s);
     }
 
 }

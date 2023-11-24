@@ -43,8 +43,27 @@ spec:
           constraint: 'ram_util_prct > 80'
         - name: bandwidth_slo
           type: slo
-#          constraint: '100 * bandwidth / PROVIDER_BANDWIDTH > 85'
+#          constraint: 'bandwidth > 85'
+          constraint:                   # i.e.  (bandwidth > 10 and bandwidth < 50) or (bandwidth > 85)
+            type: logical
+            operator: or
+            constraints: [ _c1_slo, _c2_slo ]
+        - name: _c1_slo
+          type: slo
+          constraint:
+            type: logical
+            operator: and
+            constraints: [ _c1a_slo, _c1b_slo ]
+        - name: _c1a_slo
+          type: slo
+          constraint: 'bandwidth > 10'
+        - name: _c1b_slo
+          type: slo
+          constraint: 'bandwidth < 50'
+        - name: _c2_slo
+          type: slo
           constraint: 'bandwidth > 85'
+
         - name: latency_slo
           type: slo
           constraint: 'latency > 25'
