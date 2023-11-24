@@ -141,7 +141,7 @@ public class MetricModelAnalyzer {
                 if (StringUtils.isBlank(metricName)) throw createException("Metric spec with no name: " + metricSpec);
                 NamesKey namesKey = NamesKey.create(parentName, metricName);
                 allMetrics.put(namesKey, metricSpec);
-                asMap(metricSpec).put("_containerName", parentName);
+                asMap(metricSpec).put(CONTAINER_NAME_KEY, parentName);
             });
         });
         log.debug("All Metrics: {}", allMetrics);
@@ -149,7 +149,7 @@ public class MetricModelAnalyzer {
 
         // ----- Build of constants lists -----
         ctx.read("$.spec.*.*.metrics.*[?(@.type=='constant')]", List.class).stream().filter(Objects::nonNull).forEach(spec -> {
-            processConstant(_TC, asMap(spec), asMap(spec).get("_containerName").toString());
+            processConstant(_TC, asMap(spec), getContainerName(spec));
         });
 
         // ----- Decompose SLOs to their metric hierarchies -----
@@ -403,8 +403,8 @@ public class MetricModelAnalyzer {
 
         if (StringUtils.isBlank(constraintName))
             constraintName = parentNamesKey.child + DEFAULT_CONSTRAINT_NAME_SUFFIX;
-        NamesKey constraintNamesKey = getNamesKey(parentNamesKey, constraintName);
-        NamesKey metricNamesKey = getNamesKey(parentNamesKey, metricName);
+        NamesKey constraintNamesKey = createNamesKey(parentNamesKey, constraintName);
+        NamesKey metricNamesKey = createNamesKey(parentNamesKey, metricName);
 
         // Further field checks
         if (! $$(_TC).allMetrics.containsKey(metricNamesKey))
@@ -454,8 +454,7 @@ public class MetricModelAnalyzer {
         String metricName = getSpecName(metricSpec).toLowerCase();
         String metricType = getSpecField(metricSpec, "type");
 
-        NamesKey metricNamesKey = NamesKey.create(getSpecField(metricSpec, "_containerName"), metricName);
-//        NamesKey metricNamesKey = getNamesKey(parentNamesKey, metricName);
+        NamesKey metricNamesKey = getNamesKey(metricSpec, metricName);
         if ($$(_TC).metricsUsed.containsKey(metricNamesKey)) {
             MetricContext cachedMetric = $$(_TC).metricsUsed.get(metricNamesKey);
             _TC.getDAG().addNode(parent, cachedMetric);
@@ -481,6 +480,7 @@ public class MetricModelAnalyzer {
         if ("constant".equals(metricType)) {
             return null;
         }
+        // ...else continue with metric decomposition
 
         // Delegate decomposition based on metric type
         MetricContext metric = switch (metricType) {
@@ -500,7 +500,7 @@ public class MetricModelAnalyzer {
         metric.setObject(metricSpec);
 
         // Process template
-        MetricTemplate template = processMetricTemplate(metricSpec, metricNamesKey, metric);
+        MetricTemplate template = processMetricTemplate(metricSpec, metricNamesKey);
         if (template!=null)
             metric.getMetric().setMetricTemplate(template);
 
@@ -516,7 +516,7 @@ public class MetricModelAnalyzer {
         Map<String, Object> sensorSpec = asMap(metricSpec.get("sensor"));
         Map<String, Object> outputSpec = asMap(metricSpec.get("output"));
 
-        NamesKey metricNamesKey = getNamesKey(parentNamesKey, metricName);
+        NamesKey metricNamesKey = getNamesKey(metricSpec, metricName);
 
         // Update TC
         RawMetricContext rawMetric = RawMetricContext.builder()
@@ -544,7 +544,7 @@ public class MetricModelAnalyzer {
         Map<String, Object> windowSpec = asMap(metricSpec.get("window"));
         Map<String, Object> outputSpec = asMap(metricSpec.get("output"));
 
-        NamesKey metricNamesKey = getNamesKey(parentNamesKey, metricName);
+        NamesKey metricNamesKey = getNamesKey(metricSpec, metricName);
 
         // Check formula and extract metrics
         if (StringUtils.isBlank(formula))
@@ -553,9 +553,9 @@ public class MetricModelAnalyzer {
         log.trace("decomposeCompositeMetric: {}: formula={}, args={}", metricNamesKey.name(), formula, formulaArgs);
 
         // Remove constants from 'formulaArgs'
-        String containerName = getSpecField(metricSpec, "_containerName");
+        String containerName = getContainerName(metricSpec);
         formulaArgs.removeAll( $$(_TC).constants.keySet().stream()
-                .filter(nk ->  nk.parent.equals(containerName))
+                .filter(nk ->  nk.parent.equals(containerName))         // Check that all formula args are metrics under the same parent
                 .map(nk->nk.child)
                 .collect(Collectors.toSet()));
         log.trace("decomposeCompositeMetric: {}: After removing constants: formula={}, args={}", metricNamesKey.name(), formula, formulaArgs);
@@ -572,8 +572,7 @@ public class MetricModelAnalyzer {
         //       hashCode() will return new value, different from that cached in the DAG)
         List<MetricContext> childMetricsList = new ArrayList<>();
         for (String childMetricName : formulaArgs) {
-            NamesKey childMetricNamesKey = NamesKey.create(getSpecField(metricSpec, "_containerName"), childMetricName);
-//            NamesKey childMetricNamesKey = getNamesKey(parentNamesKey, childMetricName);
+            NamesKey childMetricNamesKey = getNamesKey(metricSpec, childMetricName);
             MetricContext childMetric = decomposeMetric(
                     _TC, asMap($$(_TC).allMetrics.get(childMetricNamesKey)), metricNamesKey, compositeMetric);
             if (childMetric!=null)
@@ -596,10 +595,7 @@ public class MetricModelAnalyzer {
 
     private MetricContext processRef(TranslationContext _TC, Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent) {
         // Get needed fields
-        String metricName = getSpecName(metricSpec);
         String refStr = getMandatorySpecField(metricSpec, "ref", "Metric reference must provide a value for 'ref' field: at metric '" + parentNamesKey.name() + "': " + metricSpec);
-
-        NamesKey metricNamesKey = getNamesKey(parentNamesKey, metricName);
 
         // Process 'ref'
         refStr = refStr.replace("[", "").replace("]", "");
@@ -631,7 +627,7 @@ public class MetricModelAnalyzer {
         $$(_TC).constants.put(metricNamesKey, defaultValue);
     }
 
-    private MetricTemplate processMetricTemplate(Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent) {
+    private MetricTemplate processMetricTemplate(Map<String, Object> metricSpec, NamesKey parentNamesKey) {
         Object templateObj = metricSpec.get("template");
         if (templateObj instanceof Map templateSpec) {
             String id = getSpecField(templateSpec, "id");
@@ -848,7 +844,7 @@ public class MetricModelAnalyzer {
         if (StringUtils.isBlank(sensorName)) sensorName = parentNamesKey.child + DEFAULT_SENSOR_NAME_SUFFIX;
         if (StringUtils.isBlank(sensorType)) sensorType = DEFAULT_SENSOR_TYPE;
 
-        NamesKey sensorNamesKey = getNamesKey(parentNamesKey, sensorName);
+        NamesKey sensorNamesKey = createNamesKey(parentNamesKey, sensorName);
 
         // Get 'push' or 'pull' type
         boolean isPush = getBooleanValue(getSpecField(sensorSpec, "push"), false);
@@ -879,6 +875,8 @@ public class MetricModelAnalyzer {
     //  Helper methods
     // ------------------------------------------------------------------------
 
+    private final static String CONTAINER_NAME_KEY = "_containerName";
+
     private RuntimeException createException(String s) {
         log.error("Parse error: {}", s);
         return new RuntimeException(new ModelException(s));
@@ -901,9 +899,17 @@ public class MetricModelAnalyzer {
         throw createException("Object is not a Map: "+o);
     }
 
-    private NamesKey getNamesKey(@NonNull NamesKey parentNamesKey, @NonNull String name) {
+    private NamesKey createNamesKey(@NonNull NamesKey parentNamesKey, @NonNull String name) {
         return (NamesKey.isFullName(name))
                 ? NamesKey.create(name) : NamesKey.create(parentNamesKey.parent, name);
+    }
+
+    private NamesKey getNamesKey(@NonNull Object spec, @NonNull String name) {
+        return NamesKey.create(getSpecField(asMap(spec), CONTAINER_NAME_KEY), name);
+    }
+
+    private String getContainerName(@NonNull Object spec) {
+        return getSpecField(spec, CONTAINER_NAME_KEY);
     }
 
     private String getSpecField(Object o, String field) {

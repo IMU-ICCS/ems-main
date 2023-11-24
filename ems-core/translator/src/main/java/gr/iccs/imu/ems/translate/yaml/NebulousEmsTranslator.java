@@ -77,19 +77,19 @@ public class NebulousEmsTranslator implements Translator, InitializingBean {
 		TranslationContext _TC = new TranslationContext(modelName);
 
 		// Analyze metric model
-		log.info("NebulousEmsTranslator.translate():  Analyzing model...");
+		log.debug("NebulousEmsTranslator.translate():  Analyzing model...");
 		MetricModelAnalyzer modelAnalyzer = applicationContext.getBean(MetricModelAnalyzer.class);
 		modelAnalyzer.analyzeModel(_TC, modelObj, modelName);
 		log.debug("NebulousEmsTranslator.translate():  Analyzing model... done");
 
 		// transform graph
-//		log.info("NebulousEmsTranslator.translate():  Transforming DAG...");
+//		log.debug("NebulousEmsTranslator.translate():  Transforming DAG...");
 //		GraphTransformer transformer = applicationContext.getBean(GraphTransformer.class);
 //		transformer.transformGraph(_TC.getDAG());
 //		log.debug("NebulousEmsTranslator.translate():  Transforming DAG... done");
 
 		// generate EPL rules
-//		log.info("NebulousEmsTranslator.translate():  Generating EPL rules...");
+//		log.debug("NebulousEmsTranslator.translate():  Generating EPL rules...");
 //		RuleGenerator generator = applicationContext.getBean(RuleGenerator.class);
 //		generator.generateRules(_TC);
 //		log.debug("NebulousEmsTranslator.translate():  Generating EPL rules... done");
