@@ -12,7 +12,6 @@ package gr.iccs.imu.ems.translate;
 import gr.iccs.imu.ems.translate.yaml.NebulousEmsTranslator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -44,6 +43,7 @@ public class TranslatorApplication implements CommandLineRunner {
     private static boolean standalone = false;
     private final NebulousEmsTranslator translator;
     private final TranslationContextPrinter printer;
+    private final TranslationContextPrinterProperties printerProperties;
 
     public static void main(String[] args) {
         standalone = true;
@@ -64,6 +64,11 @@ public class TranslatorApplication implements CommandLineRunner {
         log.info("App-model: {}", modelPath);
         TranslationContext _TC = translator.translate(modelPath);
         //log.info("TC: {}", _TC);
+
+        printerProperties.getDag().setExportToFileEnabled(true);
+        printerProperties.getDag().setExportFormats(new String[] { "svg" });
+        printerProperties.getDag().setExportImageWidth(1600);
+        printerProperties.getDag().setExportPath(".");
         printer.printResults(_TC, modelPath+"-export");
     }
 }

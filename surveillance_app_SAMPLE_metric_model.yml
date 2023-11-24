@@ -94,7 +94,7 @@ spec:
           output: 'all 30 sec'
         - name: bandwidth
           type: composite
-          formula: 'mean(bandwidth_instance)'
+          formula: 'mean(bandwidth_instance) / PROVIDER_BANDWIDTH'
           window: 'sliding 5 min'
           output: 'all 30 sec'
         - name: bandwidth_instance
@@ -103,7 +103,11 @@ spec:
           output: 'all 30 sec'
         - name: PROVIDER_BANDWIDTH
           type: constant                              # Mandatory, in case of constants.
-          default: '1 Gbps'                           # Used to set initial values to constants provided by solver
+          default: '1'                                # Used to set initial values to constants provided by solver
+          template:
+            type: double
+            range: [0, 999999999]
+            unit: GB
         #---
         - name: latency
 #          type: composite
@@ -140,9 +144,9 @@ spec:
             type: sliding
             size: '1 sec'
             processing:
-             - type: grouping                         # A window GROUPING processing
+             - type: group                            # A window GROUPING processing
                function: 'unique'                     # applies UNIQUE (EPL) function
-               criteria: [ PER_INSTANCE ]             # using the listed grouping criteria....
+               criteria: [ INSTANCE ]                 # using the listed grouping criteria....
                #  I.e., groups windows events per instance (IP address) and applies the UNIQUE function per group
                #  Result: The latest event per group/instance are effectively retained and used in subsequent calculations
           output: 'all 1 sec'
@@ -161,11 +165,13 @@ spec:
           constraint: 'sample_metric_combining_data_across_components > 10'
       metrics:
         - name: sample_metric_combining_data_across_components
-          formula: 'vc_instance_number * [face-detection].[latency]'
+          formula: 'vc_instance_number * fd_latency'
           level: global
           output: 'all 1 min'
         - name: vc_instance_number
           ref: '[video-capture].[vc_instance_number]'
+        - name: fd_latency
+          ref: '[face-detection].[latency]'
           #---
         - name: VideoCaptureCardinality
           ref: '[video-capture].[instances]'

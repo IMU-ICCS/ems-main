@@ -12,10 +12,14 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ParseContext;
+import gr.iccs.imu.ems.brokercep.cep.MathUtil;
+import gr.iccs.imu.ems.translate.Grouping;
 import gr.iccs.imu.ems.translate.TranslationContext;
 import gr.iccs.imu.ems.translate.model.*;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -109,20 +113,19 @@ public class MetricModelAnalyzer {
 
         // ----- Build artifact directory -----
 
+        // ----- Define transient translation structures and cache them in _TC -----
+        _TC.setExtensionContext(new $());
+        Map<String, Object> parentSpecs = $$(_TC).parentSpecs;
+        Map<NamesKey, Object> allMetrics = $$(_TC).allMetrics;
+        Map<NamesKey, Object> allSLOs = $$(_TC).allSLOs;
+
         // ----- Build of flat lists of metrics, and SLOs, and check their specs -----
-        Map<NamesKey, Object> allMetrics = new LinkedHashMap<>();
-        Map<NamesKey, Object> allSLOs = new LinkedHashMap<>();
         ctx.read("$.spec.*.*", List.class).stream().filter(Objects::nonNull).forEach(spec -> {
             String parentName = getSpecName(spec);
             if (StringUtils.isBlank(parentName)) throw createException("Component or Scope with no name: " + spec);
+            parentSpecs.computeIfAbsent(parentName, (key)->spec);
 
-            List<Object> metrics = JsonPath.read(spec, "$[?(@.metrics!=null)].metrics.*");
-            metrics.stream().filter(Objects::nonNull).forEach(metricSpec -> {
-                String metricName = getSpecName(metricSpec);
-                if (StringUtils.isBlank(metricName)) throw createException("Metric spec with no name: " + metricSpec);
-                allMetrics.put(NamesKey.create(parentName, metricName), metricSpec);
-            });
-
+            // Requirements (SLOs) flat list building
             List<Object> slos = JsonPath.read(spec,
                     "$[?(@.requirements!=null && @.requirements.*[?(@.type=='slo')])].requirements.*");
             slos.stream().filter(Objects::nonNull).forEach(sloSpec -> {
@@ -130,12 +133,26 @@ public class MetricModelAnalyzer {
                 if (StringUtils.isBlank(sloName)) throw createException("SLO spec with no name: " + sloSpec);
                 allSLOs.put(NamesKey.create(parentName, sloName), sloSpec);
             });
+
+            // Metrics flat list building
+            List<Object> metrics = JsonPath.read(spec, "$[?(@.metrics!=null)].metrics.*");
+            metrics.stream().filter(Objects::nonNull).forEach(metricSpec -> {
+                String metricName = getSpecName(metricSpec);
+                if (StringUtils.isBlank(metricName)) throw createException("Metric spec with no name: " + metricSpec);
+                NamesKey namesKey = NamesKey.create(parentName, metricName);
+                allMetrics.put(namesKey, metricSpec);
+                asMap(metricSpec).put("_containerName", parentName);
+            });
         });
-        log.warn("All Metrics: {}", allMetrics);
-        log.warn("   All SLOs: {}", allSLOs);
+        log.debug("All Metrics: {}", allMetrics);
+        log.debug("   All SLOs: {}", allSLOs);
+
+        // ----- Build of constants lists -----
+        ctx.read("$.spec.*.*.metrics.*[?(@.type=='constant')]", List.class).stream().filter(Objects::nonNull).forEach(spec -> {
+            processConstant(_TC, asMap(spec), asMap(spec).get("_containerName").toString());
+        });
 
         // ----- Decompose SLOs to their metric hierarchies -----
-        Set<NamesKey> metricsUsed = new LinkedHashSet<>();
         allSLOs.forEach((sloNamesKey, sloSpec) -> {
             ServiceLevelObjective slo = ServiceLevelObjective.builder()
                     .name(sloNamesKey.name())
@@ -148,12 +165,17 @@ public class MetricModelAnalyzer {
             if (oConstr==null)
                 throw createException("SLO without 'constraint': "+sloSpec);
             if (oConstr instanceof Map constrSpec) {
-                decomposeConstraint(_TC, constrSpec, sloNamesKey, slo, allMetrics, metricsUsed);    //XXX:TODO: Improve signature
+                decomposeConstraint(_TC, constrSpec, sloNamesKey, slo);
             } else
                 throw createException("SLO constraint is not Map: "+sloSpec);
         });
 
-        // ----- Infer metric levels -----
+        // ----- Populate component (or data) names in requirements and metrics -----
+        //populateComponentNames();
+        //...also check about ObjectContexts....
+
+        // ----- Infer metric groupings (levels) -----
+        //inferGroupings();
 
         // ----- Build each component's SLO set (including those in the scopes it participates) -----
 
@@ -166,24 +188,148 @@ public class MetricModelAnalyzer {
         log.debug("MetricModelAnalyzer.analyzeModel(): END: metric-model: {}", metricModel);
     }
 
-    private final static Pattern METRIC_CONSTRAINT_PATTERN =
-            Pattern.compile("^([^<>=!]+)([<>]=|=[<>]|<>|!=|[=><])(.+)$");
-
-    private void expandShorthandExpressions(Object metricModel, String modelName, DocumentContext ctx) throws Exception {
-        // ----- Expand SLO constraints -----
-        List<Object> expandedConstraints = asList(ctx
-                .read("$.spec.*.*.requirements.*[?(@.constraint!=null)]", List.class)).stream()
-                        .filter(item -> JsonPath.read(item, "$.constraint") instanceof String)
-                        .peek(this::expandConstraint)
-                        .toList();
-        log.debug("MetricModelAnalyzer.analyzeModel(): Constraints expanded: {}", expandedConstraints);
-
-        //XXX:TODO: ++++ more thing to expand (window, output, sensor, etc)
+    @Data
+    @Accessors(fluent = true)
+    private static class $ {
+        private final Map<String, Object> parentSpecs = new LinkedHashMap<>();
+        private final Map<NamesKey, Object> allSLOs = new LinkedHashMap<>();
+        private final Map<NamesKey, Object> allMetrics = new LinkedHashMap<>();
+        private final Map<NamesKey, MetricContext> metricsUsed = new LinkedHashMap<>();
+        private final Map<NamesKey, Object> constants = new LinkedHashMap<>();
+    }
+    
+    private $ $$(TranslationContext _TC) {
+        return _TC.$($.class);
     }
 
     // ------------------------------------------------------------------------
     //  Methods for expanding shorthand expressions
     // ------------------------------------------------------------------------
+
+    private final static Pattern METRIC_CONSTRAINT_PATTERN =
+            Pattern.compile("^([^<>=!]+)([<>]=|=[<>]|<>|!=|[=><])(.+)$");
+    private final static Pattern METRIC_WINDOW_PATTERN =
+            Pattern.compile("^\\s*(\\w+)\\s+(\\d+(?:\\.\\d*)?|\\.\\d+)\\s*(?:(\\w+)\\s*)?");
+    private final static Pattern METRIC_WINDOW_SIZE_PATTERN =
+            Pattern.compile("^\\s*(\\d+(?:\\.\\d*)?|\\.\\d+)\\s*(?:(\\w+)\\s*)?");
+    private final static Pattern METRIC_OUTPUT_PATTERN =
+            Pattern.compile("^\\s*(\\w+)\\s+(\\d+(?:\\.\\d*)?|\\.\\d+)\\s*(\\w+)\\s*");
+    private final static Pattern METRIC_OUTPUT_SCHEDULE_PATTERN =
+            Pattern.compile("^\\s*(\\d+(?:\\.\\d*)?|\\.\\d+)\\s*(\\w+)\\s*");
+    private final static Pattern METRIC_SENSOR_PATTERN =
+            Pattern.compile("^\\s*(\\w+)\\s+(\\w+)\\s*");
+
+    private void expandShorthandExpressions(Object metricModel, String modelName, DocumentContext ctx) throws Exception {
+        // ----- Expand SLO constraints -----
+        List<Object> expandedConstraints = asList(ctx
+                .read("$.spec.*.*.requirements.*[?(@.constraint)]", List.class)).stream()
+                .filter(item -> JsonPath.read(item, "$.constraint") instanceof String)
+                .peek(this::expandConstraint)
+                .toList();
+        log.debug("MetricModelAnalyzer.analyzeModel(): Constraints expanded: {}", expandedConstraints);
+
+        // ----- Expand Metric windows -----
+        List<Object> expandedWindows = asList(ctx
+                .read("$.spec.*.*.metrics.*[?(@.window)]", List.class)).stream()
+                .filter(item -> JsonPath.read(item, "$.window") instanceof String)
+                .peek(this::expandWindow)
+                .toList();
+        log.debug("MetricModelAnalyzer.analyzeModel(): Windows expanded: {}", expandedWindows);
+
+        List<Object> expandedWindowSizes = asList(ctx
+                .read("$.spec.*.*.metrics.*.window[?(@.size)]", List.class)).stream()
+                .filter(item -> JsonPath.read(item, "$.size") instanceof String)
+                .peek(this::expandWindowSize)
+                .toList();
+        log.debug("MetricModelAnalyzer.analyzeModel(): Windows sizes expanded: {}", expandedWindows);
+
+        // ----- Expand Metric outputs -----
+        List<Object> expandedOutputs = asList(ctx
+                .read("$.spec.*.*.metrics.*[?(@.output)]", List.class)).stream()
+                .filter(item -> JsonPath.read(item, "$.output") instanceof String)
+                .peek(this::expandOutput)
+                .toList();
+        log.debug("MetricModelAnalyzer.analyzeModel(): Outputs expanded: {}", expandedOutputs);
+
+        List<Object> expandedOutputSchedules = asList(ctx
+                .read("$.spec.*.*.metrics.*.output[?(@.schedule)]", List.class)).stream()
+                .filter(item -> JsonPath.read(item, "$.schedule") instanceof String)
+                .peek(this::expandOutputSchedule)
+                .toList();
+        log.debug("MetricModelAnalyzer.analyzeModel(): Output schedules expanded: {}", expandedOutputSchedules);
+
+        // ----- Expand Metric sensors -----
+        List<Object> expandedSensors = asList(ctx
+                .read("$.spec.*.*.metrics.*[?(@.sensor)]", List.class)).stream()
+                .filter(item -> JsonPath.read(item, "$.sensor") instanceof String)
+                .peek(this::expandSensor)
+                .toList();
+        log.debug("MetricModelAnalyzer.analyzeModel(): Sensors expanded: {}", expandedSensors);
+    }
+
+    private void expandWindow(Object spec) {
+        String constraintStr = JsonPath.read(spec, "$.window").toString().trim();
+        Matcher matcher = METRIC_WINDOW_PATTERN.matcher(constraintStr);
+        if (matcher.matches()) {
+            asMap(spec).put("window", Map.of(
+                    "type", matcher.group(1),
+                    "size", (matcher.groupCount()>2)
+                            ? Map.of("value", matcher.group(2), "unit", matcher.group(3))
+                            : Map.of("value", matcher.group(2))
+            ));
+        } else
+            throw createException("Invalid metric window shorthand expression: "+spec);
+    }
+
+    private void expandWindowSize(Object spec) {
+        String constraintStr = JsonPath.read(spec, "$.size").toString().trim();
+        Matcher matcher = METRIC_WINDOW_SIZE_PATTERN.matcher(constraintStr);
+        if (matcher.matches()) {
+            asMap(spec).put("size", (matcher.groupCount()>1)
+                            ? Map.of("value", matcher.group(1), "unit", matcher.group(2))
+                            : Map.of("value", matcher.group(1))
+            );
+        } else
+            throw createException("Invalid metric window shorthand expression: "+spec);
+    }
+
+    private void expandOutput(Object spec) {
+        String constraintStr = JsonPath.read(spec, "$.output").toString().trim();
+        Matcher matcher = METRIC_OUTPUT_PATTERN.matcher(constraintStr);
+        if (matcher.matches()) {
+            asMap(spec).put("output", Map.of(
+                    "type", matcher.group(1),
+                    "schedule", Map.of(
+                            "value", matcher.group(2),
+                            "unit", matcher.group(3))
+            ));
+        } else
+            throw createException("Invalid metric output shorthand expression: "+spec);
+    }
+
+    private void expandOutputSchedule(Object spec) {
+        String constraintStr = JsonPath.read(spec, "$.output").toString().trim();
+        Matcher matcher = METRIC_OUTPUT_SCHEDULE_PATTERN.matcher(constraintStr);
+        if (matcher.matches()) {
+            asMap(spec).put("schedule", Map.of(
+                            "value", matcher.group(1),
+                            "unit", matcher.group(2))
+            );
+        } else
+            throw createException("Invalid metric output shorthand expression: "+spec);
+    }
+
+    private void expandSensor(Object spec) {
+        String constraintStr = JsonPath.read(spec, "$.sensor").toString().trim();
+        Matcher matcher = METRIC_SENSOR_PATTERN.matcher(constraintStr);
+        if (matcher.matches()) {
+            asMap(spec).put("sensor", Map.of(
+                    "type", matcher.group(1),
+                    "config", matcher.group(2)
+            ));
+        } else
+            throw createException("Invalid metric sensor shorthand expression: "+spec);
+    }
 
     private void expandConstraint(Object spec) {
         String constraintStr = JsonPath.read(spec, "$.constraint").toString().trim();
@@ -227,7 +373,7 @@ public class MetricModelAnalyzer {
 
     private final static String DEFAULT_CONSTRAINT_NAME_SUFFIX = "_CONSTRAINT";
 
-    private void decomposeConstraint(@NonNull TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent, Map<NamesKey, Object> allMetrics, Set<NamesKey> metricsUsed) {
+    private void decomposeConstraint(@NonNull TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
         // Get constraint type
         String type = getSpecField(constraintSpec, "type");
         if (StringUtils.isBlank(type))
@@ -236,19 +382,19 @@ public class MetricModelAnalyzer {
         // Delegate constraint decomposition based on type
         switch (type) {
             case "metric" ->
-                    decomposeMetricConstraint(_TC, constraintSpec, parentNamesKey, parent, allMetrics, metricsUsed);
+                    decomposeMetricConstraint(_TC, constraintSpec, parentNamesKey, parent);
             case "logical" ->
-                    decomposeLogicalConstraint(_TC, constraintSpec, parentNamesKey, parent, allMetrics, metricsUsed);
+                    decomposeLogicalConstraint(_TC, constraintSpec, parentNamesKey, parent);
             case "conditional" ->
-                    decomposeConditionalConstraint(_TC, constraintSpec, parentNamesKey, parent, allMetrics, metricsUsed);
+                    decomposeConditionalConstraint(_TC, constraintSpec, parentNamesKey, parent);
             case "variable" ->
-                    decomposeMetricVariableConstraint(_TC, constraintSpec, parentNamesKey, parent, allMetrics, metricsUsed);
+                    decomposeMetricVariableConstraint(_TC, constraintSpec, parentNamesKey, parent);
             default ->
                     throw createException("Constraint 'type' not supported: " + constraintSpec);
         }
     }
 
-    private MetricConstraint decomposeMetricConstraint(@NonNull TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent, Map<NamesKey, Object> allMetrics, Set<NamesKey> metricsUsed) {
+    private MetricConstraint decomposeMetricConstraint(@NonNull TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
         // Get needed fields
         String constraintName = getSpecName(constraintSpec);
         String metricName = getMandatorySpecField(constraintSpec, "metric", "Metric Constraint without 'metric': ");
@@ -261,7 +407,7 @@ public class MetricModelAnalyzer {
         NamesKey metricNamesKey = getNamesKey(parentNamesKey, metricName);
 
         // Further field checks
-        if (! allMetrics.containsKey(metricNamesKey))
+        if (! $$(_TC).allMetrics.containsKey(metricNamesKey))
             throw createException("Unspecified metric '"+metricNamesKey+"' found in metric constraint: "+ constraintSpec);
 
         if (! isComparisonOperator(comparisonOperator))
@@ -278,7 +424,7 @@ public class MetricModelAnalyzer {
 
         // Decompose metric
         MetricContext metric = decomposeMetric(
-                _TC, asMap(allMetrics.get(metricNamesKey)), constraintNamesKey, metricConstraint, allMetrics, metricsUsed);
+                _TC, asMap($$(_TC).allMetrics.get(metricNamesKey)), constraintNamesKey, metricConstraint);
 
         // Complete TC update
         metricConstraint.setMetricContext(metric);
@@ -287,15 +433,15 @@ public class MetricModelAnalyzer {
         return metricConstraint;
     }
 
-    private void decomposeLogicalConstraint(TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent, Map<NamesKey, Object> allMetrics, Set<NamesKey> metricsUsed) {
+    private void decomposeLogicalConstraint(TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
         throw new RuntimeException("NOT YET IMPLEMENTED: decomposeLogicalConstraint");
     }
 
-    private void decomposeConditionalConstraint(TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent, Map<NamesKey, Object> allMetrics, Set<NamesKey> metricsUsed) {
+    private void decomposeConditionalConstraint(TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
         throw new RuntimeException("NOT YET IMPLEMENTED: decomposeConditionalConstraint");
     }
 
-    private MetricVariableConstraint decomposeMetricVariableConstraint(TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent, Map<NamesKey, Object> allMetrics, Set<NamesKey> metricsUsed) {
+    private MetricVariableConstraint decomposeMetricVariableConstraint(TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
         throw new RuntimeException("NOT YET IMPLEMENTED: decomposeMetricVariableConstraint");
     }
 
@@ -303,10 +449,18 @@ public class MetricModelAnalyzer {
     //  Metric decomposition methods
     // ------------------------------------------------------------------------
 
-    private MetricContext decomposeMetric(@NonNull TranslationContext _TC, Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent, Map<NamesKey, Object> allMetrics, Set<NamesKey> metricsUsed) {
+    private MetricContext decomposeMetric(@NonNull TranslationContext _TC, Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent) {
         // Get needed fields
         String metricName = getSpecName(metricSpec).toLowerCase();
         String metricType = getSpecField(metricSpec, "type");
+
+        NamesKey metricNamesKey = NamesKey.create(getSpecField(metricSpec, "_containerName"), metricName);
+//        NamesKey metricNamesKey = getNamesKey(parentNamesKey, metricName);
+        if ($$(_TC).metricsUsed.containsKey(metricNamesKey)) {
+            MetricContext cachedMetric = $$(_TC).metricsUsed.get(metricNamesKey);
+            _TC.getDAG().addNode(parent, cachedMetric);
+            return cachedMetric;
+        }
 
         // Infer metric type
         if (StringUtils.isBlank(metricType)) {
@@ -323,22 +477,40 @@ public class MetricModelAnalyzer {
                 throw createException("Cannot infer type of metric '"+metricName+"': " + metricSpec);
         }
 
+        // If a 'constant' stop, because constants have already been registered
+        if ("constant".equals(metricType)) {
+            return null;
+        }
+
         // Delegate decomposition based on metric type
-        return switch (metricType) {
+        MetricContext metric = switch (metricType) {
             case "raw" ->
-                    decomposeRawMetric(_TC, metricSpec, parentNamesKey, parent, allMetrics, metricsUsed);
+                    decomposeRawMetric(_TC, metricSpec, parentNamesKey, parent);
             case "composite" ->
-                    decomposeCompositeMetric(_TC, metricSpec, parentNamesKey, parent, allMetrics, metricsUsed);
-            case "constant" ->
-                    processConstant(_TC, metricSpec, parentNamesKey, parent, allMetrics, metricsUsed);
+                    decomposeCompositeMetric(_TC, metricSpec, parentNamesKey, parent);
             case "ref" ->
-                    processRef(_TC, metricSpec, parentNamesKey, parent, allMetrics, metricsUsed);
+                    processRef(_TC, metricSpec, parentNamesKey, parent);
             default ->
                     throw createException("Unknown metric type '" + metricType + "' in metric '" + metricName + "': " + metricSpec);
         };
+        $$(_TC).metricsUsed.put(metricNamesKey, metric);
+
+        // Create a dummy 'metric', also set 'object'
+        metric.setMetric(Metric.builder().build());
+        metric.setObject(metricSpec);
+
+        // Process template
+        MetricTemplate template = processMetricTemplate(metricSpec, metricNamesKey, metric);
+        if (template!=null)
+            metric.getMetric().setMetricTemplate(template);
+
+        // Process metric level
+        processMetricGrouping(metric, parentNamesKey);
+
+        return metric;
     }
 
-    private RawMetricContext decomposeRawMetric(TranslationContext _TC, Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent, Map<NamesKey, Object> allMetrics, Set<NamesKey> metricsUsed) {
+    private RawMetricContext decomposeRawMetric(TranslationContext _TC, Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent) {
         // Get needed fields
         String metricName = getSpecName(metricSpec);
         Map<String, Object> sensorSpec = asMap(metricSpec.get("sensor"));
@@ -355,7 +527,8 @@ public class MetricModelAnalyzer {
 
         // Process child blocks
         Sensor sensor = processSensor(_TC, sensorSpec, metricNamesKey, rawMetric);
-        Schedule schedule = processSchedule(outputSpec, metricNamesKey);
+        Schedule schedule = outputSpec!=null
+                ? processSchedule(outputSpec, metricNamesKey) : null;
 
         // Complete TC update
         rawMetric.setSensor(sensor);
@@ -364,21 +537,305 @@ public class MetricModelAnalyzer {
         return rawMetric;
     }
 
-    private CompositeMetricContext decomposeCompositeMetric(TranslationContext _TC, Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent, Map<NamesKey, Object> allMetrics, Set<NamesKey> metricsUsed) {
-        return CompositeMetricContext.builder().name("xxxx").build();
+    private CompositeMetricContext decomposeCompositeMetric(TranslationContext _TC, Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent) {
+        // Get needed fields
+        String metricName = getSpecName(metricSpec);
+        String formula = getMandatorySpecField(metricSpec, "formula", "Composite Metric '"+metricName+"' without 'formula': ");
+        Map<String, Object> windowSpec = asMap(metricSpec.get("window"));
+        Map<String, Object> outputSpec = asMap(metricSpec.get("output"));
+
+        NamesKey metricNamesKey = getNamesKey(parentNamesKey, metricName);
+
+        // Check formula and extract metrics
+        if (StringUtils.isBlank(formula))
+            throw createException("Composite metric 'formula' cannot be blank: at '"+metricNamesKey.name()+"': " + metricSpec);
+        @NonNull Set<String> formulaArgs = MathUtil.getFormulaArguments(formula);
+        log.trace("decomposeCompositeMetric: {}: formula={}, args={}", metricNamesKey.name(), formula, formulaArgs);
+
+        // Remove constants from 'formulaArgs'
+        String containerName = getSpecField(metricSpec, "_containerName");
+        formulaArgs.removeAll( $$(_TC).constants.keySet().stream()
+                .filter(nk ->  nk.parent.equals(containerName))
+                .map(nk->nk.child)
+                .collect(Collectors.toSet()));
+        log.trace("decomposeCompositeMetric: {}: After removing constants: formula={}, args={}", metricNamesKey.name(), formula, formulaArgs);
+
+        // Update TC
+        CompositeMetricContext compositeMetric = CompositeMetricContext.builder()
+                .name(metricNamesKey.name())
+                .object(metricSpec)
+                .build();
+        _TC.getDAG().addNode(parent, compositeMetric);
+
+        // Decompose to metrics used in formula (i.e. composing or child metrics)
+        // NOTE: child metric decomposition MUST be done before this metric has been altered in any way (or else
+        //       hashCode() will return new value, different from that cached in the DAG)
+        List<MetricContext> childMetricsList = new ArrayList<>();
+        for (String childMetricName : formulaArgs) {
+            NamesKey childMetricNamesKey = NamesKey.create(getSpecField(metricSpec, "_containerName"), childMetricName);
+//            NamesKey childMetricNamesKey = getNamesKey(parentNamesKey, childMetricName);
+            MetricContext childMetric = decomposeMetric(
+                    _TC, asMap($$(_TC).allMetrics.get(childMetricNamesKey)), metricNamesKey, compositeMetric);
+            if (childMetric!=null)
+                childMetricsList.add(childMetric);
+        }
+        compositeMetric.setComposingMetricContexts(childMetricsList);
+
+        // Process child blocks
+        Window window = windowSpec!=null
+                ? processWindow(windowSpec, metricNamesKey) : null;
+        Schedule schedule = outputSpec!=null
+                ? processSchedule(outputSpec, metricNamesKey) : null;
+
+        // Complete TC update
+        compositeMetric.setWindow(window);
+        compositeMetric.setSchedule(schedule);
+
+        return compositeMetric;
     }
 
-    private MetricContext processRef(TranslationContext _TC, Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent, Map<NamesKey, Object> allMetrics, Set<NamesKey> metricsUsed) {
-        return CompositeMetricContext.builder().name("xxxx").build();
+    private MetricContext processRef(TranslationContext _TC, Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent) {
+        // Get needed fields
+        String metricName = getSpecName(metricSpec);
+        String refStr = getMandatorySpecField(metricSpec, "ref", "Metric reference must provide a value for 'ref' field: at metric '" + parentNamesKey.name() + "': " + metricSpec);
+
+        NamesKey metricNamesKey = getNamesKey(parentNamesKey, metricName);
+
+        // Process 'ref'
+        refStr = refStr.replace("[", "").replace("]", "");
+        NamesKey referencedNamesKey = NamesKey.isFullName(refStr)
+                ? NamesKey.create(refStr) : NamesKey.create(parentNamesKey.parent, refStr);
+        MetricContext referencedMetric = $$(_TC).metricsUsed.get(referencedNamesKey);
+        if (referencedMetric==null) {
+            Object spec = $$(_TC).allMetrics.get(referencedNamesKey);
+            if (spec==null)
+                throw createException("Cannot find referenced metric '"+referencedNamesKey.name()+"': " + metricSpec);
+            referencedMetric = decomposeMetric(_TC, asMap(spec), parentNamesKey, parent);
+            // 'decomposeMetric' will take care to add referencedMetric into the DAG
+        } else {
+            // add a new edge to the referencedMetric in the DAG
+            _TC.getDAG().addNode(parent, referencedMetric);
+        }
+
+        return referencedMetric;
     }
 
-    private MetricContext processConstant(TranslationContext _TC, Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent, Map<NamesKey, Object> allMetrics, Set<NamesKey> metricsUsed) {
-        return RawMetricContext.builder().name("xxxx").build();
+    private void processConstant(TranslationContext _TC, Map<String, Object> metricSpec, String parentName) {
+        // Get needed fields
+        String metricName = getSpecName(metricSpec);
+        Double defaultValue = getSpecNumber(metricSpec, "default");
+
+        NamesKey metricNamesKey = NamesKey.create(parentName, metricName);
+
+        // Register metric constant, and initial value (if available)
+        $$(_TC).constants.put(metricNamesKey, defaultValue);
+    }
+
+    private MetricTemplate processMetricTemplate(Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent) {
+        Object templateObj = metricSpec.get("template");
+        if (templateObj instanceof Map templateSpec) {
+            String id = getSpecField(templateSpec, "id");
+            String type = getMandatorySpecField(templateSpec, "type", "Metric template without 'type': at metric '" + parentNamesKey.name() + "': " + metricSpec);
+            ValueType valueType = ValueType.valueOf(type.trim().toUpperCase() + "_TYPE");
+            String dirStr = getSpecField(templateSpec, "direction");
+            short valueDirection = StringUtils.isNotBlank(dirStr) ? Short.parseShort(dirStr.trim()) : 0;    //XXX:TODO: IMPROVE!!!
+            List<Object> range = asList(templateSpec.get("range"));             //XXX:TODO: ...Add it... IMPROVE MetricTemplate class
+            List<Object> values = asList(templateSpec.get("values"));           //XXX:TODO: ...Add it... IMPROVE MetricTemplate class
+            String unit = getSpecField(templateSpec, "unit");
+
+            return MetricTemplate.builder()
+                    .object(templateSpec)
+                    .name(id)
+                    .valueType(valueType)
+                    .valueDirection(valueDirection)
+                    .unit(unit)
+                    .build();
+        }
+        return null;
+    }
+
+    private MetricContext processMetricGrouping(MetricContext metric, NamesKey parentNamesKey) {
+        String groupingStr = getSpecField(metric.getObject(), "level");      //XXX:TODO: ...change to 'grouping'
+        if (StringUtils.isNotBlank(groupingStr)) {
+            Grouping grouping = Grouping.valueOf(groupingStr.trim().toUpperCase());
+            //XXX:TODO: ....shall we do something with this??   This might be also check during inferGroupings()
+        }
+        return metric;
     }
 
 
     // ------------------------------------------------------------------------
-    //  Other model elements processing methods
+    //  Window block processing methods
+    // ------------------------------------------------------------------------
+
+    private Window processWindow(Map<String, Object> windowSpec, NamesKey metricNamesKey) {
+        // Get window type
+        String typeStr = getMandatorySpecField(windowSpec, "type", "Window without 'type': at metric '"+metricNamesKey+"': ");
+        WindowType windowType = WindowType.valueOf(typeStr.toUpperCase());
+
+        // Get window size
+        Map<String, Object> sizeMap = asMap(windowSpec.get("size"));
+        String sizeTypeStr = getSpecField(sizeMap, "type");
+        Object valueObj = sizeMap.get("value");
+        String unitStr = getSpecField(sizeMap, "unit");
+
+        // Check window size value
+        if (!(valueObj instanceof Number) && !(valueObj instanceof String))
+            throw createException("Window size value is mandatory and MUST be a positive integer: at metric '" + metricNamesKey + "': " + windowSpec);
+        long value = valueObj instanceof Number n
+                ? n.longValue() : Long.parseLong(valueObj.toString());
+        if (value<=0)
+            throw createException("Window size value cannot be zero or negative: at metric '" + metricNamesKey + "': " + windowSpec);
+
+        // Check window size (time) unit
+        ChronoUnit unit = StringUtils.isNotBlank(unitStr)
+                ? normalizeTimeUnit(unitStr) : ChronoUnit.SECONDS;
+
+        // Get or infer window size type
+        WindowSizeType sizeType;
+        if (StringUtils.isNotBlank(sizeTypeStr))
+            sizeType = WindowSizeType.valueOf(sizeTypeStr.trim().toUpperCase());
+        else
+            sizeType = (unit !=null) ? WindowSizeType.TIME_ONLY : WindowSizeType.MEASUREMENTS_ONLY;
+
+        // Initialize size parameters
+        long measurementSize = -1;
+        long timeSize = -1;
+        String timeUnit = null;
+        if (sizeType!=WindowSizeType.MEASUREMENTS_ONLY) {
+            timeSize = value;
+            timeUnit = unit.toString();
+        }
+        if (sizeType!=WindowSizeType.TIME_ONLY) {
+            measurementSize = value;
+        }
+
+        // Process any 'processing' blocks
+        List<Object> processingSpecs = asList(windowSpec.get("processing"));
+        List<WindowProcessing> processingsList = null;
+        if (processingSpecs!=null) {
+            for (Object processingObj : processingSpecs) {
+                WindowProcessing processing = processProcessing(asMap(processingObj), metricNamesKey);
+                if (processingsList==null)
+                    processingsList = new ArrayList<>();
+                processingsList.add(processing);
+            }
+        }
+
+        return Window.builder()
+                .object(windowSpec)
+                .windowType(windowType)
+                .sizeType(sizeType)
+                .measurementSize(measurementSize)
+                .timeSize(timeSize)
+                .timeUnit(timeUnit)
+                .processings(processingsList)
+                .build();
+    }
+
+    private WindowProcessing processProcessing(Map<String, Object> processingSpec, NamesKey metricNamesKey) {
+        // Get processing type
+        String typeStr = getMandatorySpecField(processingSpec, "type", "Window Processing without 'type': at metric '"+metricNamesKey+"': ");
+        WindowProcessingType processingType = WindowProcessingType.valueOf(typeStr.trim().toUpperCase());
+
+        // Get 'function' field
+        String functionStr = getSpecField(processingSpec, "function");
+        //XXX:TODO: .... do something with 'function' or delete it!!
+
+        // Process any 'criteria' blocks
+        List<Object> criteriaSpecs = asList(processingSpec.get("criteria"));
+        List<WindowCriterion> criteriaList = null;
+        if (criteriaSpecs!=null) {
+            for (Object criterionObj : criteriaSpecs) {
+                WindowCriterion criterion = processCriterion(criterionObj, metricNamesKey);
+                if (criteriaList==null)
+                    criteriaList = new ArrayList<>();
+                criteriaList.add(criterion);
+            }
+        }
+
+        return WindowProcessing.builder()
+                .object(processingSpec)
+                .processingType(processingType)
+                .groupingCriteria( processingType==WindowProcessingType.GROUP ? criteriaList : null )
+                .rankingCriteria( processingType!=WindowProcessingType.GROUP ? criteriaList : null )
+                .build();
+    }
+
+    private WindowCriterion processCriterion(Object criterionSpec, NamesKey metricNamesKey) {
+        if (criterionSpec instanceof String typeStr) {
+            CriterionType criterionType = CriterionType.valueOf(typeStr);
+            if (criterionType!=CriterionType.CUSTOM)
+                return WindowCriterion.builder()
+                        .type(criterionType).build();
+            else
+                throw createException("Window Criterion of '"+criterionType+"' type cannot be a string: at metric '" + metricNamesKey + "': " + criterionSpec);
+        }
+
+        if (criterionSpec instanceof Map) {
+            // Get processing type
+            String typeStr = getMandatorySpecField(criterionSpec, "type", "Window Criterion without 'type': at metric '"+metricNamesKey+"': ");
+            CriterionType criterionType = CriterionType.valueOf(typeStr);
+
+            // Get 'custom' field (if CUSTOM)
+            String custom = null;
+            if (criterionType==CriterionType.CUSTOM) {
+                custom = getMandatorySpecField(criterionSpec, "custom",
+                        "CUSTOM window criterion must provide 'custom' field: at metric '" + metricNamesKey + "': ");
+            }
+
+            // Get sort direction (ascending, or descending)
+            String ascStr = getSpecField(criterionSpec, "ascending");
+            boolean isAscending = getBooleanValue(ascStr.trim(), true);
+
+            return WindowCriterion.builder()
+                    .object(criterionSpec)
+                    .type(criterionType)
+                    .custom(custom)
+                    .ascending(isAscending)
+                    .build();
+        }
+
+        throw createException("Window Criterion specification not supported: at metric '" + metricNamesKey + "': " + criterionSpec);
+    }
+
+    // ------------------------------------------------------------------------
+    //  Schedule block processing methods
+    // ------------------------------------------------------------------------
+
+    private Schedule processSchedule(Map<String, Object> scheduleSpec, NamesKey metricNamesKey) {
+        // Get needed fields
+        String type = getSpecField(scheduleSpec, "type");
+        if (StringUtils.isBlank(type)) type = "all";
+        //XXX:TODO: .....use OUTPUT TYPE.....
+
+        // Get 'schedule'
+        Map<String, Object> schedMap = asMap(scheduleSpec.get("schedule"));
+
+        // Get schedule value
+        Object valueObj = schedMap.get("value");
+        long interval;
+        if (!(valueObj instanceof Number) && !(valueObj instanceof String))
+            throw createException("Schedule value is mandatory and MUST be a positive integer: at metric '" + metricNamesKey.name() + "': " + scheduleSpec);
+        else
+            interval = (valueObj instanceof Number n) ? n.longValue() : Long.parseLong(valueObj.toString());
+        if (interval<=0)
+            throw createException("Schedule value cannot be zero or negative: at metric '" + metricNamesKey.name() + "': " + scheduleSpec);
+
+        // Get schedule unit
+        String unitStr = getSpecField(schedMap, "unit");
+        ChronoUnit unit = StringUtils.isNotBlank(unitStr)
+                ? normalizeTimeUnit(unitStr) : ChronoUnit.SECONDS;
+
+        return Schedule.builder()
+                .object(scheduleSpec)
+                .interval(interval)
+                .timeUnit(unit.toString())
+                .build();
+    }
+
+    // ------------------------------------------------------------------------
+    //  Sensor block processing methods
     // ------------------------------------------------------------------------
 
     private static final String DEFAULT_SENSOR_NAME_SUFFIX = "_SENSOR";
@@ -388,53 +845,34 @@ public class MetricModelAnalyzer {
         // Get needed fields
         String sensorName = getSpecName(sensorSpec);
         String sensorType = getSpecField(sensorSpec, "type");
-        boolean isPush = getBooleanValue(getSpecField(sensorSpec, "push"), false);
-        boolean isPull = getBooleanValue(getSpecField(sensorSpec, "pull"), false);
         if (StringUtils.isBlank(sensorName)) sensorName = parentNamesKey.child + DEFAULT_SENSOR_NAME_SUFFIX;
         if (StringUtils.isBlank(sensorType)) sensorType = DEFAULT_SENSOR_TYPE;
 
         NamesKey sensorNamesKey = getNamesKey(parentNamesKey, sensorName);
 
-        // Checks
+        // Get 'push' or 'pull' type
+        boolean isPush = getBooleanValue(getSpecField(sensorSpec, "push"), false);
+        boolean isPull = getBooleanValue(getSpecField(sensorSpec, "pull"), false);
         if (isPush && isPull)
             throw createException("Sensor cannot be both 'push' and 'pull': sensor '" + sensorName + "' in metric '" + parentNamesKey + "': " + sensorSpec);
+
+        // Get additional fields
+        Object configObj = sensorSpec.get("config");            //XXX:TODO: ...check how it is used...
+        Object installObj = sensorSpec.get("install");          //XXX:TODO: ...add this???
 
         // Update TC
         Sensor sensor = Sensor.builder()
                 .name(sensorNamesKey.name())
                 .object(sensorSpec)
                 .isPush(isPush)
+                .configurationStr( configObj instanceof String s ? s : null )
+                .additionalProperties( configObj instanceof Map m ? m : null )
                 .build();
         _TC.getDAG().addNode(parent, sensor);
 
         //XXX:TODO: ... add Monitor, add Component-Sensor pair
 
         return sensor;
-    }
-
-    private Schedule processSchedule(Map<String, Object> scheduleSpec, NamesKey metricNamesKey) {
-        // Get needed fields
-        String type = getSpecField(scheduleSpec, "type");
-        if (StringUtils.isBlank(type)) type = "all";
-
-        Map<String, Object> schedMap = asMap(scheduleSpec.get("schedule"));
-
-        Object valueObj = schedMap.get("value");
-        if (!(valueObj instanceof Number))
-            throw createException("Schedule value is mandatory and MUST be a positive integer: at metric '" + metricNamesKey + "': " + scheduleSpec);
-        long interval = (Long) valueObj;
-        if (interval<=0)
-            throw createException("Schedule value cannot be zero or negative: at metric '" + metricNamesKey + "': " + scheduleSpec);
-
-        String unitStr = getSpecField(schedMap, "unit");
-        ChronoUnit unit = StringUtils.isNotBlank(unitStr)
-                ? ChronoUnit.valueOf(unitStr.trim()) : ChronoUnit.SECONDS;
-
-        return Schedule.builder()
-                .object(scheduleSpec)
-                .interval(interval)
-                .timeUnit(unit.toString())
-                .build();
     }
 
     // ------------------------------------------------------------------------
@@ -484,7 +922,7 @@ public class MetricModelAnalyzer {
             }
             throw createException(exceptionMessage.formatted(field) + spec);
         } catch (Exception e) {
-            throw createException(exceptionMessage.formatted(field), e);
+            throw createException(exceptionMessage.formatted(field) + o, e);
         }
     }
 
@@ -507,6 +945,9 @@ public class MetricModelAnalyzer {
             if (oValue instanceof Number n) {
                 return n.doubleValue();
             }
+            if (oValue instanceof String s) {
+                return Double.parseDouble(s);
+            }
             throw createException("Block '"+field+"' is not Number: " + spec);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -523,6 +964,21 @@ public class MetricModelAnalyzer {
     private boolean getBooleanValue(String val, boolean defaultValue) {
         if (StringUtils.isBlank(val)) return defaultValue;
         return "true".equalsIgnoreCase(val.trim());
+    }
+
+    private ChronoUnit normalizeTimeUnit(String s) {
+        s = s.trim().toLowerCase();
+        return switch (s) {
+            case "ms", "msec", "millisecond", "milliseconds" -> ChronoUnit.MILLIS;
+            case "s", "sec", "second", "seconds" -> ChronoUnit.SECONDS;
+            case "m", "min", "minute", "minutes" -> ChronoUnit.MINUTES;
+            case "h", "hr", "hrs", "hour", "hours" -> ChronoUnit.HOURS;
+            case "d", "day", "days" -> ChronoUnit.DAYS;
+            case "w", "week", "weeks" -> ChronoUnit.WEEKS;
+            case "mon", "month", "months" -> ChronoUnit.MONTHS;
+            case "yr", "year", "years" -> ChronoUnit.YEARS;
+            default -> throw createException("Not supported time unit: "+s);
+        };
     }
 
     // ------------------------------------------------------------------------
@@ -582,6 +1038,9 @@ public class MetricModelAnalyzer {
     //  Even more helper methods
     // ------------------------------------------------------------------------
 
+    private final static List<String> COMPARISON_OPERATORS =
+            List.of("<", "<=", "=<", ">", ">=", "=<", "=", "<>", "!=");
+
     private boolean isExpression(String s) {
         return ! isConstant(s);
     }
@@ -601,8 +1060,7 @@ public class MetricModelAnalyzer {
     }
 
     private boolean isComparisonOperator(String s) {
-        //XXX:TODO: Improve!!!!
-        return Arrays.asList("<", "<=", "=<", ">", ">=", "=<", "=", "<>", "!=").contains(s);
+        return COMPARISON_OPERATORS.contains(s);
     }
 
 }

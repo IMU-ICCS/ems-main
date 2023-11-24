@@ -40,6 +40,13 @@ public class TranslationContext implements Serializable {
     @JsonIgnore
     private transient gr.iccs.imu.ems.translate.dag.DAG DAG;
 
+    // Extension translation context
+    @Getter @Setter @JsonIgnore private transient Object extensionContext;
+
+    // Extension translation context helper methods
+    public Object $() { return extensionContext; }
+    public <T> T $(Class<T> c) { return (T) extensionContext; }
+
     // Event-to-Action map
     @Getter
     private final Map<String, Set<String>> E2A = new HashMap<>();
