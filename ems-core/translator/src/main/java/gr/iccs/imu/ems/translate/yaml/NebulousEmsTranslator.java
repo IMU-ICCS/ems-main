@@ -10,6 +10,7 @@ package gr.iccs.imu.ems.translate.yaml;
 
 import gr.iccs.imu.ems.translate.TranslationContext;
 import gr.iccs.imu.ems.translate.Translator;
+import gr.iccs.imu.ems.translate.yaml.analyze.MetricModelAnalyzer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

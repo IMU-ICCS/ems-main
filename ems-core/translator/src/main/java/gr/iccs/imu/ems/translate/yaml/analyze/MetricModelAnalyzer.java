@@ -6,7 +6,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package gr.iccs.imu.ems.translate.yaml;
+package gr.iccs.imu.ems.translate.yaml.analyze;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
@@ -16,6 +16,7 @@ import gr.iccs.imu.ems.brokercep.cep.MathUtil;
 import gr.iccs.imu.ems.translate.Grouping;
 import gr.iccs.imu.ems.translate.TranslationContext;
 import gr.iccs.imu.ems.translate.model.*;
+import gr.iccs.imu.ems.translate.yaml.NebulousEmsTranslatorProperties;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -27,15 +28,16 @@ import org.springframework.stereotype.Service;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static gr.iccs.imu.ems.translate.yaml.analyze.AnalysisUtils.*;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MetricModelAnalyzer {
     private final NebulousEmsTranslatorProperties properties;
+    private final ShorthandsExpansionHelper shorthandsExpansionHelper;
     private final MetricModelValidator validator;
 
     // ================================================================================================================
@@ -51,7 +53,7 @@ public class MetricModelAnalyzer {
 
         // -- Expand shorthand expressions ------------------------------------
         log.debug("MetricModelAnalyzer.analyzeModel(): Expanding shorthand expressions in metric model: {}", metricModel);
-        expandShorthandExpressions(metricModel, modelName, ctx);
+        shorthandsExpansionHelper.expandShorthandExpressions(metricModel, modelName, ctx);
 
         // -- Schematron Validation -------------------------------------------
         log.debug("MetricModelAnalyzer.analyzeModel(): Validating metric model: {}", metricModel);
@@ -207,7 +209,7 @@ public class MetricModelAnalyzer {
     }
 
     // ------------------------------------------------------------------------
-    //  Methods for expanding shorthand expressions
+    //  Analysis helper methods
     // ------------------------------------------------------------------------
 
     private Object addContainerNameAndMakeMutable(Object o, String parentName) {
@@ -241,171 +243,6 @@ public class MetricModelAnalyzer {
     
     private $ $$(TranslationContext _TC) {
         return _TC.$($.class);
-    }
-
-    // ------------------------------------------------------------------------
-    //  Methods for expanding shorthand expressions
-    // ------------------------------------------------------------------------
-
-    private final static Pattern METRIC_CONSTRAINT_PATTERN =
-            Pattern.compile("^([^<>=!]+)([<>]=|=[<>]|<>|!=|[=><])(.+)$");
-    private final static Pattern METRIC_WINDOW_PATTERN =
-            Pattern.compile("^\\s*(\\w+)\\s+(\\d+(?:\\.\\d*)?|\\.\\d+)\\s*(?:(\\w+)\\s*)?");
-    private final static Pattern METRIC_WINDOW_SIZE_PATTERN =
-            Pattern.compile("^\\s*(\\d+(?:\\.\\d*)?|\\.\\d+)\\s*(?:(\\w+)\\s*)?");
-    private final static Pattern METRIC_OUTPUT_PATTERN =
-            Pattern.compile("^\\s*(\\w+)\\s+(\\d+(?:\\.\\d*)?|\\.\\d+)\\s*(\\w+)\\s*");
-    private final static Pattern METRIC_OUTPUT_SCHEDULE_PATTERN =
-            Pattern.compile("^\\s*(\\d+(?:\\.\\d*)?|\\.\\d+)\\s*(\\w+)\\s*");
-    private final static Pattern METRIC_SENSOR_PATTERN =
-            Pattern.compile("^\\s*(\\w+)\\s+(\\w+)\\s*");
-
-    private void expandShorthandExpressions(Object metricModel, String modelName, DocumentContext ctx) throws Exception {
-        // ----- Expand SLO constraints -----
-        List<Object> expandedConstraints = asList(ctx
-                .read("$.spec.*.*.requirements.*[?(@.constraint)]", List.class)).stream()
-                .filter(item -> JsonPath.read(item, "$.constraint") instanceof String)
-                .peek(this::expandConstraint)
-                .toList();
-        log.debug("MetricModelAnalyzer.analyzeModel(): Constraints expanded: {}", expandedConstraints);
-
-        // ----- Expand Metric windows -----
-        List<Object> expandedWindows = asList(ctx
-                .read("$.spec.*.*.metrics.*[?(@.window)]", List.class)).stream()
-                .filter(item -> JsonPath.read(item, "$.window") instanceof String)
-                .peek(this::expandWindow)
-                .toList();
-        log.debug("MetricModelAnalyzer.analyzeModel(): Windows expanded: {}", expandedWindows);
-
-        List<Object> expandedWindowSizes = asList(ctx
-                .read("$.spec.*.*.metrics.*.window[?(@.size)]", List.class)).stream()
-                .filter(item -> JsonPath.read(item, "$.size") instanceof String)
-                .peek(this::expandWindowSize)
-                .toList();
-        log.debug("MetricModelAnalyzer.analyzeModel(): Windows sizes expanded: {}", expandedWindows);
-
-        // ----- Expand Metric outputs -----
-        List<Object> expandedOutputs = asList(ctx
-                .read("$.spec.*.*.metrics.*[?(@.output)]", List.class)).stream()
-                .filter(item -> JsonPath.read(item, "$.output") instanceof String)
-                .peek(this::expandOutput)
-                .toList();
-        log.debug("MetricModelAnalyzer.analyzeModel(): Outputs expanded: {}", expandedOutputs);
-
-        List<Object> expandedOutputSchedules = asList(ctx
-                .read("$.spec.*.*.metrics.*.output[?(@.schedule)]", List.class)).stream()
-                .filter(item -> JsonPath.read(item, "$.schedule") instanceof String)
-                .peek(this::expandOutputSchedule)
-                .toList();
-        log.debug("MetricModelAnalyzer.analyzeModel(): Output schedules expanded: {}", expandedOutputSchedules);
-
-        // ----- Expand Metric sensors -----
-        List<Object> expandedSensors = asList(ctx
-                .read("$.spec.*.*.metrics.*[?(@.sensor)]", List.class)).stream()
-                .filter(item -> JsonPath.read(item, "$.sensor") instanceof String)
-                .peek(this::expandSensor)
-                .toList();
-        log.debug("MetricModelAnalyzer.analyzeModel(): Sensors expanded: {}", expandedSensors);
-    }
-
-    private void expandWindow(Object spec) {
-        String constraintStr = JsonPath.read(spec, "$.window").toString().trim();
-        Matcher matcher = METRIC_WINDOW_PATTERN.matcher(constraintStr);
-        if (matcher.matches()) {
-            asMap(spec).put("window", Map.of(
-                    "type", matcher.group(1),
-                    "size", (matcher.groupCount()>2)
-                            ? Map.of("value", matcher.group(2), "unit", matcher.group(3))
-                            : Map.of("value", matcher.group(2))
-            ));
-        } else
-            throw createException("Invalid metric window shorthand expression: "+spec);
-    }
-
-    private void expandWindowSize(Object spec) {
-        String constraintStr = JsonPath.read(spec, "$.size").toString().trim();
-        Matcher matcher = METRIC_WINDOW_SIZE_PATTERN.matcher(constraintStr);
-        if (matcher.matches()) {
-            asMap(spec).put("size", (matcher.groupCount()>1)
-                            ? Map.of("value", matcher.group(1), "unit", matcher.group(2))
-                            : Map.of("value", matcher.group(1))
-            );
-        } else
-            throw createException("Invalid metric window shorthand expression: "+spec);
-    }
-
-    private void expandOutput(Object spec) {
-        String constraintStr = JsonPath.read(spec, "$.output").toString().trim();
-        Matcher matcher = METRIC_OUTPUT_PATTERN.matcher(constraintStr);
-        if (matcher.matches()) {
-            asMap(spec).put("output", Map.of(
-                    "type", matcher.group(1),
-                    "schedule", Map.of(
-                            "value", matcher.group(2),
-                            "unit", matcher.group(3))
-            ));
-        } else
-            throw createException("Invalid metric output shorthand expression: "+spec);
-    }
-
-    private void expandOutputSchedule(Object spec) {
-        String constraintStr = JsonPath.read(spec, "$.output").toString().trim();
-        Matcher matcher = METRIC_OUTPUT_SCHEDULE_PATTERN.matcher(constraintStr);
-        if (matcher.matches()) {
-            asMap(spec).put("schedule", Map.of(
-                            "value", matcher.group(1),
-                            "unit", matcher.group(2))
-            );
-        } else
-            throw createException("Invalid metric output shorthand expression: "+spec);
-    }
-
-    private void expandSensor(Object spec) {
-        String constraintStr = JsonPath.read(spec, "$.sensor").toString().trim();
-        Matcher matcher = METRIC_SENSOR_PATTERN.matcher(constraintStr);
-        if (matcher.matches()) {
-            asMap(spec).put("sensor", Map.of(
-                    "type", matcher.group(1),
-                    "config", matcher.group(2)
-            ));
-        } else
-            throw createException("Invalid metric sensor shorthand expression: "+spec);
-    }
-
-    private void expandConstraint(Object spec) {
-        String constraintStr = JsonPath.read(spec, "$.constraint").toString().trim();
-        Matcher matcher = METRIC_CONSTRAINT_PATTERN.matcher(constraintStr);
-        if (matcher.matches()) {
-            String g1 = matcher.group(1);
-            String g2 = matcher.group(2);
-            String g3 = matcher.group(3);
-
-            if (! isComparisonOperator(g2))
-                throw createException("Invalid metric constraint shorthand expression in Requirement [Group 2 not a comparison operator]: "+spec);
-
-            // Swap operands
-            if (isDouble(g1)) {
-                String tmp = g1;
-                g1 = g3;
-                g3 = tmp;
-            }
-
-            if (StringUtils.isBlank(g1) || StringUtils.isBlank(g3))
-                throw createException("Invalid metric constraint shorthand expression in Requirement [Group 1 or 3 is blank]: "+spec);
-
-            String metricName = g1.trim();
-            double threshold = Double.parseDouble(g3.trim());
-
-            Map<String, Object> constrMap = Map.of(
-                    "type", "metric",
-                    "metric", metricName,
-                    "operator", g2.trim(),
-                    "threshold", threshold
-            );
-
-            asMap(spec).put("constraint", constrMap);
-        } else
-            throw createException("Invalid metric constraint shorthand expression: "+spec);
     }
 
     // ------------------------------------------------------------------------
@@ -956,210 +793,6 @@ public class MetricModelAnalyzer {
         //XXX:TODO: ... add Monitor, add Component-Sensor pair
 
         return sensor;
-    }
-
-    // ------------------------------------------------------------------------
-    //  Helper methods
-    // ------------------------------------------------------------------------
-
-    private final static String CONTAINER_NAME_KEY = "_containerName";
-
-    private RuntimeException createException(String s) {
-        log.error("Parse error: {}", s);
-        return new RuntimeException(new ModelException(s));
-    }
-
-    private RuntimeException createException(String s, Throwable t) {
-        log.error("Parse error: {}: ", s, t);
-        return new RuntimeException(s, t);
-    }
-
-    private List<Object> asList(Object o) {
-        if (o==null) return null;
-        if (o instanceof List l) return l;
-        throw createException("Object is not a List: "+o);
-    }
-
-    private Map<String, Object> asMap(Object o) {
-        if (o==null) return null;
-        if (o instanceof Map m) return m;
-        throw createException("Object is not a Map: "+o);
-    }
-
-    private NamesKey createNamesKey(@NonNull NamesKey parentNamesKey, @NonNull String name) {
-        return (NamesKey.isFullName(name))
-                ? NamesKey.create(name) : NamesKey.create(parentNamesKey.parent, name);
-    }
-
-    private NamesKey getNamesKey(@NonNull Object spec, @NonNull String name) {
-        return NamesKey.create(getContainerName(spec), name);
-    }
-
-    private String getContainerName(@NonNull Object spec) {
-        return getSpecField(spec, CONTAINER_NAME_KEY);
-    }
-
-    private String getSpecField(Object o, String field) {
-        return getSpecField(o, field, "Block '%s' is not String: ");
-    }
-
-    private String getSpecField(Object o, String field, String exceptionMessage) {
-        try {
-            Map<String, Object> spec = asMap(o);
-            Object oValue = spec.get(field);
-            if (oValue == null)
-                return null;
-            if (oValue instanceof String s) {
-                s = s.trim();
-                return s;
-            }
-            throw createException(exceptionMessage.formatted(field) + spec);
-        } catch (Exception e) {
-            throw createException(exceptionMessage.formatted(field) + o, e);
-        }
-    }
-
-    private String getMandatorySpecField(Object o, String field, String exceptionMessage) {
-        String val = getSpecField(o, field, exceptionMessage);
-        if (val==null)
-            throw createException(exceptionMessage.formatted(field) + o);
-        return val;
-    }
-
-    private String getSpecName(Object o) {
-        return getSpecField(o, "name");
-    }
-
-    private Double getSpecNumber(Object o, String field) {
-        try {
-            Map<String, Object> spec = asMap(o);
-            Object oValue = spec.get(field);
-            if (oValue == null) return null;
-            if (oValue instanceof Number n) {
-                return n.doubleValue();
-            }
-            if (oValue instanceof String s) {
-                return Double.parseDouble(s);
-            }
-            throw createException("Block '"+field+"' is not Number: " + spec);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Double getSpecNumber(Object o, String field, String exceptionMessage) {
-        Double val = getSpecNumber(o, field);
-        if (val==null)
-            throw createException(exceptionMessage+o);
-        return val;
-    }
-
-    private boolean getBooleanValue(String val, boolean defaultValue) {
-        if (StringUtils.isBlank(val)) return defaultValue;
-        return "true".equalsIgnoreCase(val.trim());
-    }
-
-    private ChronoUnit normalizeTimeUnit(String s) {
-        s = s.trim().toLowerCase();
-        return switch (s) {
-            case "ms", "msec", "millisecond", "milliseconds" -> ChronoUnit.MILLIS;
-            case "s", "sec", "second", "seconds" -> ChronoUnit.SECONDS;
-            case "m", "min", "minute", "minutes" -> ChronoUnit.MINUTES;
-            case "h", "hr", "hrs", "hour", "hours" -> ChronoUnit.HOURS;
-            case "d", "day", "days" -> ChronoUnit.DAYS;
-            case "w", "week", "weeks" -> ChronoUnit.WEEKS;
-            case "mon", "month", "months" -> ChronoUnit.MONTHS;
-            case "yr", "year", "years" -> ChronoUnit.YEARS;
-            default -> throw createException("Not supported time unit: "+s);
-        };
-    }
-
-    // ------------------------------------------------------------------------
-    //  More Helper methods
-    // ------------------------------------------------------------------------
-
-    private List<Object> getSLOs(Object o) {
-        return getRequirements(o).stream().filter(Objects::nonNull).filter(reqSpec -> {
-            try {
-                Map<String, Object> spec = asMap(reqSpec);
-                Object oType = spec.get("type");
-                if (oType == null)
-                    throw createException("Block does not contain 'type' field: " + spec);
-                //return true;
-                if (oType instanceof String s) {
-                    s = s.trim();
-                    return "slo".equals(s);
-                }
-                throw createException("Block 'type' is not String: " + spec);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }).toList();
-    }
-
-    private List<Object> getRequirements(Object o) {
-        try {
-            Map<String, Object> spec = asMap(o);
-            Object oMetrics = spec.get("requirements");
-            if (oMetrics == null)
-                return Collections.emptyList();
-            if (oMetrics instanceof List l) {
-                return l;
-            }
-            throw createException("Block 'requirements' is not List: " + spec);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private List<Object> getMetrics(Object o) {
-        try {
-            Map<String, Object> spec = asMap(o);
-            Object oMetrics = spec.get("metrics");
-            if (oMetrics == null)
-                return Collections.emptyList();
-            if (oMetrics instanceof List l) {
-                return l;
-            }
-            throw createException("Block 'metrics' is not List: " + spec);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    //  Even more helper methods
-    // ------------------------------------------------------------------------
-
-    private final static List<String> COMPARISON_OPERATORS =
-            List.of("<", "<=", "=<", ">", ">=", "=<", "=", "<>", "!=");
-    private final static List<String> LOGICAL_OPERATORS =
-            List.of("and", "or");
-
-    private boolean isExpression(String s) {
-        return ! isConstant(s);
-    }
-
-    private boolean isConstant(String s) {
-        return //constants.contains(s.trim()) ||
-                isDouble(s);
-    }
-
-    private boolean isDouble(String s) {
-        try {
-            Double.parseDouble(s);
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
-
-    private boolean isComparisonOperator(String s) {
-        return COMPARISON_OPERATORS.contains(s);
-    }
-
-    private boolean isLogicalOperator(String s) {
-        return LOGICAL_OPERATORS.contains(s);
     }
 
 }

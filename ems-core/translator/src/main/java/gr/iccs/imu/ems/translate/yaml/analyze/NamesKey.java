@@ -1,4 +1,4 @@
-package gr.iccs.imu.ems.translate.yaml;
+package gr.iccs.imu.ems.translate.yaml.analyze;
 
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
