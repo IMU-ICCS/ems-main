@@ -163,8 +163,13 @@ public class MetricModelAnalyzer {
             processConstant(_TC, asMap(spec), getContainerName(spec));
         });
 
-        // ----- Decompose SLOs to their metric hierarchies -----
-        allSLOs.forEach((sloNamesKey, sloSpec) -> {
+        // ----- Decompose SLOs with metric constraints to their metric hierarchies -----
+        Map<NamesKey, Object> metricSLOs = allSLOs.entrySet().stream()
+                //.peek(x -> log.warn("-------->  {}", getSpecField(asMap(x.getValue()).get("constraint"), "type") ))
+                .filter(x -> "metric".equals( getSpecField(asMap(x.getValue()).get("constraint"), "type") ))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        metricSLOs.forEach((sloNamesKey, sloSpec) -> {
             ServiceLevelObjective slo = ServiceLevelObjective.builder()
                     .name(sloNamesKey.name())
                     .object(sloSpec)
@@ -286,8 +291,9 @@ public class MetricModelAnalyzer {
                     decomposeLogicalConstraint(_TC, constraintSpec, parentNamesKey, parent);
             case "conditional" ->
                     decomposeConditionalConstraint(_TC, constraintSpec, parentNamesKey, parent);
-            case "variable" ->
-                    decomposeMetricVariableConstraint(_TC, constraintSpec, parentNamesKey, parent);
+            //XXX:TODO: ....shall we use metric variables? i think no!
+            /*case "variable" ->
+                    decomposeMetricVariableConstraint(_TC, constraintSpec, parentNamesKey, parent);*/
             default ->
                     throw createException("Constraint 'type' not supported: " + constraintSpec);
         };
@@ -373,12 +379,55 @@ public class MetricModelAnalyzer {
     }
 
     private IfThenConstraint decomposeConditionalConstraint(TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
-        throw new RuntimeException("NOT YET IMPLEMENTED: decomposeConditionalConstraint");
+        // Get needed fields
+        String constraintName = getSpecName(constraintSpec);
+
+        if (StringUtils.isBlank(constraintName))
+            constraintName = parentNamesKey.child + DEFAULT_CONSTRAINT_NAME_SUFFIX;
+        NamesKey constraintNamesKey = createNamesKey(parentNamesKey, constraintName);
+
+        // Get the referenced constraints names (their SLOs' actually)
+        String ifSloName   = getMandatorySpecField(constraintSpec, "if", "Unspecified IF part in conditional constraint '"+constraintNamesKey.name()+"': "+ constraintSpec);
+        String thenSloName = getMandatorySpecField(constraintSpec, "then", "Unspecified THEN part in conditional constraint '"+constraintNamesKey.name()+"': "+ constraintSpec);
+        String elseSloName = getSpecField(constraintSpec, "else");
+
+        // Update TC
+        IfThenConstraint conditionalConstraint = IfThenConstraint.builder()
+                .name(constraintNamesKey.name())
+                .object(constraintSpec)
+                .build();
+        _TC.getDAG().addNode(parent, conditionalConstraint);
+
+        // Get referenced constraints (their SLOs actually)
+        Object ifSloSpec = $$(_TC).allSLOs.get(NamesKey.create(parentNamesKey.parent, ifSloName));
+        log.warn(">>>>>>>>>>>>>>>>>>    {} :: {}", ifSloName, ifSloSpec);
+
+        Map<String, Object> ifConstrSpec = asMap(asMap(ifSloSpec).get("constraint"));
+        log.warn(">>>>>>>>>>>>>>>>>>    {} :: {}", ifSloName, ifConstrSpec);
+
+        // Decompose composing constraints
+        Constraint ifConstraint = decomposeConstraint(_TC, ifConstrSpec, constraintNamesKey, conditionalConstraint);
+        log.warn(">>>>>>>>>>>>>>>>>>    {} :: {}", ifSloName, ifConstraint);
+
+        Constraint thenConstraint = null;
+        Constraint elseConstraint = null;
+
+//        ifConstraint = decomposeConstraint(_TC, asMap(ifSpec), parentNamesKey, parent);
+
+        conditionalConstraint.setIfConstraint(ifConstraint);
+        conditionalConstraint.setThenConstraint(thenConstraint);
+        if (elseConstraint!=null)
+            conditionalConstraint.setElseConstraint(elseConstraint);
+
+        // Complete TC update
+//        _TC.addIfThenConstraint(conditionalConstraint);
+
+        return conditionalConstraint;
     }
 
-    private MetricVariableConstraint decomposeMetricVariableConstraint(TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
+    /*private MetricVariableConstraint decomposeMetricVariableConstraint(TranslationContext _TC, Map<String, Object> constraintSpec, NamesKey parentNamesKey, NamedElement parent) {
         throw new RuntimeException("NOT YET IMPLEMENTED: decomposeMetricVariableConstraint");
-    }
+    }*/
 
     // ------------------------------------------------------------------------
     //  Metric decomposition methods

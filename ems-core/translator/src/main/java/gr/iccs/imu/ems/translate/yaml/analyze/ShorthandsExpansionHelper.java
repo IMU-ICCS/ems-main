@@ -65,7 +65,7 @@ public class ShorthandsExpansionHelper {
                 .filter(item -> JsonPath.read(item, "$.size") instanceof String)
                 .peek(this::expandWindowSize)
                 .toList();
-        log.debug("MetricModelAnalyzer.analyzeModel(): Windows sizes expanded: {}", expandedWindows);
+        log.debug("MetricModelAnalyzer.analyzeModel(): Windows sizes expanded: {}", expandedWindowSizes);
 
         // ----- Expand Metric outputs -----
         List<Object> expandedOutputs = asList(ctx
