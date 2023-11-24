@@ -43,11 +43,29 @@ spec:
           constraint: 'ram_util_prct > 80'
         - name: bandwidth_slo
           type: slo
-#          constraint: 'bandwidth > 85'
+          constraint: 'bandwidth > 85'
+        - name: latency_slo
+          type: slo
+          constraint: 'latency > 25'
+        - name: fps_slo
+          type: slo
+#          constraint: 'fps - 30 * vc_instance_number < 0'
+          constraint: 'vc_instance_number < 0'
+
+        - name: test_logical_slo
+          type: slo
           constraint:                   # i.e.  (bandwidth > 10 and bandwidth < 50) or (bandwidth > 85)
             type: logical
             operator: or
             constraints: [ _c1_slo, _c2_slo ]
+        - name: test_conditional_slo
+          type: slo
+          constraint:
+            type: conditional
+            if:   _c1a_slo
+            then: _c1b_slo
+            else: _c2_slo
+
         - name: _c1_slo
           type: slo
           constraint:
@@ -64,19 +82,6 @@ spec:
           type: slo
           constraint: 'bandwidth > 85'
 
-        - name: latency_slo
-          type: slo
-#          constraint: 'latency > 25'
-          constraint:
-            type: conditional
-            if:   _c1a_slo
-            then: _c1b_slo
-            else: _c2_slo
-
-        - name: fps_slo
-          type: slo
-#          constraint: 'fps - 30 * vc_instance_number < 0'
-          constraint: 'vc_instance_number < 0'
       #--------------------------
       metrics:
         - name: cpu_util_prct
