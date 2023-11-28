@@ -11,6 +11,8 @@ package gr.iccs.imu.ems.translate.yaml;
 import gr.iccs.imu.ems.translate.TranslationContext;
 import gr.iccs.imu.ems.translate.Translator;
 import gr.iccs.imu.ems.translate.yaml.analyze.MetricModelAnalyzer;
+import gr.iccs.imu.ems.translate.yaml.generate.RuleGenerator;
+import gr.iccs.imu.ems.translate.yaml.transform.GraphTransformer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -84,16 +86,18 @@ public class NebulousEmsTranslator implements Translator, InitializingBean {
 		log.debug("NebulousEmsTranslator.translate():  Analyzing model... done");
 
 		// transform graph
-//		log.debug("NebulousEmsTranslator.translate():  Transforming DAG...");
-//		GraphTransformer transformer = applicationContext.getBean(GraphTransformer.class);
-//		transformer.transformGraph(_TC.getDAG());
-//		log.debug("NebulousEmsTranslator.translate():  Transforming DAG... done");
+		//XXX:TODO: Not sure it is needed in Nebulous (removes MVVs and adds TL metrics above TL metric context),
+		//XXX:TODO: ... but MVVs are not used, neither metrics (only metric contexts).
+		log.debug("NebulousEmsTranslator.translate():  Transforming DAG...");
+		GraphTransformer transformer = applicationContext.getBean(GraphTransformer.class);
+		transformer.transformGraph(_TC.getDAG());
+		log.debug("NebulousEmsTranslator.translate():  Transforming DAG... done");
 
 		// generate EPL rules
-//		log.debug("NebulousEmsTranslator.translate():  Generating EPL rules...");
-//		RuleGenerator generator = applicationContext.getBean(RuleGenerator.class);
-//		generator.generateRules(_TC);
-//		log.debug("NebulousEmsTranslator.translate():  Generating EPL rules... done");
+		log.debug("NebulousEmsTranslator.translate():  Generating EPL rules...");
+		RuleGenerator generator = applicationContext.getBean(RuleGenerator.class);
+		generator.generateRules(_TC);
+		log.debug("NebulousEmsTranslator.translate():  Generating EPL rules... done");
 
 		log.debug("NebulousEmsTranslator.translate():  END: result={}", _TC);
 		return _TC;

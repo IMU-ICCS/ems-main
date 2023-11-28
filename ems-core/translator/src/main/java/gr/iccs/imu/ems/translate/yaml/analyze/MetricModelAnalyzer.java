@@ -180,7 +180,7 @@ public class MetricModelAnalyzer {
         //populateComponentNames();
         //...also check about ObjectContexts....
 
-        // ----- Infer metric groupings (levels) -----
+        // ----- Infer groupings (levels) -----
         log.debug("Inferring and setting groupings");
         inferGroupings(_TC);
 
