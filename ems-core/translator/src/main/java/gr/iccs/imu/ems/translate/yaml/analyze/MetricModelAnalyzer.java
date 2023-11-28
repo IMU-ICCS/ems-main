@@ -271,7 +271,8 @@ public class MetricModelAnalyzer {
             if (object==null)
                 throw createException("SLO without 'constraint': "+sloSpec);
             if (object instanceof Map constraintSpec) {
-                decomposeConstraint(_TC, asMap(constraintSpec), sloNamesKey, slo);
+                Constraint constr = decomposeConstraint(_TC, asMap(constraintSpec), sloNamesKey, slo);
+                slo.setConstraint(constr);
             } else
                 throw createException("SLO constraint is not Map: "+sloSpec);
         });
@@ -443,6 +444,8 @@ public class MetricModelAnalyzer {
     //  Metric decomposition methods
     // ------------------------------------------------------------------------
 
+    private final static String DEFAULT_METRIC_NAME_SUFFIX = "_METRIC";
+
     private MetricContext decomposeMetric(@NonNull TranslationContext _TC, Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent) {
         // Get needed fields
         String metricName = getSpecName(metricSpec).toLowerCase();
@@ -489,8 +492,7 @@ public class MetricModelAnalyzer {
         };
         $$(_TC).metricsUsed.put(metricNamesKey, metric);
 
-        // Create a dummy 'metric', also set 'object'
-        metric.setMetric(Metric.builder().build());
+        // Set 'object'
         metric.setObject(metricSpec);
 
         // Process template
@@ -527,6 +529,9 @@ public class MetricModelAnalyzer {
         // Complete TC update
         rawMetric.setSensor(sensor);
         rawMetric.setSchedule(schedule);
+        rawMetric.setMetric(RawMetric.builder()
+                .name(metricName + DEFAULT_METRIC_NAME_SUFFIX)
+                .build());
 
         return rawMetric;
     }
@@ -583,6 +588,11 @@ public class MetricModelAnalyzer {
         // Complete TC update
         compositeMetric.setWindow(window);
         compositeMetric.setSchedule(schedule);
+        compositeMetric.setMetric(CompositeMetric.builder()
+                .name(metricName + DEFAULT_METRIC_NAME_SUFFIX)
+                .formula(formula)
+                .componentMetrics(childMetricsList.stream().map(MetricContext::getMetric).toList())
+                .build());
 
         return compositeMetric;
     }
@@ -797,7 +807,6 @@ public class MetricModelAnalyzer {
         // Get needed fields
         String type = getSpecField(scheduleSpec, "type");
         if (StringUtils.isBlank(type)) type = "all";
-        //XXX:TODO: .....use OUTPUT TYPE.....
 
         // Get 'schedule'
         Map<String, Object> schedMap = asMap(scheduleSpec.get("schedule"));
@@ -821,6 +830,7 @@ public class MetricModelAnalyzer {
                 .object(scheduleSpec)
                 .interval(interval)
                 .timeUnit(unit.toString())
+                .type(Schedule.SCHEDULE_TYPE.valueOf(type.trim().toUpperCase()))
                 .build();
     }
 

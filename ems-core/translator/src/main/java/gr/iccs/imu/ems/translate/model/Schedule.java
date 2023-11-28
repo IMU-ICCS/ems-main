@@ -21,11 +21,16 @@ import java.util.concurrent.TimeUnit;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Schedule extends Feature {
+    // Derived from EPL
+    // See: https://esper.espertech.com/release-5.1.0/esper-reference/html/epl_clauses.html#epl-output-rate
+    public enum SCHEDULE_TYPE { ALL, FIRST, LAST, SNAPSHOT }
+
     private Date start;
     private Date end;
     private String timeUnit;
     private long interval;
     private int repetitions;
+    private SCHEDULE_TYPE type;
 
     public long getIntervalInMillis() {
         if (timeUnit == null) return interval;
