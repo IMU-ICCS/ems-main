@@ -18,6 +18,7 @@ import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.parse.Parser;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.AttributeType;
@@ -365,22 +366,63 @@ public class DAG {
             return null;
         }
 
+        // Create a DOT exporter
         DOTExporter<DAGNode, DAGEdge> exporter = new DOTExporter<>(node -> "NODE_" + node.getId());
+
+        // Format the graph
+        /*exporter.setGraphAttributeProvider(() -> {
+            LinkedHashMap<String, Attribute> graphAttributes = new LinkedHashMap<>();
+            // See: https://graphviz.org/docs/layouts/
+            graphAttributes.put("layout", new DefaultAttribute<>("circo", AttributeType.STRING));
+            graphAttributes.put("beautify", new DefaultAttribute<>("true", AttributeType.BOOLEAN));
+            return graphAttributes;
+        });*/
+
+        // Format vertices (nodes)
+        // See (colors): https://www.pastelcolorpalettes.com/7-color-pastels-rainbow
+        List<String> ll = Arrays.asList("#F6CA94", "#FAFABE", "#C1EBC0", "#C7CAFF", "#CDABEB", "#F6C2F3", "#F09EA7");
+        //Collections.reverse(ll);
+        String[] colorsArr = ll.toArray(new String[0]);
         exporter.setVertexAttributeProvider(node -> {
             LinkedHashMap<String, Attribute> vertexAttributes = new LinkedHashMap<>();
+
+            // Prepare and format labels
+            // See: https://graphviz.org/doc/info/shapes.html#html
             String label;
+            String col;
             if (node.getName() != null) {
                 if (node.getGrouping() != null) {
-                    label = String.format("%s\n[%s]", node.getName(), node.getGrouping());
+                    //label = String.format("%s\n[%s]", node.getName(), node.getGrouping());
+                    String[] namePart = node.getName().split("\\.",2);
+                    String name = (namePart.length>1)
+                            ? "<U>"+namePart[0].trim()+"</U> .."+namePart[1].trim() : "<U>"+namePart[0].trim()+"</U>";
+                    label = String.format("<B>%s</B><BR/><BR/><B><FONT COLOR=\"red\">[%s]</FONT></B>",
+                            name, node.getGrouping());
+                    col = colorsArr[(node.getGrouping().getOrder() % (colorsArr.length-1))];
                 } else {
                     label = node.getName();
+                    col = "#ffffff";
                 }
             } else {
-                label = "<ROOT>";
+                label = StringEscapeUtils.escapeHtml4("<ROOT>");
+                label = "<B>"+label+"</B>";
+                col = colorsArr[colorsArr.length-1];
             }
             // See: https://graphviz.org/doc/info/attrs.html
-            vertexAttributes.put("label", new DefaultAttribute<>(label, AttributeType.STRING));
+            vertexAttributes.put("label", new DefaultAttribute<>(label, AttributeType.HTML));
+
+            // See: https://graphviz.org/doc/info/shapes.html#polygon
+            vertexAttributes.put("shape", new DefaultAttribute<>("box", AttributeType.STRING));
+
+            //vertexAttributes.put("fillcolor", new DefaultAttribute<>(col, AttributeType.STRING));
+            //vertexAttributes.put("style", new DefaultAttribute<>("filled", AttributeType.STRING));
+            // or
+            vertexAttributes.put("fillcolor", new DefaultAttribute<>(col+":white;0.3", AttributeType.STRING));
+            vertexAttributes.put("style", new DefaultAttribute<>("radial, rounded", AttributeType.STRING));
+            vertexAttributes.put("gradientangle", new DefaultAttribute<>(60, AttributeType.INT));
+
             /*
+            // Example
             vertexAttributes.put("color", new DefaultAttribute<>("red", AttributeType.STRING));
             vertexAttributes.put("fontcolor", new DefaultAttribute<>("yellow", AttributeType.STRING));
             vertexAttributes.put("fillcolor", new DefaultAttribute<>("cyan:green;0.3", AttributeType.STRING));
@@ -398,7 +440,7 @@ public class DAG {
         try {
             if (!checkExportConfiguration(baseFileName, exportFormats, imageWidth)) return null;
 
-            // Export DAG in DOT format (can be viewd with GraphViz tool)
+            // Export DAG in DOT format (can be viewed with GraphViz tool)
             String dot = exportToDot();
             log.debug("DAG.exportDAG(): Results of exportToDot(): Graph in DOT format:\n{}", dot);
             if (dot==null) {

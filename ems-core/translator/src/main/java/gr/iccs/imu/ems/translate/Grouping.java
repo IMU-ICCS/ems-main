@@ -9,6 +9,9 @@
 
 package gr.iccs.imu.ems.translate;
 
+import lombok.Getter;
+
+@Getter
 public enum Grouping {
     UNSPECIFIED(-1, false, false),
     PER_INSTANCE(0, true, false),
