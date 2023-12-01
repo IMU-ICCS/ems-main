@@ -158,8 +158,8 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         controlServiceInfo.put("current-ems-state", controlServiceCoordinator.getCurrentEmsState());
         controlServiceInfo.put("current-ems-state-message", controlServiceCoordinator.getCurrentEmsStateMessage());
         controlServiceInfo.put("current-ems-state-change-timestamp", controlServiceCoordinator.getCurrentEmsStateChangeTimestamp());
-        controlServiceInfo.put("current-app-model-path", controlServiceCoordinator.getAppModelPath());
-        controlServiceInfo.put("current-cp-model-path", controlServiceCoordinator.getCpModelPath());
+        controlServiceInfo.put("current-app-model-path", controlServiceCoordinator.getAppModelId());
+        controlServiceInfo.put("current-app-exec-model-path", controlServiceCoordinator.getAppExecModelId());
         if (controlServiceProperties!=null && infoServiceProperties!=null) {
             controlServiceInfo.put("prop-ip-setting", controlServiceProperties.getIpSetting());
             controlServiceInfo.put("prop-executionware", controlServiceProperties.getExecutionware().toString());
@@ -226,7 +226,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         // Destinations per grouping and min/max grouping
         Map<String,Object> translatorInfo = new LinkedHashMap<>();
         metrics.put(TRANSLATOR_INFO_PROVIDER, translatorInfo);
-        String appModelPath = controlServiceCoordinator.getAppModelPath();
+        String appModelPath = controlServiceCoordinator.getAppModelId();
         if (StringUtils.isNotBlank(appModelPath)) {
             TranslationContext _TC = controlServiceCoordinator.getTranslationContextOfAppModel(appModelPath);
             Set<String> groupings = _TC.getG2T().keySet();

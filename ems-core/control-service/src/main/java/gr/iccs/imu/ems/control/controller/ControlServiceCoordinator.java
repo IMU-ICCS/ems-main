@@ -90,7 +90,7 @@ public class ControlServiceCoordinator implements InitializingBean {
     private final Map<String, TranslationContext> appModelToTcCache = new HashMap<>();
 
     @Getter private String currentAppModelId;
-    @Getter private String currentCpModelId;
+    @Getter private String currentAppExecModelId;
     private TranslationContext currentTC;
 
     private ServerNetdataCollector netdataCollector;
@@ -158,12 +158,12 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     // ------------------------------------------------------------------------------------------------------------
 
-    public String getAppModelPath() {
+    public String getAppModelId() {
         return currentAppModelId;
     }
 
-    public String getCpModelPath() {
-        return currentCpModelId;
+    public String getAppExecModelId() {
+        return currentAppExecModelId;
     }
 
     public TranslationContext getTranslationContextOfAppModel(String appModelId) {
@@ -194,12 +194,12 @@ public class ControlServiceCoordinator implements InitializingBean {
     @Async
     public void preloadModels() {
         String preloadAppModel = properties.getPreload().getAppModel();
-        String preloadCpModel = properties.getPreload().getCpModel();
+        String preloadAppExecModel = properties.getPreload().getCpModel();
         if (StringUtils.isNotBlank(preloadAppModel)) {
             log.info("===================================================================================================");
-            log.info("ControlServiceCoordinator.preloadModels(): Preloading models: app-model={}, cp-model={}",
-                    preloadAppModel, preloadCpModel);
-            processAppModel(preloadAppModel, preloadCpModel, ControlServiceRequestInfo.EMPTY);
+            log.info("ControlServiceCoordinator.preloadModels(): Preloading models: app-model={}, app-exec-model={}",
+                    preloadAppModel, preloadAppExecModel);
+            processAppModel(preloadAppModel, preloadAppExecModel, ControlServiceRequestInfo.EMPTY);
         } else {
             log.info("ControlServiceCoordinator.preloadModels(): No model to preload");
         }
@@ -208,33 +208,33 @@ public class ControlServiceCoordinator implements InitializingBean {
     // ------------------------------------------------------------------------------------------------------------
 
     @Async
-    public void processAppModel(String appModelId, String cpModelId, ControlServiceRequestInfo requestInfo) {
-        _lockAndProcessModel(appModelId, cpModelId, requestInfo, "processAppModel()", () -> {
+    public void processAppModel(String appModelId, String appExecModelId, ControlServiceRequestInfo requestInfo) {
+        _lockAndProcessModel(appModelId, appExecModelId, requestInfo, "processAppModel()", () -> {
             // Call '_processNewModels()' to do actual processing
-            _processAppModels(appModelId, cpModelId, requestInfo);
+            _processAppModels(appModelId, appExecModelId, requestInfo);
             this.currentAppModelId = _normalizeModelId(appModelId);
-            this.currentCpModelId = _normalizeModelId(cpModelId);
+            this.currentAppExecModelId = _normalizeModelId(appExecModelId);
         });
     }
 
     @Async
-    public void processCpModel(String cpModelId, ControlServiceRequestInfo requestInfo) {
-        _lockAndProcessModel(null, cpModelId, requestInfo, "processCpModel()", () -> {
-            // Call '_processCpModel()' to do actual processing
-            _processCpModel(cpModelId, requestInfo);
-            this.currentCpModelId = _normalizeModelId(cpModelId);
+    public void processAppExecModel(String appExecModelId, ControlServiceRequestInfo requestInfo) {
+        _lockAndProcessModel(null, appExecModelId, requestInfo, "processAppExecModel()", () -> {
+            // Call '_processAppExecModel()' to do actual processing
+            _processAppExecModel(appExecModelId, requestInfo);
+            this.currentAppExecModelId = _normalizeModelId(appExecModelId);
         });
     }
 
     @Async
     public void setConstants(@NonNull Map<String,Double> constants, ControlServiceRequestInfo requestInfo) {
-        _lockAndProcessModel(null, null, requestInfo, "processCpModel()", () -> {
-            // Call '_processCpModel()' to do actual processing
+        _lockAndProcessModel(null, null, requestInfo, "setConstants()", () -> {
+            // Call '_setConstants()' to do actual processing
             _setConstants(constants, requestInfo);
         });
     }
 
-    protected void _lockAndProcessModel(String appModelId, String cpModelId, ControlServiceRequestInfo requestInfo, String caller, Runnable callback) {
+    protected void _lockAndProcessModel(String appModelId, String appExecModelId, ControlServiceRequestInfo requestInfo, String caller, Runnable callback) {
         // Acquire lock of this coordinator
         if (!inUse.compareAndSet(false, true)) {
             String mesg = "ControlServiceCoordinator."+caller+": ERROR: Coordinator is in use. Exits immediately";
@@ -267,8 +267,8 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     // ------------------------------------------------------------------------------------------------------------
 
-    protected void _processAppModels(String appModelId, String cpModelId, ControlServiceRequestInfo requestInfo) {
-        log.info("ControlServiceCoordinator._processAppModel(): BEGIN: app-model-id={}, cp-model-id={}, request-info={}", appModelId, cpModelId, requestInfo);
+    protected void _processAppModels(String appModelId, String appExecModelId, ControlServiceRequestInfo requestInfo) {
+        log.info("ControlServiceCoordinator._processAppModel(): BEGIN: app-model-id={}, app-exec-model-id={}, request-info={}", appModelId, appExecModelId, requestInfo);
 
         // Translate model into Translation Context (with EPL rules etc.)
         TranslationContext _TC;
@@ -298,13 +298,13 @@ public class ControlServiceCoordinator implements InitializingBean {
             log.error("ControlServiceCoordinator._processAppModel(): EXCEPTION while printing Translation results: ", e);
         }
 
-        // Retrieve Metric Variable Values (MVV) from CP model - i.e. constants
+        // Retrieve Metric Variable Values (MVV) from App Exec model - i.e. constants
         Map<String, Double> constants = new HashMap<>();
         if (!properties.isSkipMvvRetrieve()) {
-            if (StringUtils.isNotBlank(cpModelId)) {
-                constants = retrieveConstantsFromCpModel(cpModelId, _TC, EMS_STATE.INITIALIZING);
+            if (StringUtils.isNotBlank(appExecModelId)) {
+                constants = retrieveConstantsFromAppExecModel(appExecModelId, _TC, EMS_STATE.INITIALIZING);
             } else {
-                log.warn("ControlServiceCoordinator._processAppModel(): No CP model has been provided");
+                log.warn("ControlServiceCoordinator._processAppModel(): No App Exec model has been provided");
             }
         } else {
             log.warn("ControlServiceCoordinator._processAppModel(): Skipping MVV retrieval due to configuration");
@@ -362,23 +362,23 @@ public class ControlServiceCoordinator implements InitializingBean {
         setCurrentEmsState(EMS_STATE.READY, null);
     }
 
-    protected void _processCpModel(String cpModelId, ControlServiceRequestInfo requestInfo) {
-        log.info("ControlServiceCoordinator._processCpModel(): BEGIN: cp-model-id={}, request-info={}", cpModelId, requestInfo);
-        log.info("ControlServiceCoordinator._processCpModel(): Current app-model-id={}", currentAppModelId);
+    protected void _processAppExecModel(String appExecModelId, ControlServiceRequestInfo requestInfo) {
+        log.info("ControlServiceCoordinator._processAppExecModel(): BEGIN: app-exec-model-id={}, request-info={}", appExecModelId, requestInfo);
+        log.info("ControlServiceCoordinator._processAppExecModel(): Current app-model-id={}", currentAppModelId);
         TranslationContext _TC = this.currentTC;
 
-        // Retrieve Metric Variable Values (MVV) from CP model
+        // Retrieve Metric Variable Values (MVV) from App Exec model
         Map<String, Double> constants = new HashMap<>();
         if (!properties.isSkipMvvRetrieve()) {
-            constants = retrieveConstantsFromCpModel(cpModelId, _TC, EMS_STATE.RECONFIGURING);
+            constants = retrieveConstantsFromAppExecModel(appExecModelId, _TC, EMS_STATE.RECONFIGURING);
         } else {
-            log.warn("ControlServiceCoordinator._processCpModel(): Skipping MVV retrieval due to configuration");
+            log.warn("ControlServiceCoordinator._processAppExecModel(): Skipping MVV retrieval due to configuration");
         }
 
         // Set MVV constants in Broker-CEP and Baguette Server, and then notify others
         _setConstants(constants, requestInfo);
 
-        log.info("ControlServiceCoordinator._processCpModel(): END: cp-model-id={}", cpModelId);
+        log.info("ControlServiceCoordinator._processAppExecModel(): END: app-exec-model-id={}", appExecModelId);
 
         setCurrentEmsState(EMS_STATE.READY, null);
     }
@@ -387,7 +387,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         log.info("ControlServiceCoordinator.setConstants(): BEGIN: constants={}, request-info={}", constants, requestInfo);
         log.info("ControlServiceCoordinator.setConstants(): constants={}", constants);
 
-        // Retrieve Metric Variable Values (MVV) from CP model
+        // Retrieve Metric Variable Values (MVV) from App Exec model
         if (properties.isSkipMvvRetrieve()) {
             log.warn("ControlServiceCoordinator.setConstants(): isSkipMvvRetrieve is true, but constants processing will continue");
         }
@@ -511,24 +511,24 @@ public class ControlServiceCoordinator implements InitializingBean {
         return String.format(fileName, appModelId.replaceAll("[^\\p{L}\\d]", "_"));
     }
 
-    private Map<String, Double> retrieveConstantsFromCpModel(String cpModelId, TranslationContext _TC, EMS_STATE emsState) {
+    private Map<String, Double> retrieveConstantsFromAppExecModel(String appExecModelId, TranslationContext _TC, EMS_STATE emsState) {
         Map<String, Double> constants = Collections.emptyMap();
-        if (StringUtils.isNotBlank(cpModelId)) {
-            setCurrentEmsState(emsState, "Retrieving MVVs from CP model");
+        if (StringUtils.isNotBlank(appExecModelId)) {
+            setCurrentEmsState(emsState, "Retrieving MVVs from App Exec model");
 
             try {
-                log.debug("ControlServiceCoordinator.retrieveConstantsFromCpModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
+                log.debug("ControlServiceCoordinator.retrieveConstantsFromAppExecModel(): Retrieving MVVs from App Exec model: app-exec-model-id={}", appExecModelId);
 
-                // Retrieve constant names from '_TC.MVV_CP' and values from a given CP model
-                log.debug("ControlServiceCoordinator.retrieveConstantsFromCpModel(): Looking for MVV_CP's: {}", _TC.getMvvCP());
-                constants = mvvService.getMatchingMetricVariableValues(cpModelId, _TC);
-                log.debug("ControlServiceCoordinator.retrieveConstantsFromCpModel(): MVVs retrieved from CP model: cp-model-id={}, MVVs={}", cpModelId, constants);
+                // Retrieve constant names from '_TC.MVV_CP' and values from a given App Exec model
+                log.debug("ControlServiceCoordinator.retrieveConstantsFromAppExecModel(): Looking for MVV_CP's: {}", _TC.getMvvCP());
+                constants = mvvService.getMatchingMetricVariableValues(appExecModelId, _TC);
+                log.debug("ControlServiceCoordinator.retrieveConstantsFromAppExecModel(): MVVs retrieved from App Exec model: app-exec-model-id={}, MVVs={}", appExecModelId, constants);
 
             } catch (Exception ex) {
-                log.error("ControlServiceCoordinator.retrieveConstantsFromCpModel(): EXCEPTION while retrieving MVVs from CP model: cp-model-id={}", cpModelId, ex);
+                log.error("ControlServiceCoordinator.retrieveConstantsFromAppExecModel(): EXCEPTION while retrieving MVVs from App Exec model: app-exec-model-id={}", appExecModelId, ex);
             }
         } else {
-            log.error("ControlServiceCoordinator.retrieveConstantsFromCpModel(): No CP model have been provided");
+            log.error("ControlServiceCoordinator.retrieveConstantsFromAppExecModel(): No App Exec model have been provided");
         }
         return constants;
     }

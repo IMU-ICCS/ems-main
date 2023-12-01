@@ -13,11 +13,11 @@ export const FORM_TYPE_OPTIONS = [
             'text': 'Basic API - Model Translation',
             'priority': -1000,
             'options': [
-                { 'id': 'new-app-model', 'text': 'Send App. model request', 'url': '/camelModel', 'method': 'POST', 'form': 'app-model-form', 'priority': 1 },
-                { 'id': 'new-cp-model', 'text': 'Send CP model request', 'url': '/cpModelJson', 'method': 'POST', 'form': 'cp-model-form', 'priority': 2 },
-                { 'id': 'constants-update', 'text': 'Set constants (add name-value pairs in Payload)', 'url': '/cpConstants', 'method': 'POST', 'form': '', 'priority': 3 },
+                { 'id': 'new-app-model', 'text': 'Send App. model request', 'url': '/appModel', 'method': 'POST', 'form': 'app-model-form', 'priority': 1 },
+                { 'id': 'new-app-exec-model', 'text': 'Send App. Execution model request', 'url': '/appExecModel', 'method': 'POST', 'form': 'app-exec-model-form', 'priority': 2 },
+                { 'id': 'constants-update', 'text': 'Set constants (add name-value pairs in Payload)', 'url': '/appConstants', 'method': 'POST', 'form': '', 'priority': 3 },
                 { 'id': 'get-app-model', 'text': 'Current App. model', 'url': '/translator/currentAppModel', 'method': 'GET', 'form': '', 'priority': 4 },
-                { 'id': 'get-cp-model', 'text': 'Current CP model', 'url': '/translator/currentCpModel', 'method': 'GET', 'form': '', 'priority': 5 },
+                { 'id': 'get-app-exec-model', 'text': 'Current App. Execution model', 'url': '/translator/currentAppExecModel', 'method': 'GET', 'form': '', 'priority': 5 },
             ]
         },
 
@@ -89,9 +89,9 @@ export const FORM_SPECS = {
                         { 'name': 'watermark.date', 'text': '-- Date', 'defaultValue': function() { return new Date().getTime(); } },
                     ],
                 },
-                'cp-model-form': {
+                'app-exec-model-form': {
                     'fields': [
-                        { 'name': 'cp-model-id', 'text': 'CP model path' },
+                        { 'name': 'app-exec-model-id', 'text': 'App. Execution model path' },
                     ]
                 },
                 'vm-form': {

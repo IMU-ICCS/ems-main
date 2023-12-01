@@ -58,9 +58,13 @@ public class ControlServiceController {
         // Use Gson to get model id's from request body (in JSON format)
         com.google.gson.JsonObject jObj = new com.google.gson.Gson().fromJson(requestStr, com.google.gson.JsonObject.class);
         String appModelId = Optional.ofNullable(jObj.get("app-model-id")).map(je -> stripQuotes(je.toString())).orElse(null);
-        String cpModelId = Optional.ofNullable(jObj.get("cp-model-id")).map(je -> stripQuotes(je.toString())).orElse(null);
-        log.info("ControlServiceController.newAppModel(): App model id from request: {}", appModelId);
-        log.info("ControlServiceController.newAppModel(): CP model id from request: {}", cpModelId);
+        if (StringUtils.isBlank(appModelId))
+            appModelId = Optional.ofNullable(jObj.get("applicationId")).map(je -> stripQuotes(je.toString())).orElse(null);
+        String appExecModelId = Optional.ofNullable(jObj.get("app-exec-model-id")).map(je -> stripQuotes(je.toString())).orElse(null);
+        if (StringUtils.isBlank(appExecModelId))
+            appExecModelId = Optional.ofNullable(jObj.get("cp-model-id")).map(je -> stripQuotes(je.toString())).orElse(null);
+        log.info("ControlServiceController.newAppModel():  App model id from request: {}", appModelId);
+        log.info("ControlServiceController.newAppModel(): Exec model id from request: {}", appExecModelId);
 
         // Check parameters
         if (StringUtils.isBlank(appModelId)) {
@@ -69,7 +73,7 @@ public class ControlServiceController {
         }
 
         // Start translation and component reconfiguration in a worker thread
-        coordinator.processAppModel(appModelId, cpModelId, ControlServiceRequestInfo.create(null, null, jwtToken));
+        coordinator.processAppModel(appModelId, appExecModelId, ControlServiceRequestInfo.create(null, null, jwtToken));
         log.debug("ControlServiceController.newAppModel(): Model translation dispatched to a worker thread");
 
         return "OK";
@@ -96,14 +100,14 @@ public class ControlServiceController {
             throw new RestControllerException(400, "Request does not contain an App execution model id");
         }
 
-        // Start CP model processing in a worker thread
-        coordinator.processCpModel(appExecModelId, ControlServiceRequestInfo.create(null, null, jwtToken));
+        // Start App Exec model processing in a worker thread
+        coordinator.processAppExecModel(appExecModelId, ControlServiceRequestInfo.create(null, null, jwtToken));
         log.debug("ControlServiceController.newAppExecModel(): App Execution Model processing dispatched to a worker thread");
 
         return "OK";
     }
 
-    @RequestMapping(value = "/cpConstants", method = POST,
+    @RequestMapping(value = {"/cpConstants", "/appConstants"}, method = POST,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public String setConstants(@RequestBody String requestStr,
                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
@@ -116,7 +120,7 @@ public class ControlServiceController {
         Map<String, Double> constants = new com.google.gson.Gson().fromJson(requestStr, type);
         log.info("ControlServiceController.setConstants(): Constants from request: {}", constants);
 
-        // Start CP model processing in a worker thread
+        // Start App Exec model processing in a worker thread
         coordinator.setConstants(constants, ControlServiceRequestInfo.create(null, null, jwtToken));
         log.debug("ControlServiceController.setConstants(): Constants set");
 
@@ -154,16 +158,16 @@ public class ControlServiceController {
         return currentAppModelId;
     }
 
-    @RequestMapping(value = "/translator/currentCpModel", method = {GET,POST})
-    public String getCurrentCpModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    @RequestMapping(value = "/translator/currentAppExecModel", method = {GET,POST})
+    public String getCurrentAppExecModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.debug("ControlServiceController.getCurrentCpModel(): Received request");
-        log.trace("ControlServiceController.getCurrentCpModel(): JWT token: {}", jwtToken);
+        log.debug("ControlServiceController.getCurrentAppExecModel(): Received request");
+        log.trace("ControlServiceController.getCurrentAppExecModel(): JWT token: {}", jwtToken);
 
-        String currentCpModelId = coordinator.getCurrentCpModelId();
-        log.info("ControlServiceController.getCurrentCpModel(): Current CP model: {}", currentCpModelId);
+        String currentAppExecModelId = coordinator.getCurrentAppExecModelId();
+        log.info("ControlServiceController.getCurrentAppExecModel(): Current App Exec model: {}", currentAppExecModelId);
 
-        return currentCpModelId;
+        return currentAppExecModelId;
     }
 
     // ---------------------------------------------------------------------------------------------------
