@@ -31,6 +31,7 @@ import java.nio.file.Paths;
 public class NebulousEmsTranslator implements Translator, InitializingBean {
 
 	private final ApplicationContext applicationContext;
+	private final NebulousEmsTranslatorProperties properties;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -51,7 +52,7 @@ public class NebulousEmsTranslator implements Translator, InitializingBean {
 		Object modelObj;
 		try {
 			// -- Load model ------------------------------------------------------
-			Path inputFile = Paths.get(metricModelPath);
+			Path inputFile = Paths.get(properties.getModelsDir(), metricModelPath);
 			String yamlStr = Files.readString(inputFile);
 
 			// Parsing YAML file with SnakeYAML, since Jackson Parser does not support Anchors and references

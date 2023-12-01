@@ -18,11 +18,11 @@ import com.helger.xml.transform.StringStreamSource;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
-import java.io.File;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +32,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MetricModelValidator {
     private static final String DEFAULT_SCHEMATRON_FILE = "classpath:metric-model-schematron.xml";
+
+    private final ResourceLoader resourceLoader;
 
     // ================================================================================================================
     // Model analysis methods
@@ -67,11 +69,13 @@ public class MetricModelValidator {
         // Load Schematron rules
 
         String schematronFile = DEFAULT_SCHEMATRON_FILE;
-        File resourceFile = ResourceUtils.getFile(schematronFile);
-        SchematronResourcePure schRes = SchematronResourcePure//.fromFile(schematronFile);
-                .fromInputStream( schematronFile, Files.newInputStream(resourceFile.toPath()) );
-        if (!schRes.isValidSchematron())
-            throw new IllegalArgumentException ("Invalid Schematron file: "+schematronFile);
+        Resource resource = resourceLoader.getResource(schematronFile);
+        SchematronResourcePure schRes;
+        try (InputStream is = resource.getInputStream()) {
+            schRes = SchematronResourcePure.fromInputStream(schematronFile, is);
+            if (!schRes.isValidSchematron())
+                throw new IllegalArgumentException("Invalid Schematron file: " + schematronFile);
+        }
 
         // ----------------------------------------------------------
         // Validate model using schematron -- Alt. #1
@@ -87,6 +91,7 @@ public class MetricModelValidator {
 
         // Validate metric model and get failed asserts
         SchematronOutputType schOutput = schRes.applySchematronValidationToSVRL(new StringStreamSource(xmlStr));
+        assert schOutput != null;
         List<Object> failedAsserts = schOutput.getActivePatternAndFiredRuleAndFailedAssert();
         int failedAssertsCount = 0;
         for (Object object : failedAsserts) {
@@ -108,6 +113,7 @@ public class MetricModelValidator {
 
         if (! isMetricModelValid)
             throw new IllegalArgumentException ("Invalid Metric Model: "+modelName);
+        log.info("MetricModelValidator:  Metric model is valid: {}", modelName);
     }
 
     public List getSchematronDiagnosticMessages(Object o) {

@@ -69,6 +69,19 @@ public class MetricModelAnalyzer {
         log.debug("MetricModelAnalyzer.analyzeModel(): Analyzing metric model: {}", metricModel);
         Map<String, Object> topLevelModelElements = ctx.read("$", Map.class);
 
+        // ----- Define additional translation structures and cache them in _TC -----
+        _TC.setExtensionContext(new AdditionalTranslationContextData());
+
+        Map<String, Object> parentSpecs = $$(_TC).parentSpecs;
+        Map<NamesKey, Object> allMetrics = $$(_TC).allMetrics;
+        Map<NamesKey, Object> allConstraints = $$(_TC).allConstraints;
+        Map<NamesKey, Object> allSLOs = $$(_TC).allSLOs;
+
+        // set full-name pattern in _TC, for full-name generation
+        if (StringUtils.isNotBlank(properties.getFullNamePattern()))
+            _TC.setFullNamePattern(properties.getFullNamePattern());
+        //XXX:TODO: ...Remove {CAMEL} occurrences from TranslationContext class...
+
         // ----- Process function specifications -----
         if (topLevelModelElements.containsKey("functions")) {
             List<Object> functionSpecsList = ctx.read("$.functions.*", List.class);
@@ -122,14 +135,6 @@ public class MetricModelAnalyzer {
         modelRoot.put("spec", specNode);
 
         // ----- Build artifact directory -----
-
-        // ----- Define additional translation structures and cache them in _TC -----
-        _TC.setExtensionContext(new AdditionalTranslationContextData());
-
-        Map<String, Object> parentSpecs = $$(_TC).parentSpecs;
-        Map<NamesKey, Object> allMetrics = $$(_TC).allMetrics;
-        Map<NamesKey, Object> allConstraints = $$(_TC).allConstraints;
-        Map<NamesKey, Object> allSLOs = $$(_TC).allSLOs;
 
         // ----- Create object contexts for components -----
         Map<String, ObjectContext> objectContexts = componentNames.stream()
@@ -235,6 +240,7 @@ public class MetricModelAnalyzer {
         private final Map<NamesKey, MetricContext> metricsUsed = new LinkedHashMap<>();
         private final Map<NamesKey, Constraint> constraintsUsed = new LinkedHashMap<>();
         private final Map<NamesKey, Object> constants = new LinkedHashMap<>();
+        private final Set<String> functionNames = new HashSet<>();
     }
 
     // ------------------------------------------------------------------------
@@ -293,7 +299,7 @@ public class MetricModelAnalyzer {
             throw createException("Custom Function spec contains non-string arguments: "+ s);
 
         // Check if function name is unique
-        if (_TC.containsFunction(name))
+        if (_TC.containsFunction(name) || $$(_TC).functionNames.contains(name))
             throw createException("Custom Function with 'name' already exists: "+ s);
 
         // Check if function definition is correct/valid
@@ -310,6 +316,8 @@ public class MetricModelAnalyzer {
                 .arguments(argsList)
                 .build());
         log.debug("Added custom function: {}", name);
+
+        $$(_TC).functionNames.add(name);
     }
 
     // ------------------------------------------------------------------------
@@ -611,12 +619,13 @@ public class MetricModelAnalyzer {
         @NonNull Set<String> formulaArgs = MathUtil.getFormulaArguments(formula);
         log.trace("decomposeCompositeMetric: {}: formula={}, args={}", metricNamesKey.name(), formula, formulaArgs);
 
-        // Remove constants from 'formulaArgs'
+        // Remove constants and custom function names from 'formulaArgs'
         String containerName = getContainerName(metricSpec);
         formulaArgs.removeAll( $$(_TC).constants.keySet().stream()
                 .filter(nk ->  nk.parent.equals(containerName))         // Check that all formula args are metrics under the same parent
                 .map(nk->nk.child)
                 .collect(Collectors.toSet()));
+        formulaArgs.removeAll( $$(_TC).functionNames );
         log.trace("decomposeCompositeMetric: {}: After removing constants: formula={}, args={}", metricNamesKey.name(), formula, formulaArgs);
 
         // Update TC
@@ -968,7 +977,9 @@ public class MetricModelAnalyzer {
                     .build();
         } else {
             // Get push sensor port
-            String portStr = configuration.getOrDefault("port", "-1").toString();
+            Object portObj = configuration.get("port");
+            String portStr = portObj!=null ? portObj.toString().trim() : "";
+            if (StringUtils.isBlank(portStr)) portStr = null;
             int port = StrUtil.strToInt(portStr, -1, (i)->i>0 && i<=65535, false,
                     String.format("    processSensor(): ERROR: Invalid port. Using -1: sensor=%s, port=%s\n", sensorName, portStr));
 
@@ -1042,7 +1053,7 @@ public class MetricModelAnalyzer {
 
     private void inferGroupings(TranslationContext _TC) {
         Grouping topLevelGrouping = Grouping.GLOBAL;
-        Grouping leafGrouping = Grouping.PER_INSTANCE;
+        Grouping leafGrouping = properties.getLeafNodeGrouping();
 
         _TC.getDAG().traverseDAG(node -> {
             NamedElement elem = node.getElement();

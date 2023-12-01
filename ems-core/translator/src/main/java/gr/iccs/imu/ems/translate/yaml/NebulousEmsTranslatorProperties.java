@@ -8,6 +8,7 @@
 
 package gr.iccs.imu.ems.translate.yaml;
 
+import gr.iccs.imu.ems.translate.Grouping;
 import gr.iccs.imu.ems.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -15,10 +16,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Data
@@ -31,32 +28,24 @@ public class NebulousEmsTranslatorProperties implements InitializingBean {
         log.debug("NebulousEmsTranslatorProperties: {}", this);
     }
 
+    // Model validation settings
     private boolean skipModelValidation;
 
     // Translator parameters
-    private String modelDir = "/models";
+    private String modelsDir = "/models";
 
-    private String sensorConfigurationAnnotation = "MELODICMetadataSchema.ContextAwareSecurityModel.SecurityContextElement.Object.DataArtefact.Configuration.ConfigurationFormat.JSON_FORMAT";
+    // Sensor processing parameters
     private long sensorMinInterval;
     private long sensorDefaultInterval;
 
-    private String leafNodeGrouping;
+    // TC processing settings
+    private Grouping leafNodeGrouping = Grouping.PER_INSTANCE;
     private boolean pruneMvv = true;
     private boolean addTopLevelMetrics = true;
     private String fullNamePattern;
-    private boolean formulaCheckEnabled = true;
 
     // Load-annotated metric settings
+//XXX:TODO:...... in MetricModelAnalyzer......
     private String loadMetricAnnotation = "MELODICMetadataSchema.UtilityNotions.UtilityRelatedProperties.Utility.BusyInstanceMetric";
     private String loadMetricVariableFormatter = "busy.%s";
-
-    // Active sink types
-    private List<String> sinks;
-
-    // Sink type configurations
-    private final Map<String,Map<String,String>> sinkConfig = new HashMap<>();
-
-    public Map<String,Map<String,String>> getSinkConfig() {
-        return sinkConfig;
-    }
 }

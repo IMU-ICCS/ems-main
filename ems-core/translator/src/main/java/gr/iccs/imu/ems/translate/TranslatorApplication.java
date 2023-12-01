@@ -10,6 +10,7 @@
 package gr.iccs.imu.ems.translate;
 
 import gr.iccs.imu.ems.translate.yaml.NebulousEmsTranslator;
+import gr.iccs.imu.ems.translate.yaml.NebulousEmsTranslatorProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -42,6 +43,7 @@ public class TranslatorApplication implements CommandLineRunner {
 
     private static boolean standalone = false;
     private final NebulousEmsTranslator translator;
+    private final NebulousEmsTranslatorProperties translatorProperties;
     private final TranslationContextPrinter printer;
     private final TranslationContextPrinterProperties printerProperties;
 
@@ -62,6 +64,7 @@ public class TranslatorApplication implements CommandLineRunner {
                 ? args[0].trim() : "ems-main/surveillance_app_SAMPLE_metric_model.yml";
 
         log.info("App-model: {}", modelPath);
+        translatorProperties.setModelsDir("");
         TranslationContext _TC = translator.translate(modelPath);
         //log.info("TC: {}", _TC);
 
