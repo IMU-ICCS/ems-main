@@ -18,6 +18,7 @@ import gr.iccs.imu.ems.translate.TranslationContext;
 import gr.iccs.imu.ems.translate.dag.DAGNode;
 import gr.iccs.imu.ems.translate.model.*;
 import gr.iccs.imu.ems.translate.yaml.NebulousEmsTranslatorProperties;
+import gr.iccs.imu.ems.util.StrUtil;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -80,7 +81,7 @@ public class MetricModelAnalyzer {
 
         // ----- Build component-to-scope mapping -----
         //XXX:TODO:  .... do we need this?
-        Map<String, Set<String>> componentToScopeMap = new LinkedHashMap<>();
+        /*Map<String, Set<String>> componentToScopeMap = new LinkedHashMap<>();
         ctx.read("$.spec.scopes.*", List.class).stream().filter(Objects::nonNull).forEach(scope -> {
             String sloName = JsonPath.read(scope, "$.name").toString();
             Object oComponents = ((Map)scope).get("components");
@@ -102,7 +103,7 @@ public class MetricModelAnalyzer {
             else
                 componentToScopeMap.put(sloName, includedComponents);
         });
-        log.debug("Component-to-Scope map: {}", componentToScopeMap);
+        log.debug("Component-to-Scope map: {}", componentToScopeMap);*/
 
         // ----- Set container name and make mutable all 'spec' elements (and sub-elements) -----
         Map<String, Object> modelRoot = asMap(ctx.read("$"));
@@ -119,6 +120,16 @@ public class MetricModelAnalyzer {
         Map<NamesKey, Object> allMetrics = $$(_TC).allMetrics;
         Map<NamesKey, Object> allConstraints = $$(_TC).allConstraints;
         Map<NamesKey, Object> allSLOs = $$(_TC).allSLOs;
+
+        // ----- Create object contexts for components -----
+        Map<String, ObjectContext> objectContexts = componentNames.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        name -> ObjectContext.builder()
+                                .component(Component.builder().name(name).build())
+                                .build()
+                ));
+        $$(_TC).objectContexts.putAll(objectContexts);
 
         // ----- Build of flat lists of metrics, constraints and SLOs, and check their specs -----
         asList(JsonPath.read(modelRoot, "$.spec.*.*")).stream().filter(Objects::nonNull).forEach(spec -> {
@@ -206,7 +217,8 @@ public class MetricModelAnalyzer {
     @Data
     @Accessors(fluent = true)
     private static class AdditionalTranslationContextData {
-        private final Map<String, Object> parentSpecs = new LinkedHashMap<>();          // i.e. all component and scope specs
+        private final Map<String, Object> parentSpecs = new LinkedHashMap<>();              // i.e. all component and scope specs
+        private final Map<String, ObjectContext> objectContexts = new LinkedHashMap<>();    // i.e. object contexts for all components
         private final Map<NamesKey, Object> allSLOs = new LinkedHashMap<>();
         private final Map<NamesKey, Object> allConstraints = new LinkedHashMap<>();
         private final Map<NamesKey, Object> allMetrics = new LinkedHashMap<>();
@@ -655,11 +667,11 @@ public class MetricModelAnalyzer {
     }
 
     private MetricContext processMetricGrouping(MetricContext metric, NamesKey parentNamesKey) {
-        String groupingStr = getSpecField(metric.getObject(), "level");      //XXX:TODO: ...change to 'grouping'
+        /*String groupingStr = getSpecField(metric.getObject(), "level");      //XXX:TODO: ...change to 'grouping'
         if (StringUtils.isNotBlank(groupingStr)) {
             Grouping grouping = Grouping.valueOf(groupingStr.trim().toUpperCase());
-            //XXX:TODO: ....shall we do something with this??   This might be also check during inferGroupings()
-        }
+            //XXX:TODO: ....shall we do something with this??   This might be also checked during inferGroupings()
+        }*/
         return metric;
     }
 
@@ -856,23 +868,124 @@ public class MetricModelAnalyzer {
         if (isPush && isPull)
             throw createException("Sensor cannot be both 'push' and 'pull': sensor '" + sensorName + "' in metric '" + parentNamesKey + "': " + sensorSpec);
 
-        // Get additional fields
-        Object configObj = sensorSpec.get("config");            //XXX:TODO: ...check how it is used...
-        Object installObj = sensorSpec.get("install");          //XXX:TODO: ...add this???
+        // Get configuration
+        Object mapping = sensorSpec.get("affinity");            //XXX:TODO: !! RENAME IT -or- MOVE IT TO "config" !!
+        Object configObj = sensorSpec.get("config");
+        Object installObj = sensorSpec.get("install");          //XXX:TODO: !! MOVE TO "config" !!
+
+        if (! DEFAULT_SENSOR_TYPE.equalsIgnoreCase(sensorType))
+            mapping = null;
+
+        LinkedHashMap<String, Object> configuration = new LinkedHashMap<>();
+        configuration.put("type", sensorType);
+        if (configObj!=null) configuration.putAll(asMap(configObj));
+        if (mapping!=null && StringUtils.isNotBlank(mapping.toString())) configuration.put("mapping", mapping.toString().trim());
+        if (configObj!=null) configuration.put("install", asMap(installObj));
+
+        // Create pull or push sensor
+        Sensor sensor;
+        if (isPull) {
+            // Convert Map<String,Object> to Map<String,String>
+            Map<String, String> cfgMapWithStr = configuration.entrySet().stream()
+                    .filter(e -> e.getValue() != null)
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
+
+            // Get pull sensor configuration
+            String className = StrUtil.getWithVariations(cfgMapWithStr, "className", "").trim();
+            String intervalPeriodStr = StrUtil.getWithVariations(cfgMapWithStr, "intervalPeriod", "").trim();
+            String intervalUnitStr = StrUtil.getWithVariations(cfgMapWithStr, "intervalUnit", "").trim();
+
+            // Get interval
+            int period = StrUtil.strToInt(intervalPeriodStr,
+                    (int)properties.getSensorDefaultInterval(), (i)->i>=properties.getSensorMinInterval(), false,
+                    String.format("    processSensor(): Invalid interval period in configuration: sensor=%s, configuration=%s\n",
+                            sensorName, cfgMapWithStr));
+            Interval.UnitType periodUnit = StrUtil.strToEnum(intervalUnitStr,
+                    Interval.UnitType.class, Interval.UnitType.SECONDS, false,
+                    String.format("    processSensor(): Invalid interval unit in configuration: sensor=%s, configuration=%s\n",
+                            sensorName, cfgMapWithStr));
+            Interval interval = Interval.builder()
+                    .period(period)
+                    .unit(periodUnit)
+                    .build();
+
+            // Create pull sensor
+            sensor = PullSensor.builder()
+                    .name(sensorNamesKey.name())
+                    .object(sensorSpec)
+                    .isPush(false)
+                    .className(className)
+                    .interval(interval)
+                    .configuration(cfgMapWithStr)
+                    .build();
+        } else {
+            // Get push sensor port
+            String portStr = configuration.getOrDefault("port", "-1").toString();
+            int port = StrUtil.strToInt(portStr, -1, (i)->i>0 && i<=65535, false,
+                    String.format("    processSensor(): ERROR: Invalid port. Using -1: sensor=%s, port=%s\n", sensorName, portStr));
+
+            // Create push sensor
+            sensor = PushSensor.builder()
+                    .name(sensorNamesKey.name())
+                    .object(sensorSpec)
+                    .isPush(true)
+                    .port(port)
+                    .build();
+        }
+
+        sensor.setConfigurationStr( configObj instanceof String s ? s : null );
+        sensor.setAdditionalProperties( configObj instanceof Map m ? m : null );
 
         // Update TC
-        Sensor sensor = Sensor.builder()
-                .name(sensorNamesKey.name())
-                .object(sensorSpec)
-                .isPush(isPush)
-                .configurationStr( configObj instanceof String s ? s : null )
-                .additionalProperties( configObj instanceof Map m ? m : null )
-                .build();
-        _TC.getDAG().addNode(parent, sensor);
+        DAGNode sensorNode = _TC.getDAG().addNode(parent, sensor);
 
-        //XXX:TODO: ... add Monitor, add Component-Sensor pair
+        // Add component-sensor pair
+        Map<String, Object> metricSpec = asMap($$(_TC).allMetrics.get(parentNamesKey));
+        String componentName = getContainerName(metricSpec);
+        ObjectContext objCtx = $$(_TC).objectContexts.get(componentName);
+        _TC.addComponentSensorPair(objCtx, sensor);
+
+        // Add sensor monitor(s)
+        _TC.addMonitorsForSensor(sensorNamesKey.name(), _createMonitorsForSensor(_TC, objCtx, sensor, sensorNode));
 
         return sensor;
+    }
+
+    private Set<Monitor> _createMonitorsForSensor(TranslationContext _TC, ObjectContext objectContext, Sensor sensor, DAGNode sensorNode) {
+        log.debug("    _createMonitorsForSensor(): sensor={}", sensor.getName());
+
+        // Check if sensor monitors have already been created
+        if (_TC.containsMonitorsForSensor(sensor.getName())) {
+            log.debug("    _createMonitorsForSensor(): sensor={} :: Monitors for this sensor have already been added", sensor.getName());
+            return Collections.emptySet();
+        }
+
+        // Get monitor component
+        String componentName = (objectContext!=null && objectContext.getComponent()!=null)
+                ? objectContext.getComponent().getName() : null;
+
+        // Create results set
+        Set<Monitor> results = new HashSet<>();
+        for (DAGNode parent : _TC.getDAG().getParentNodes(sensorNode)) {
+            // Get metric name from sensor
+            log.debug("    + _createMonitorsForSensor(): sensor={} :: parent-node={}", sensor.getName(), parent.getName());
+            Map<String, Object> rawMetricSpec = asMap(parent.getElement().getObject());
+            String metricName = getSpecName(rawMetricSpec);
+            log.debug("    + _createMonitorsForSensor(): sensor={} :: metric={}, component={}", sensor.getName(), metricName, componentName);
+
+            // Create a Monitor instance
+            Monitor monitor = Monitor.builder()
+                    .metric(metricName)
+                    .sensor(sensor)
+                    .component(componentName)
+                    .build();
+            // watermark will be set in Coordinator
+
+            results.add(monitor);
+        }
+        log.debug("    _createMonitorsForSensor(): sensor={} :: monitors={}", sensor.getName(), results);
+
+        return results;
     }
 
     // ------------------------------------------------------------------------

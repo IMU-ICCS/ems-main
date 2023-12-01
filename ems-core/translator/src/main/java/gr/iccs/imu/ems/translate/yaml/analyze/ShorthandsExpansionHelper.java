@@ -149,7 +149,7 @@ public class ShorthandsExpansionHelper {
         if (matcher.matches()) {
             asMap(spec).put("sensor", Map.of(
                     "type", matcher.group(1),
-                    "config", matcher.group(2)
+                    "config", Map.of("mapping", matcher.group(2))
             ));
         } else
             throw createException("Invalid metric sensor shorthand expression: "+spec);
