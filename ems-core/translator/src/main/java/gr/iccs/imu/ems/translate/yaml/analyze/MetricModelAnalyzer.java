@@ -18,6 +18,7 @@ import gr.iccs.imu.ems.translate.TranslationContext;
 import gr.iccs.imu.ems.translate.dag.DAGNode;
 import gr.iccs.imu.ems.translate.model.*;
 import gr.iccs.imu.ems.translate.yaml.NebulousEmsTranslatorProperties;
+import gr.iccs.imu.ems.util.FunctionDefinition;
 import gr.iccs.imu.ems.util.StrUtil;
 import lombok.Data;
 import lombok.NonNull;
@@ -66,6 +67,15 @@ public class MetricModelAnalyzer {
 
         // -- Model processing ------------------------------------------------
         log.debug("MetricModelAnalyzer.analyzeModel(): Analyzing metric model: {}", metricModel);
+        Map<String, Object> topLevelModelElements = ctx.read("$", Map.class);
+
+        // ----- Process function specifications -----
+        if (topLevelModelElements.containsKey("functions")) {
+            List<Object> functionSpecsList = ctx.read("$.functions.*", List.class);
+            functionSpecsList.stream().filter(s -> s instanceof Map).forEach(s -> {
+                processFunction(_TC, s);
+            });
+        }
 
         // ----- Get component and scope names -----
         List<String> componentNamesList = ctx.read("$.spec.components.*.name", List.class);
@@ -262,6 +272,44 @@ public class MetricModelAnalyzer {
             return newL;
         }
         return o;
+    }
+
+    // ------------------------------------------------------------------------
+    //  Custom Function processing methods
+    // ------------------------------------------------------------------------
+
+    private void processFunction(TranslationContext _TC, Object s) {
+        // Get function definition elements
+        String name = getSpecName(s);
+        String expression = getMandatorySpecField(s, "expression", "Custom Function without expression: ");
+        List<Object> args = asList(((Map<?, ?>) s).get("arguments"));
+
+        // Check function definition elements
+        if (StringUtils.isBlank(name)) throw createException("Custom Function with blank name: "+ s);
+        if (StringUtils.isBlank(expression)) throw createException("Custom Function with blank expression: "+ s);
+        if (args==null || args.isEmpty())
+            throw createException("Custom Function without arguments: "+ s);
+        if (args.stream().anyMatch(a -> !(a instanceof String)))
+            throw createException("Custom Function spec contains non-string arguments: "+ s);
+
+        // Check if function name is unique
+        if (_TC.containsFunction(name))
+            throw createException("Custom Function with 'name' already exists: "+ s);
+
+        // Check if function definition is correct/valid
+        List<String> argsList = args.stream().map(Object::toString).toList();
+        FunctionDefinition fd = new FunctionDefinition()
+                .setName(name).setExpression(expression).setArguments(argsList);
+        MathUtil.addFunctionDefinition(fd);
+        MathUtil.clearFunctionDefinitions();
+
+        // Update TC
+        _TC.addFunction(gr.iccs.imu.ems.translate.model.Function.builder()
+                .name(name)
+                .expression(expression)
+                .arguments(argsList)
+                .build());
+        log.debug("Added custom function: {}", name);
     }
 
     // ------------------------------------------------------------------------

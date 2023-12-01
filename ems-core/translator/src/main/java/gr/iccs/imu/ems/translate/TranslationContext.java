@@ -430,6 +430,10 @@ public class TranslationContext implements Serializable {
         MvvCP.put(matchingVarName, varName);
     }
 
+    public boolean containsFunction(String name) {
+        return FUNC.stream().anyMatch(fd -> fd.getName().equals(name));
+    }
+
     public void addFunction(Function f) {
         FunctionDefinition fdef = new FunctionDefinition().setName(f.getName()).setExpression(f.getExpression()).setArguments(f.getArguments());
         FUNC.add(fdef);

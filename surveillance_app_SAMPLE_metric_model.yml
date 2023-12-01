@@ -125,7 +125,7 @@ spec:
         - name: bandwidth
           type: composite
           level: per_region
-          formula: 'mean(bandwidth_instance) / PROVIDER_BANDWIDTH'
+          formula: 'mean(bandwidth_instance) / my_sgn(PROVIDER_BANDWIDTH) * PROVIDER_BANDWIDTH'
           window: 'sliding 5 min'
           output: 'all 30 sec'
         - name: bandwidth_instance
@@ -205,3 +205,8 @@ spec:
           #---
         - name: VideoCaptureCardinality
           ref: '[video-capture].[instances]'
+
+functions:
+  - name: my_sgn
+    expression: 'abs( n ) / n'
+    arguments: [ n ]
