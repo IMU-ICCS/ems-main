@@ -581,8 +581,8 @@ translator.prune-mvv=true
 translator.add-top-level-metrics=true
 
 ### IMPORTANT: Pattern must yield valid EPL identifiers
-translator.full-name-pattern={TYPE}__{CAMEL}__{MODEL}__{ELEM}__{COUNT}
-translator.formula-check-enabled=true
+#translator.full-name-pattern={TYPE}__{CAMEL}__{MODEL}__{ELEM}__{COUNT}
+#translator.formula-check-enabled=true
 
 ### Sensor settings
 translator.sensor-configuration-annotation=MELODICMetadataSchema.ContextAwareSecurityModel.SecurityContextElement.Object.DataArtefact.Configuration.ConfigurationFormat.JSON_FORMAT

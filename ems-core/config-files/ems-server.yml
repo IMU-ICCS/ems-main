@@ -642,8 +642,8 @@ translator:
   add-top-level-metrics: true
 
   ### IMPORTANT: Pattern must yield valid EPL identifiers
-  full-name-pattern: '{TYPE}__{CAMEL}__{MODEL}__{ELEM}__{COUNT}'
-  formula-check-enabled: true
+  #full-name-pattern: '{TYPE}__{CAMEL}__{MODEL}__{ELEM}__{COUNT}'
+  #formula-check-enabled: true
 
   ### Sensor settings
   sensor-configuration-annotation: 'MELODICMetadataSchema.ContextAwareSecurityModel.SecurityContextElement.Object.DataArtefact.Configuration.ConfigurationFormat.JSON_FORMAT'
