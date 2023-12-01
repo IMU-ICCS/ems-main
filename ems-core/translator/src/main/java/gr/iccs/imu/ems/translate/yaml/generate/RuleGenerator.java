@@ -83,8 +83,9 @@ public class RuleGenerator implements InitializingBean {
         _TC.getDAG().traverseDAG(node -> {
             String grouping = node.getGrouping() != null ? node.getGrouping().toString() : null;
             NamedElement elem = node.getElement();
-            String elemName = elem != null ? elem.getName() : null;
-            Class elemClass = elem != null ? elem.getClass() : null;
+            String elemName = elem != null ? getElemNameNormalized(elem) : null;
+            node.setTopicName(elemName);
+            Class<?> elemClass = elem != null ? elem.getClass() : null;
             log.debug("RuleGenerator.generateRules():  node: {}, grouping={}, elem-name={}, elem-class={}", node, grouping, elemName, elemClass);
 
             // Generate rules depending on the type of element
@@ -161,14 +162,16 @@ public class RuleGenerator implements InitializingBean {
 
                 // Get constraint's metric context (just the name)
                 MetricContext mc = constr.getMetricContext();
-                log.debug("RuleGenerator.generateRules():      Metric-Constraint: node={}, elem-name={}, operator={}->{}, threshold={}, metric-context={}", node, elemName, camelOp, ruleOp, threshold, mc.getName());
+                String mcName = getElemNameNormalized(mc);
+                log.debug("RuleGenerator.generateRules():      Metric-Constraint: node={}, elem-name={}, operator={}->{}, threshold={}, metric-context={}",
+                        node, elemName, camelOp, ruleOp, threshold, mcName);
 
                 // Require context topic in this level
-                _TC.requireGroupingTopicPair(grouping, mc.getName());
+                _TC.requireGroupingTopicPair(grouping, mcName);
 
                 // Write rule for CONSTR-MET
                 Context context = new Context();
-                context.setVariable("metricContext", mc.getName());
+                context.setVariable("metricContext", mcName);
                 context.setVariable("operator", ruleOp);
                 context.setVariable("threshold", threshold);
                 _generateRule(_TC, "CONSTR-MET", grouping, elem, context);
@@ -177,15 +180,15 @@ public class RuleGenerator implements InitializingBean {
                 IfThenConstraint constr = (IfThenConstraint) elem;
 
                 // Get constraint If, Then, Else child constraints
-                String ifConstr = constr.getIf().getName();
-                String thenConstr = constr.getThen().getName();
-                String elseConstr = constr.getElse()!=null ? constr.getElse().getName() : null;
+                String ifConstr = getElemNameNormalized(constr.getIf());
+                String thenConstr = getElemNameNormalized(constr.getThen());
+                String elseConstr = constr.getElse()!=null ? getElemNameNormalized(constr.getElse()) : null;
 
                 log.debug("RuleGenerator.generateRules():      If-Then-Constraint: node={}, elem-name={}, If={}, Then={}, Else={}",
                         node, elemName, ifConstr, thenConstr, elseConstr);
 
                 // Require context topic in this level
-                _TC.requireGroupingTopicPair(grouping, constr.getName());
+                _TC.requireGroupingTopicPair(grouping, getElemNameNormalized(constr));
 
                 // Write rule for CONSTR-IF-THEN
                 Context context = new Context();
@@ -203,12 +206,13 @@ public class RuleGenerator implements InitializingBean {
                 // Get logical constraint operator and component constraints
                 String camelOp = constr.getLogicalOperator().name();
                 String ruleOp = camelToRule(MapType.OPERATOR, ElemType.CONSTR, camelOp);
-                List<String> componentConstraintsNamesList = constr.getConstraints().stream().map(NamedElement::getName).collect(Collectors.toList());
+                List<String> componentConstraintsNamesList = constr.getConstraints().stream()
+                        .map(this::getElemNameNormalized).collect(Collectors.toList());
 
                 log.debug("RuleGenerator.generateRules():      Logical-Constraint: node={}, elem-name={}, operator={}->{}, component-constraints={}", node, elemName, camelOp, ruleOp, componentConstraintsNamesList);
 
                 // Require context topic in this level
-                _TC.requireGroupingTopicPair(grouping, constr.getName());
+                _TC.requireGroupingTopicPair(grouping, getElemNameNormalized(constr));
 
                 // Write rule for CONSTR-LOG
                 Context context = new Context();
@@ -225,7 +229,7 @@ public class RuleGenerator implements InitializingBean {
                 CompositeMetric metric = (CompositeMetric) cmc.getMetric();
                 String formula = metric.getFormula();
                 List<Metric> components = metric.getComponentMetrics();
-                List<String> componentNames = components.stream().map(NamedElement::getName).collect(Collectors.toList());
+                List<String> componentNames = components.stream().map(this::getElemNameNormalized).collect(Collectors.toList());
 
                 boolean isAggregation = MathUtil.containsAggregator(formula);
 
@@ -242,12 +246,20 @@ public class RuleGenerator implements InitializingBean {
 
                 // Get composite metric context's composing metric contexts (just the names)
                 List<MetricContext> composingCtxList = cmc.getComposingMetricContexts();
-                List<String> composingMetricNamesList = composingCtxList.stream().map(item -> item.getMetric().getName()).collect(Collectors.toList());
-                List<String> composingCtxNamesList = composingCtxList.stream().map(NamedElement::getName).collect(Collectors.toList());
+                List<String> composingMetricNamesList = composingCtxList.stream()
+                        //XXX:TODO: LOW-PRI: Improve by using formula rewrite in order to include component name too
+                        //XXX:TODO: LOW-PRI: (e.g. 'mean([face-detection.latency_instance])' to 'mean( face_detection_latency__instance )' )
+                        .map(item -> StringUtils.defaultIfBlank(
+                                StringUtils.substringAfterLast(item.getName(), "."),
+                                item.getName()))
+                        //.map(item -> getElemName(item.getMetric()))
+                        .collect(Collectors.toList());
+                List<String> composingCtxNamesList = composingCtxList.stream().map(this::getElemNameNormalized).collect(Collectors.toList());
 
                 // Check that component metrics' names (from composite metric) and metric names from component contexts match
                 if (checkIfListsAreEqual(componentNames, composingCtxNamesList)) {
-                    log.error("RuleGenerator.generateRules():      Component metrics of composite metric '{}' do not match to component contexts of Composite-Metric-Context '{}': component-metrics={}, component-context-metrics={}", metric.getName(), cmc.getName(), componentNames, composingCtxNamesList);
+                    log.error("RuleGenerator.generateRules():      Component metrics of composite metric '{}' do not match to component contexts of Composite-Metric-Context '{}': component-metrics={}, component-context-metrics={}",
+                            getElemNameNormalized(metric), getElemNameNormalized(cmc), componentNames, composingCtxNamesList);
                     throw new IllegalArgumentException(String.format("Component metrics of composite metric '%s' do not match to component contexts of Composite-Metric-Context: %s", metric.getName(), cmc.getName()));
                 }
 
@@ -266,7 +278,7 @@ public class RuleGenerator implements InitializingBean {
                 // Write rule for CMC or CMC-AGG
                 Context context = new Context();
                 context.setVariable("formula", formula);
-                context.setVariable("metric", metric.getName());
+                context.setVariable("metric", getElemNameNormalized(metric));
                 context.setVariable("components", composingMetricNamesList);
                 context.setVariable("contexts", composingCtxNamesList);
                 context.setVariable("windowClause", winClause);
@@ -278,7 +290,7 @@ public class RuleGenerator implements InitializingBean {
                 // Get raw metric context's metric parameters
                 RawMetric metric = (RawMetric) rmc.getMetric();
                 Sensor sensor = rmc.getSensor();
-                String sensorName = sensor != null ? sensor.getName() : null;
+                String sensorName = sensor != null ? getElemNameNormalized(sensor) : null;
 
                 // Get raw metric context's schedule parameters
                 Schedule sched = rmc.getSchedule();
@@ -293,11 +305,11 @@ public class RuleGenerator implements InitializingBean {
                         node, elemName, metric.getName(), sensorName, schedClause, compName, dataName);
 
                 // Require topics in this level
-                _TC.requireGroupingTopicPair(grouping, rmc.getName());
+                _TC.requireGroupingTopicPair(grouping, getElemNameNormalized(rmc));
 
                 // Write rule for RMC
                 Context context = new Context();
-                context.setVariable("metric", metric.getName());
+                context.setVariable("metric", getElemNameNormalized(metric));
                 context.setVariable("sensor", sensorName);
                 context.setVariable("scheduleClause", schedClause);
                 _generateRule(_TC, "RAW-CTX", grouping, elem, context);
@@ -459,7 +471,7 @@ public class RuleGenerator implements InitializingBean {
 
                 // Write rule for SLO
                 Context context = new Context();
-                context.setVariable("constraint", constr.getName());
+                context.setVariable("constraint", getElemNameNormalized(constr));
                 _generateRule(_TC, "SLO", grouping, elem, context);
             } else
 
@@ -470,14 +482,18 @@ public class RuleGenerator implements InitializingBean {
 
             // Add provided topic (i.e. this node generates the rule(s) that will create the events to be published in topic)
             if (providesTopic) {
-                _TC.provideGroupingTopicPair(grouping, elem.getName());
+                _TC.provideGroupingTopicPair(grouping, getElemNameNormalized(elem));
             }
         });
         log.debug("RuleGenerator.generateRules(): Traversing DAG... done");
     }
 
+    protected String getElemNameNormalized(NamedElement elem) {
+        return elem.getName().replace("_", "__").replaceAll("[^A-Za-z0-9_]", "_");
+    }
+
     protected void _generateRule(TranslationContext _TC, String type, String grouping, NamedElement elem, Context context) {
-        String elemName = elem.getName();
+        String elemName = getElemNameNormalized(elem);
 
         // Check for sub-feature attribute 'translation_config.epl_value'. If it exists then the rule EPL statement is
         // taken from its value (provided it is not null or blank, and it is a string value).
