@@ -16,7 +16,7 @@ translator.generator:
     SCHEDULE:
       __ANY__:
         - |
-          OUTPUT ${type} EVERY [(${period})] [(${unit})]
+          OUTPUT [(${type})] EVERY [(${period})] [(${unit})]
       AGG:
         - |
           OUTPUT SNAPSHOT EVERY [(${period})] [(${unit})]
