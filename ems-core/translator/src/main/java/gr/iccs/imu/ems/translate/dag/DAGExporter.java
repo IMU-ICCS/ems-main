@@ -72,15 +72,18 @@ public class DAGExporter {
                     String[] namePart = node.getName().split("\\.",2);
                     String name = (namePart.length>1)
                             ? "<U>"+namePart[0].trim()+"</U> .."+namePart[1].trim() : "<U>"+namePart[0].trim()+"</U>";
+                    String type = node.getElement()!=null ? node.getElement().getClass().getSimpleName() : "-";
                     String topic = StringUtils.defaultIfBlank(node.getTopicName(), "");
                     label = String.format("""
                             <B>%s</B>
-                            <BR/><BR/>
+                            <BR/>
+                            <FONT POINT-SIZE="12">&laquo; %s &raquo;</FONT>
+                            <BR/>
                             <I><FONT COLOR="grey">%s</FONT></I>
                             <BR/>
                             <B><FONT COLOR="red">[%s]</FONT></B>
                             """,
-                            name, topic, node.getGrouping());
+                            name, type, topic, node.getGrouping());
                     col = colorsArr[(node.getGrouping().getOrder() % (colorsArr.length-1))];
 
                     isSensor = node.getElement()!=null &&
