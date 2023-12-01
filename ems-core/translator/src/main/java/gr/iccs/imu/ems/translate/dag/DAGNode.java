@@ -29,6 +29,7 @@ public class DAGNode implements Serializable {
     private final NamedElement element;
     private final String elementName;
     private Grouping grouping;
+    private String topicName;
 
     DAGNode() {
         id = counter.getAndIncrement();
@@ -46,6 +47,11 @@ public class DAGNode implements Serializable {
 
     public DAGNode setGrouping(Grouping g) {
         grouping = g;
+        return this;
+    }
+
+    public DAGNode setTopicName(String s) {
+        topicName = s;
         return this;
     }
 
