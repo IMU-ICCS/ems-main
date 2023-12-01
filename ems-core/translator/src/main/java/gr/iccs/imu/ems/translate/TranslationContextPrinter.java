@@ -9,6 +9,7 @@
 
 package gr.iccs.imu.ems.translate;
 
+import gr.iccs.imu.ems.translate.dag.DAGExporter;
 import gr.iccs.imu.ems.translate.model.NamedElement;
 import gr.iccs.imu.ems.util.FunctionDefinition;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TranslationContextPrinter {
 	private final TranslationContextPrinterProperties properties;
-	
+	private final DAGExporter dagExporter;
+
 	public void printResults(TranslationContext _TC, String exportName) {
 		if (! properties.isPrintResults()) {
 			log.debug("TranslationContextPrinter.printResults(): Translation results printing is disabled");
@@ -44,7 +46,7 @@ public class TranslationContextPrinter {
 			log.info("*********************************************************");
 			try {
 				if (_TC.getDAG().getRootNode()!=null) {
-					dot = _TC.getDAG().exportToDot();
+					dot = dagExporter.exportToDot(_TC.getDAG());
 					log.info("Decomposition Graph in DOT format:\n{}", dot);
 				} else {
 					log.warn("Decomposition Graph is empty.");
@@ -71,9 +73,9 @@ public class TranslationContextPrinter {
 				String baseFileName = String.format("%s/%s-%d", exportPath, exportName, System.currentTimeMillis());
 				List<String> exportFiles;
 				if (dot!=null) {
-					exportFiles = _TC.getDAG().exportDAG(dot, baseFileName, exportFormats, imageWidth);
+					exportFiles = dagExporter.exportDAG(dot, baseFileName, exportFormats, imageWidth);
 				} else {
-					exportFiles = _TC.getDAG().exportDAG(baseFileName, exportFormats, imageWidth);
+					exportFiles = dagExporter.exportDAG(_TC.getDAG(), baseFileName, exportFormats, imageWidth);
 				}
 				_TC.setExportFiles(exportFiles);
 				//log.info("Decomposition Graph export to file(s): ok");

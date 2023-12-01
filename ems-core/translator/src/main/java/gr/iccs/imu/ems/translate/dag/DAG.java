@@ -11,23 +11,9 @@ package gr.iccs.imu.ems.translate.dag;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import gr.iccs.imu.ems.translate.model.NamedElement;
-import guru.nidi.graphviz.engine.Format;
-import guru.nidi.graphviz.engine.Graphviz;
-import guru.nidi.graphviz.engine.GraphvizV8Engine;
-import guru.nidi.graphviz.model.MutableGraph;
-import guru.nidi.graphviz.parse.Parser;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.text.StringEscapeUtils;
 import org.jgrapht.graph.DirectedAcyclicGraph;
-import org.jgrapht.nio.Attribute;
-import org.jgrapht.nio.AttributeType;
-import org.jgrapht.nio.DefaultAttribute;
-import org.jgrapht.nio.dot.DOTExporter;
 
-import java.io.File;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,7 +23,7 @@ public class DAG {
     // Graph-related fields
     @JsonIgnore
     private transient Function<NamedElement, String> fullNameProvider = NamedElement::getName;
-    private DirectedAcyclicGraph<DAGNode, DAGEdge> _graph;
+    DirectedAcyclicGraph<DAGNode, DAGEdge> _graph;
     @JsonIgnore
     private transient DAGNode _root;
     @JsonIgnore
@@ -355,145 +341,6 @@ public class DAG {
 
     public void addDAGEdge(DAGNode src, DAGNode trg) {
         _graph.addEdge(src, trg);
-    }
-
-    // ====================================================================================================================================================
-    // Export methods
-
-    public String exportToDot() {
-        if (_graph==null) {
-            log.warn("DAG.exportToDot(): Cannot export: DAG has not been initialized");
-            return null;
-        }
-
-        // Create a DOT exporter
-        DOTExporter<DAGNode, DAGEdge> exporter = new DOTExporter<>(node -> "NODE_" + node.getId());
-
-        // Format the graph
-        /*exporter.setGraphAttributeProvider(() -> {
-            LinkedHashMap<String, Attribute> graphAttributes = new LinkedHashMap<>();
-            // See: https://graphviz.org/docs/layouts/
-            graphAttributes.put("layout", new DefaultAttribute<>("circo", AttributeType.STRING));
-            graphAttributes.put("beautify", new DefaultAttribute<>("true", AttributeType.BOOLEAN));
-            return graphAttributes;
-        });*/
-
-        // Format vertices (nodes)
-        // See (colors): https://www.pastelcolorpalettes.com/7-color-pastels-rainbow
-        List<String> ll = Arrays.asList("#F6CA94", "#FAFABE", "#C1EBC0", "#C7CAFF", "#CDABEB", "#F6C2F3", "#F09EA7");
-        //Collections.reverse(ll);
-        String[] colorsArr = ll.toArray(new String[0]);
-        exporter.setVertexAttributeProvider(node -> {
-            LinkedHashMap<String, Attribute> vertexAttributes = new LinkedHashMap<>();
-
-            // Prepare and format labels
-            // See: https://graphviz.org/doc/info/shapes.html#html
-            String label;
-            String col;
-            if (node.getName() != null) {
-                if (node.getGrouping() != null) {
-                    //label = String.format("%s\n[%s]", node.getName(), node.getGrouping());
-                    String[] namePart = node.getName().split("\\.",2);
-                    String name = (namePart.length>1)
-                            ? "<U>"+namePart[0].trim()+"</U> .."+namePart[1].trim() : "<U>"+namePart[0].trim()+"</U>";
-                    label = String.format("<B>%s</B><BR/><BR/><B><FONT COLOR=\"red\">[%s]</FONT></B>",
-                            name, node.getGrouping());
-                    col = colorsArr[(node.getGrouping().getOrder() % (colorsArr.length-1))];
-                } else {
-                    label = node.getName();
-                    col = "#ffffff";
-                }
-            } else {
-                label = StringEscapeUtils.escapeHtml4("<ROOT>");
-                label = "<B>"+label+"</B>";
-                col = colorsArr[colorsArr.length-1];
-            }
-            // See: https://graphviz.org/doc/info/attrs.html
-            vertexAttributes.put("label", new DefaultAttribute<>(label, AttributeType.HTML));
-
-            // See: https://graphviz.org/doc/info/shapes.html#polygon
-            vertexAttributes.put("shape", new DefaultAttribute<>("box", AttributeType.STRING));
-
-            //vertexAttributes.put("fillcolor", new DefaultAttribute<>(col, AttributeType.STRING));
-            //vertexAttributes.put("style", new DefaultAttribute<>("filled", AttributeType.STRING));
-            // or
-            vertexAttributes.put("fillcolor", new DefaultAttribute<>(col+":white;0.3", AttributeType.STRING));
-            vertexAttributes.put("style", new DefaultAttribute<>("radial, rounded", AttributeType.STRING));
-            vertexAttributes.put("gradientangle", new DefaultAttribute<>(60, AttributeType.INT));
-
-            /*
-            // Example
-            vertexAttributes.put("color", new DefaultAttribute<>("red", AttributeType.STRING));
-            vertexAttributes.put("fontcolor", new DefaultAttribute<>("yellow", AttributeType.STRING));
-            vertexAttributes.put("fillcolor", new DefaultAttribute<>("cyan:green;0.3", AttributeType.STRING));
-            vertexAttributes.put("style", new DefaultAttribute<>("radial", AttributeType.STRING));
-            vertexAttributes.put("gradientangle", new DefaultAttribute<>(60, AttributeType.INT));
-            */
-            return vertexAttributes;
-        });
-        Writer writer = new StringWriter();
-        exporter.exportGraph(_graph, writer);
-        return writer.toString();
-    }
-
-    public List<String> exportDAG(String baseFileName, String[] exportFormats, int imageWidth) {
-        try {
-            if (!checkExportConfiguration(baseFileName, exportFormats, imageWidth)) return null;
-
-            // Export DAG in DOT format (can be viewed with GraphViz tool)
-            String dot = exportToDot();
-            log.debug("DAG.exportDAG(): Results of exportToDot(): Graph in DOT format:\n{}", dot);
-            if (dot==null) {
-                log.warn("DAG.exportDAG(): Cannot export: DAG has not been initialized");
-                return null;
-            }
-
-            // Export DOT into specified formats and save to file(s)
-            return exportDAG(dot, baseFileName, exportFormats, imageWidth);
-
-        } catch (Exception ex) {
-            log.error("DAG.exportDAG(): Graph export FAILED: ", ex);
-            return null;
-        }
-    }
-
-    public List<String> exportDAG(@NonNull String dot, String baseFileName, String[] exportFormats, int imageWidth) {
-        try {
-            if (!checkExportConfiguration(baseFileName, exportFormats, imageWidth)) return null;
-
-            // Configure Graphviz rendering engine to V8. It's faster
-            // See also: https://github.com/nidi3/graphviz-java
-            Graphviz.useEngine(new GraphvizV8Engine());
-
-            // Export DOT into specified formats and save to file(s)
-            List<String> exportFilesList = new LinkedList<>();
-            MutableGraph mg = new Parser().read(dot);
-            for (String f : exportFormats) {
-                Format fmt = Format.valueOf(f.toUpperCase());
-                String exportFile = baseFileName + "." + f;
-                Graphviz.fromGraph(mg).width(imageWidth).render(fmt).toFile(new File(exportFile));
-                exportFilesList.add(exportFile);
-                log.info("DAG.exportDAG(): Graph exported in {} format: {}", fmt, exportFile);
-            }
-            return exportFilesList;
-
-        } catch (Exception ex) {
-            log.error("DAG.exportDAG(): Graph export FAILED: ", ex);
-            return null;
-        }
-    }
-
-    protected boolean checkExportConfiguration(String baseFileName, String[] exportFormats, int imageWidth) {
-        // check export configuration
-        if (exportFormats == null || exportFormats.length == 0) {
-            log.warn("DAG.checkExportConfiguration(): No export formats specified for Graph export: {}", Arrays.toString(exportFormats));
-            return false;
-        }
-        if (imageWidth < 1) {
-            log.warn("DAG.checkExportConfiguration(): Invalid image width for Graph export: {}", imageWidth);
-            return false;
-        }
-        return true;
     }
 
     public String toString() {
