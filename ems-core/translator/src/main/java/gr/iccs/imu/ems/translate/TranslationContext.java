@@ -674,7 +674,8 @@ public class TranslationContext implements Serializable {
     }
 
     public Map<String,String> getBusyStatusDestinationNameToMetricContextNameMap() {
-        return new HashMap<>(busyStatusDestinationToMetricContextNameMap);
+        return busyStatusDestinationToMetricContextNameMap!=null
+                ? new HashMap<>(busyStatusDestinationToMetricContextNameMap) : new HashMap<>();
     }
 
     public String getBusyStatusDestinationMetricContextName(@NonNull String key) {
@@ -690,7 +691,8 @@ public class TranslationContext implements Serializable {
     }
 
     public Set<String> getBusyStatusMetricsSet() {
-        return new HashSet<>(busyStatusMetricsSet);
+        return busyStatusMetricsSet!=null
+                ? new HashSet<>(busyStatusMetricsSet) : new HashSet<>();
     }
 
     // ====================================================================================================================================================
