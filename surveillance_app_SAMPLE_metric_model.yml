@@ -105,7 +105,6 @@ spec:
         - name: cpu_util_instance
           type: raw                             # Optional. Can be inferred from the existence of 'sensor' field
           template: *prct_tpl
-          busy-status: true
 #          sensor: 'netdata netdata__system__cpu__total'
           # ALTERNATIVE REPRESENTATION of sensor
           sensor:
@@ -131,6 +130,7 @@ spec:
           output: 'all 30 sec'
         - name: bandwidth_instance
           type: raw
+          busy-status: true
           sensor: 'netdata netdata__system__cpu__total'
           output: 'all 30 sec'
         - name: PROVIDER_BANDWIDTH

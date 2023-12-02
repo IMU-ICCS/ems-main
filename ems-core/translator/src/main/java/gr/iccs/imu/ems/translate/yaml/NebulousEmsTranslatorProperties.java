@@ -44,8 +44,6 @@ public class NebulousEmsTranslatorProperties implements InitializingBean {
     private boolean addTopLevelMetrics = true;
     private String fullNamePattern;
 
-    // Load-annotated metric settings
-//XXX:TODO:...... in MetricModelAnalyzer......
-    private String loadMetricAnnotation = "MELODICMetadataSchema.UtilityNotions.UtilityRelatedProperties.Utility.BusyInstanceMetric";
-    private String loadMetricVariableFormatter = "busy.%s";
+    // Busy-Status metric settings
+    private String busyStatusDestinationNameFormatter = "busy.%s";
 }

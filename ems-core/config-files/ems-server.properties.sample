@@ -589,9 +589,9 @@ translator.sensor-configuration-annotation=MELODICMetadataSchema.ContextAwareSec
 translator.sensor-min-interval=1
 translator.sensor-default-interval=60
 
-# Load-annotated metric settings
-translator.loadMetricAnnotation=MELODICMetadataSchema.UtilityNotions.UtilityRelatedProperties.Utility.BusyInstanceMetric
-translator.loadMetricVariableFormatter=busy.%s
+# Busy-Status metric settings
+#translator.busyStatusMetricAnnotation=MELODICMetadataSchema.Application_Placement_Model.UtilityNotions.BusyInstanceMetric
+translator.busyStatusDestinationNameFormatter=busy.%s
 
 ### Print results and export switches
 #translator.print-results=true

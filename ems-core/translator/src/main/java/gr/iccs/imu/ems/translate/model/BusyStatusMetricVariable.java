@@ -17,8 +17,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class LoadMetricVariable extends MetricVariable {
-    public LoadMetricVariable(String name, MetricContext context) {
+public class BusyStatusMetricVariable extends MetricVariable {
+    public BusyStatusMetricVariable(String name, MetricContext context) {
         setName(name);
         setMetricContext(context);
     }

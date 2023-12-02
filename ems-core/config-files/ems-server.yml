@@ -650,9 +650,9 @@ translator:
   sensor-min-interval: 1
   sensor-default-interval: 60
 
-  # Load-annotated metric settings
-  loadMetricAnnotation: 'MELODICMetadataSchema.Application_Placement_Model.UtilityNotions.BusyInstanceMetric'
-  loadMetricVariableFormatter: 'busy.%s'
+  # Busy-Status metric settings
+  #busyStatusMetricAnnotation: 'MELODICMetadataSchema.Application_Placement_Model.UtilityNotions.BusyInstanceMetric'
+  busyStatusDestinationNameFormatter: 'busy.%s'
 
   ### Print results and export switches
   #print-results: true

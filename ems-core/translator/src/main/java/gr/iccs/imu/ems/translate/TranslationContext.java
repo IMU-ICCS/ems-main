@@ -116,9 +116,9 @@ public class TranslationContext implements Serializable {
     // If-Then-Else Constraints
     private final Set<IfThenConstraint> ifThenConstraints = new LinkedHashSet<>();
 
-    // Load-annotated Metric
-    protected final Map<String, String> loadAnnotatedDestinationToMetricContextNameMap = new LinkedHashMap<>();
-    protected final Set<String> loadAnnotatedMetricsSet = new LinkedHashSet<>();
+    // Busy-Status Metrics
+    protected final Map<String, String> busyStatusDestinationToMetricContextNameMap = new LinkedHashMap<>();
+    protected final Set<String> busyStatusMetricsSet = new LinkedHashSet<>();
 
     // Top-Level metric names
     protected final Set<String> topLevelMetricNames = new LinkedHashSet<>();
@@ -666,35 +666,34 @@ public class TranslationContext implements Serializable {
     }
 
     // ====================================================================================================================================================
-    // Load-Metrics-related helper methods
+    // Busy-Status metrics-related helper methods
 
-    public void addLoadAnnotatedDestinationNameToMetricContextName(@NonNull String metricContextName, @NonNull String destinationName) {
-        loadAnnotatedDestinationToMetricContextNameMap.put(destinationName, metricContextName);
+    public void addBusyStatusDestinationNameToMetricContextName(@NonNull String metricContextName, @NonNull String destinationName) {
+        busyStatusDestinationToMetricContextNameMap.put(destinationName, metricContextName);
     }
 
-    public void addLoadAnnotatedDestinationNameToMetricContextName(@NonNull Map<String,String> map) {
-        loadAnnotatedDestinationToMetricContextNameMap.putAll(map);
+    public void addBusyStatusDestinationNameToMetricContextName(@NonNull Map<String,String> map) {
+        busyStatusDestinationToMetricContextNameMap.putAll(map);
     }
 
-    public Map<String,String> getLoadAnnotatedDestinationNameToMetricContextNameMap() {
-        return loadAnnotatedDestinationToMetricContextNameMap!=null
-                ? new HashMap<>(loadAnnotatedDestinationToMetricContextNameMap) : new HashMap<>();
+    public Map<String,String> getBusyStatusDestinationNameToMetricContextNameMap() {
+        return new HashMap<>(busyStatusDestinationToMetricContextNameMap);
     }
 
-    public String getLoadAnnotatedDestinationMetricContextName(@NonNull String key) {
-        return getLoadAnnotatedDestinationNameToMetricContextNameMap().get(key);
+    public String getBusyStatusDestinationMetricContextName(@NonNull String key) {
+        return getBusyStatusDestinationNameToMetricContextNameMap().get(key);
     }
 
-    public void addLoadAnnotatedMetric(@NonNull String metricName) {
-        loadAnnotatedMetricsSet.add(metricName);
+    public void addBusyStatusMetric(@NonNull String metricName) {
+        busyStatusMetricsSet.add(metricName);
     }
 
-    public void addLoadAnnotatedMetrics(@NonNull Set<String> metricNames) {
-        loadAnnotatedMetricsSet.addAll(metricNames);
+    public void addBusyStatusMetrics(@NonNull Set<String> metricNames) {
+        busyStatusMetricsSet.addAll(metricNames);
     }
 
-    public Set<String> getLoadAnnotatedMetricsSet() {
-        return loadAnnotatedMetricsSet!=null ? new HashSet<>(loadAnnotatedMetricsSet) : new HashSet<>();
+    public Set<String> getBusyStatusMetricsSet() {
+        return new HashSet<>(busyStatusMetricsSet);
     }
 
     // ====================================================================================================================================================

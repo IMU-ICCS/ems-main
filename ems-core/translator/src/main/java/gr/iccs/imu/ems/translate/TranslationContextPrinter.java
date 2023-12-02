@@ -114,10 +114,10 @@ public class TranslationContextPrinter {
 		log.info("*********************************************************");
 		log.info("Metric Constraints:\n{}", _TC.getMetricConstraints());
 		log.info("*********************************************************");
-		log.info("Load-Annotated Destination-to-Metric Context names map:\n{}",
-				_TC.getLoadAnnotatedDestinationNameToMetricContextNameMap());
+		log.info("Busy-Status Destination-to-Metric Context names map:\n{}",
+				_TC.getBusyStatusDestinationNameToMetricContextNameMap());
 		log.info("*********************************************************");
-		log.info("Load-Annotated Metrics:\n{}", _TC.getLoadAnnotatedMetricsSet());
+		log.info("Busy-Status Metrics:\n{}", _TC.getBusyStatusMetricsSet());
 		log.info("*********************************************************");
 		log.info("Top-Level Metric names:\n{}", _TC.getTopLevelMetricNames());
 		log.info("*********************************************************");

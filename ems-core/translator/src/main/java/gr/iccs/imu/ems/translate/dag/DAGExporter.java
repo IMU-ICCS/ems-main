@@ -89,7 +89,7 @@ public class DAGExporter {
                     isSensor = node.getElement()!=null &&
                             StringUtils.containsIgnoreCase(node.getElement().getClass().getSimpleName(), "Sensor");
                     isBusyStatus = node.getElement()!=null &&
-                            "LoadMetricVariable".equalsIgnoreCase(node.getElement().getClass().getSimpleName());
+                            "BusyStatusMetricVariable".equalsIgnoreCase(node.getElement().getClass().getSimpleName());
                 } else {
                     label = node.getName();
                     col = "#ffffff";

@@ -567,12 +567,12 @@ public class MetricModelAnalyzer {
         // Check if it is a Busy-Status metric
         if (getSpecBoolean(metricSpec, "busy-status", false)) {
             log.trace("decomposeMetric: {}: It is a BUSY-STATUS metric", metricNamesKey.name());
-            _TC.addLoadAnnotatedMetric(metric.getName());
+            _TC.addBusyStatusMetric(metric.getName());
 
             // Add a top-level node to connect busy-status metric
-            String busyStatusMetricName =     //XXX:TODO:  Rename 'xxxLoadMetricXxxx' occurrences with 'xxxBusyStatusMetricXxxx'
-                    String.format(properties.getLoadMetricVariableFormatter(), metric.getName());
-            LoadMetricVariable newMv = LoadMetricVariable.builder()
+            String busyStatusMetricName =
+                    String.format(properties.getBusyStatusDestinationNameFormatter(), metric.getName());
+            BusyStatusMetricVariable newMv = BusyStatusMetricVariable.builder()
                     .name(busyStatusMetricName)
                     .metricContext(metric)
                     .componentMetrics(List.of(metric.getMetric()))
@@ -581,7 +581,7 @@ public class MetricModelAnalyzer {
             log.debug("decomposeMetric: {}: New Busy-Status metric variable: {}", metricNamesKey.name(), newMv.getName());
 
             // Update TC
-            _TC.addLoadAnnotatedDestinationNameToMetricContextName(metric.getName(), busyStatusMetricName);
+            _TC.addBusyStatusDestinationNameToMetricContextName(metric.getName(), busyStatusMetricName);
             //_TC.addElementToNamePair(newMv, newMv.getName());
             _TC.getDAG().addTopLevelNode(newMv);
             _TC.getDAG().addNode(newMv, metric);
