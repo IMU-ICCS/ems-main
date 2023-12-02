@@ -42,7 +42,7 @@ public class NebulousEmsTranslatorProperties implements InitializingBean {
     private Grouping leafNodeGrouping = Grouping.PER_INSTANCE;
     private boolean pruneMvv = true;
     private boolean addTopLevelMetrics = true;
-    private String fullNamePattern;
+    private String fullNamePattern = "{ELEM}";
 
     // Busy-Status metric settings
     private String busyStatusDestinationNameFormatter = "busy.%s";

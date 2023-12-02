@@ -691,8 +691,7 @@ public class TranslationContext implements Serializable {
     }
 
     public Set<String> getBusyStatusMetricsSet() {
-        return busyStatusMetricsSet!=null
-                ? new HashSet<>(busyStatusMetricsSet) : new HashSet<>();
+        return busyStatusMetricsSet!=null ? new HashSet<>(busyStatusMetricsSet) : new HashSet<>();
     }
 
     // ====================================================================================================================================================
