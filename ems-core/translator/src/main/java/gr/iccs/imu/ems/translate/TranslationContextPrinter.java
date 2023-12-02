@@ -98,9 +98,22 @@ public class TranslationContextPrinter {
 		log.info("*********************************************************");
 		log.info("Grouping-to-EPL Rules map:\n{}", prettifyG2R(_TC.getG2R(), ""));
 		log.info("*********************************************************");
-		log.info("Grouping-to-Topics map:\n{}", _TC.getG2T());
+		log.info("Grouping-to-Topics map:\n{}", _TC.getG2T().entrySet().stream()
+				.sorted(Comparator.comparingInt(o -> Grouping.valueOf(o.getKey()).ordinal()))
+				.map(e -> e.getKey()+": "+e.getValue().stream()
+						.collect(Collectors.joining("\n    - ", "\n    - ", "")) )
+				.collect(Collectors.joining("\n  ", "  ", "")));
 		log.info("*********************************************************");
-		log.info("Topics-Connections map:\n{}", _TC.getTopicConnections());
+		log.info("Topics-Connections map:\n{}", _TC.getTopicConnections().entrySet().stream()
+				.sorted(Comparator.comparingInt(o -> Grouping.valueOf(o.getKey()).ordinal()))
+				.map(e -> e.getKey()+": "+ e.getValue().entrySet().stream()
+						.sorted(Map.Entry.comparingByKey())
+						.map(ee -> ee.getKey()+": "+ee.getValue().stream()
+								.sorted(Comparator.comparingInt(o -> Grouping.valueOf(o).ordinal()))
+								.toList())
+						.collect(Collectors.joining("\n    ", "\n    ", ""))
+				)
+				.collect(Collectors.joining("\n  ", "  ", "")));
 		log.info("*********************************************************");
 		log.info("MVV set:\n{}", _TC.getMVV());
 		log.info("*********************************************************");
