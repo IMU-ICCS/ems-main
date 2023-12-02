@@ -166,10 +166,10 @@ translator.generator:
                  current_timestamp AS timestamp [/] [/]
           FROM [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx}+' AS '+${ctx} + ', ' : ${ctx}+' AS '+${ctx}"] [/]
           
-    LOAD-VAR:
+    BUSY-STATUS-VAR:
       __ANY__:
         - |
-          /* LOAD-VAR-any */ /*INSERT INTO [(${outputStream})]*/
+          /* BUSY-STATUS-VAR-any */ /*INSERT INTO [(${outputStream})]*/
           SELECT * FROM [(${context})]
 
     # Optimisation-Requirement templates

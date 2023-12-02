@@ -315,7 +315,7 @@ public class RuleGenerator implements InitializingBean {
                 _generateRule(_TC, "RAW-CTX", grouping, elem, context);
             } else
 
-            // Generate rules for Metrics and Metric Variables
+            // Generate rules for Metrics
             /*if ((elem instanceof RawMetric || elem instanceof CompositeMetric) && _TC.getDAG().isTopLevelNode(node)) {
                 log.debug("RuleGenerator.generateRules():      Found a Top-Level Metric element: node={}, elem-name={}", node, elemName);
                 Metric m = (Metric) elem;
@@ -348,24 +348,31 @@ public class RuleGenerator implements InitializingBean {
                 log.debug("RuleGenerator.generateRules():      Found a Raw-Metric element: node={}, elem-name={}", node, elemName);
                 providesTopic = false;
                 // Nothing to do here
-            } else if (elem instanceof LoadMetricVariable) {
-                log.debug("RuleGenerator.generateRules():      Found a LOAD Metric-Variable element: node={}, elem-name={}", node, elemName);
-                MetricVariable mvar = (LoadMetricVariable) elem;
+            } else*/
+
+            // Generate rules for Metric Variables
+            if (elem instanceof BusyStatusMetricVariable) {
+                log.debug("RuleGenerator.generateRules():      Found a BUSY-STATUS metric variable element: node={}, elem-name={}", node, elemName);
+                MetricVariable mvar = (BusyStatusMetricVariable) elem;
                 Component comp = mvar.getComponent();
                 String compName = comp != null ? comp.getName() : null;
 
-                MetricContext loadMetricContext = mvar.getMetricContext();
-                String loadMetricContextName = loadMetricContext.getName();
+                MetricContext busyStatusMetricContext = mvar.getMetricContext();
+                String busyStatusMetricContextName = getElemNameNormalized(busyStatusMetricContext);
 
-                log.debug("RuleGenerator.generateRules():      LOAD Metric-Variable: node={}, elem-name={}, component={}, metric-context={}",
-                        node, elemName, compName, loadMetricContextName);
+                log.debug("RuleGenerator.generateRules():      BUSY-STATUS metric variable: node={}, elem-name={}, component={}, metric-context={}",
+                        node, elemName, compName, busyStatusMetricContextName);
 
-                // Write rule for LOAD Metric Variable
+                // Require topics in this level
+                _TC.requireGroupingTopicPair(grouping, busyStatusMetricContextName);
+
+                // Write rule for BUSY-STATUS Metric Variable
                 Context context = new Context();
-                context.setVariable("context", loadMetricContextName);
-                _generateRule(_TC, "LOAD-VAR", grouping, elem, context);
+                context.setVariable("context", busyStatusMetricContextName);
+                _generateRule(_TC, "BUSY-STATUS-VAR", grouping, elem, context);
 
-            } else if (elem instanceof MetricVariable mvar) {
+            } else
+            /*if (elem instanceof MetricVariable mvar) {
                 log.debug("RuleGenerator.generateRules():      Found a Metric-Variable element: node={}, elem-name={}", node, elemName);
                 boolean isCurrConfig = mvar.isCurrentConfiguration();
                 boolean isOnNodeCand = mvar.isOnNodeCandidates();
