@@ -67,9 +67,9 @@ public class TranslationContextPrinter {
 				int imageWidth = properties.getDag().getExportImageWidth();
 
 				// Get base name and path of export files
-				if (exportPath == null) exportPath = "";
+				if (StringUtils.isBlank(exportPath)) exportPath = "";
 				exportName = StringUtils.stripToEmpty(exportName);
-				if (exportName.isEmpty()) exportName = "noname";
+				if (exportName.isEmpty()) exportName = "export";
 				String baseFileName = String.format("%s/%s-%d", exportPath, exportName, System.currentTimeMillis());
 				List<String> exportFiles;
 				if (dot!=null) {

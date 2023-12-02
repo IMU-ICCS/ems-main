@@ -49,7 +49,7 @@ public class BrokerCepStatementSubscriber implements StatementSubscriber {
     }
 
     protected void publishToLocalBroker(Map<String, Object> eventMap) {
-        log.info("- New event received: subscriber={}, topic={}, payload={}", name, topic, eventMap);
+        log.debug("- New event received: subscriber={}, topic={}, payload={}", name, topic, eventMap);
         String localBrokerUrl = brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer();
         String username = brokerCep.getBrokerUsername();
         String password = brokerCep.getBrokerPassword();

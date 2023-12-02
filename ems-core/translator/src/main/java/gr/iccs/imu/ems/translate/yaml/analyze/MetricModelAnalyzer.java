@@ -932,76 +932,34 @@ public class MetricModelAnalyzer {
         boolean isPull = getBooleanValue(getSpecField(sensorSpec, "pull"), false);
         if (isPush && isPull)
             throw createException("Sensor cannot be both 'push' and 'pull': sensor '" + sensorName + "' in metric '" + parentNamesKey + "': " + sensorSpec);
+        if (!isPush && !isPull)
+            isPull = true;
 
         // Get configuration
-        Object mapping = sensorSpec.get("affinity");            //XXX:TODO: !! RENAME IT -or- MOVE IT TO "config" !!
-        Object configObj = sensorSpec.get("config");
-        Object installObj = sensorSpec.get("install");          //XXX:TODO: !! MOVE TO "config" !!
-
-        if (! DEFAULT_SENSOR_TYPE.equalsIgnoreCase(sensorType))
-            mapping = null;
-
         LinkedHashMap<String, Object> configuration = new LinkedHashMap<>();
-        if (configObj!=null) configuration.putAll(asMap(configObj));
-        if (mapping!=null && StringUtils.isNotBlank(mapping.toString())) configuration.put("mapping", mapping.toString().trim());
-        if (configObj!=null) configuration.put("install", asMap(installObj));
+
+        Object mapping = sensorSpec.get("mapping");
+        Object configObj = sensorSpec.get("config");
+        Object installObj = sensorSpec.get("install");
+        if (configObj!=null)
+            configuration.putAll(asMap(configObj));
+        if (mapping instanceof String s && StringUtils.isNotBlank(s))
+            configuration.put("mapping", s.trim());
+        if (installObj instanceof Map i && !i.isEmpty())
+            configuration.put("install", i);
+
+        // overrides 'type' in 'config' (if any)
+        configuration.put("type", sensorType);
 
         // Create pull or push sensor
         Sensor sensor;
         if (isPull) {
-            // Convert Map<String,Object> to Map<String,String>
-            Map<String, String> cfgMapWithStr = configuration.entrySet().stream()
-                    .filter(e -> e.getValue() != null)
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
-
-            // Get pull sensor configuration
-            String className = StrUtil.getWithVariations(cfgMapWithStr, "className", "").trim();
-            String intervalPeriodStr = StrUtil.getWithVariations(cfgMapWithStr, "intervalPeriod", "").trim();
-            String intervalUnitStr = StrUtil.getWithVariations(cfgMapWithStr, "intervalUnit", "").trim();
-
-            // Get interval
-            int period = StrUtil.strToInt(intervalPeriodStr,
-                    (int)properties.getSensorDefaultInterval(), (i)->i>=properties.getSensorMinInterval(), false,
-                    String.format("    processSensor(): Invalid interval period in configuration: sensor=%s, configuration=%s\n",
-                            sensorName, cfgMapWithStr));
-            Interval.UnitType periodUnit = StrUtil.strToEnum(intervalUnitStr,
-                    Interval.UnitType.class, Interval.UnitType.SECONDS, false,
-                    String.format("    processSensor(): Invalid interval unit in configuration: sensor=%s, configuration=%s\n",
-                            sensorName, cfgMapWithStr));
-            Interval interval = Interval.builder()
-                    .period(period)
-                    .unit(periodUnit)
-                    .build();
-
-            // Create pull sensor
-            sensor = PullSensor.builder()
-                    .name(sensorNamesKey.name())
-                    .object(sensorSpec)
-                    .isPush(false)
-                    .className(className)
-                    .interval(interval)
-                    .configuration(cfgMapWithStr)
-                    .build();
+            sensor = createPullSensor(sensorSpec, sensorName, sensorNamesKey, configuration);
         } else {
-            // Get push sensor port
-            Object portObj = configuration.get("port");
-            String portStr = portObj!=null ? portObj.toString().trim() : "";
-            if (StringUtils.isBlank(portStr)) portStr = null;
-            int port = StrUtil.strToInt(portStr, -1, (i)->i>0 && i<=65535, false,
-                    String.format("    processSensor(): ERROR: Invalid port. Using -1: sensor=%s, port=%s\n", sensorName, portStr));
-
-            // Create push sensor
-            sensor = PushSensor.builder()
-                    .name(sensorNamesKey.name())
-                    .object(sensorSpec)
-                    .isPush(true)
-                    .port(port)
-                    .build();
+            sensor = createPushSensor(sensorSpec, sensorName, sensorNamesKey, configuration);
         }
-
         sensor.setConfigurationStr( configObj instanceof String s ? s : null );
-        sensor.setAdditionalProperties( configObj instanceof Map m ? m : new LinkedHashMap<>() );
-        sensor.getAdditionalProperties().put("type", sensorType);
+        sensor.setConfiguration( configuration );
 
         // Update TC
         DAGNode sensorNode = _TC.getDAG().addNode(parent, sensor);
@@ -1016,6 +974,58 @@ public class MetricModelAnalyzer {
         _TC.addMonitorsForSensor(sensorNamesKey.name(), _createMonitorsForSensor(_TC, objCtx, sensor, sensorNode));
 
         return sensor;
+    }
+
+    private Sensor createPullSensor(Map<String, Object> sensorSpec, String sensorName, NamesKey sensorNamesKey, LinkedHashMap<String, Object> configuration) {
+        // Convert Map<String,Object> to Map<String,String>
+        Map<String, String> cfgMapWithStr = configuration.entrySet().stream()
+                .filter(e -> e.getValue() != null)
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
+
+        // Get pull sensor configuration
+        String className = StrUtil.getWithVariations(cfgMapWithStr, "className", "").trim();
+        String intervalPeriodStr = StrUtil.getWithVariations(cfgMapWithStr, "intervalPeriod", "").trim();
+        String intervalUnitStr = StrUtil.getWithVariations(cfgMapWithStr, "intervalUnit", "").trim();
+
+        // Get interval
+        int period = StrUtil.strToInt(intervalPeriodStr,
+                (int)properties.getSensorDefaultInterval(), (i)->i>=properties.getSensorMinInterval(), false,
+                String.format("    createPullSensor(): Invalid interval period in configuration: sensor=%s, configuration=%s\n",
+                        sensorName, cfgMapWithStr));
+        Interval.UnitType periodUnit = StrUtil.strToEnum(intervalUnitStr,
+                Interval.UnitType.class, Interval.UnitType.SECONDS, false,
+                String.format("    createPullSensor(): Invalid interval unit in configuration: sensor=%s, configuration=%s\n",
+                        sensorName, cfgMapWithStr));
+        Interval interval = Interval.builder()
+                .period(period)
+                .unit(periodUnit)
+                .build();
+
+        // Create pull sensor
+        return PullSensor.builder()
+                .name(sensorNamesKey.name())
+                .object(sensorSpec)
+                .isPush(false)
+                .className(className)
+                .interval(interval)
+                .build();
+    }
+
+    private static Sensor createPushSensor(Map<String, Object> sensorSpec, String sensorName, NamesKey sensorNamesKey, LinkedHashMap<String, Object> configuration) {
+        // Get push sensor port
+        Object portObj = configuration.get("port");
+        String portStr = portObj!=null ? portObj.toString().trim() : "";
+        if (StringUtils.isBlank(portStr)) portStr = null;
+        int port = StrUtil.strToInt(portStr, -1, (i)->i>0 && i<=65535, false,
+                String.format("    createPushSensor(): ERROR: Invalid port. Using -1: sensor=%s, port=%s\n", sensorName, portStr));
+
+        // Create push sensor
+        return PushSensor.builder()
+                .name(sensorNamesKey.name())
+                .object(sensorSpec)
+                .isPush(true)
+                .port(port)
+                .build();
     }
 
     private Set<Monitor> _createMonitorsForSensor(TranslationContext _TC, ObjectContext objectContext, Sensor sensor, DAGNode sensorNode) {

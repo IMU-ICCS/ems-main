@@ -265,23 +265,20 @@ public class TranslationContext implements Serializable {
     // Copy/Getter methods
 
     public Map<String, Set<String>> getG2T() {
-        HashMap<String, Set<String>> newMap = new HashMap<>();
-        G2T.forEach((key, value) -> newMap.put(key, new HashSet<>(value)));
-        return newMap;
+        return G2T.keySet().stream().map(Grouping::valueOf).sorted().collect(Collectors.toMap(
+                Enum::name, e->G2T.get(e.name()), (oldval, newval) -> oldval, LinkedHashMap::new));
     }
 
     public Map<String, Map<String, Set<String>>> getG2R() {
-        Map<String, Map<String, Set<String>>> newGroupingsMap = new HashMap<>();    // groupings
-        G2R.forEach((key, value) -> {
-            Map<String, Set<String>> newTopicsMap = new HashMap<>();            // topics per grouping
-            newGroupingsMap.put(key, newTopicsMap);
-            value.forEach((key1, value1) -> {
-                Set<String> newRuleSet = new HashSet<>();                    // rules per topic per grouping
-                newTopicsMap.put(key1, newRuleSet);
-                newRuleSet.addAll(value1);
-            });
-        });
-        return newGroupingsMap;
+        return G2R.keySet().stream().map(Grouping::valueOf).sorted().collect(Collectors.toMap(  // groupings
+                Enum::name, grouping -> {
+                    Map<String, Set<String>> topicsMap = G2R.get(grouping.name());              // topics per grouping
+                    return topicsMap.keySet().stream().sorted().collect(Collectors.toMap(
+                            t->t, t -> new HashSet<>(topicsMap.get(t)),                         // rules per topic per grouping
+                            (oldval, newval) -> oldval, LinkedHashMap::new
+                    ));
+                }, (oldval, newval) -> oldval, LinkedHashMap::new
+        ));
     }
 
     public Set<MetricConstraint> getMetricConstraints() {
