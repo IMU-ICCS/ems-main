@@ -105,6 +105,7 @@ spec:
         - name: cpu_util_instance
           type: raw                             # Optional. Can be inferred from the existence of 'sensor' field
           template: *prct_tpl
+          busy-status: true
 #          sensor: 'netdata netdata__system__cpu__total'
           # ALTERNATIVE REPRESENTATION of sensor
           sensor:

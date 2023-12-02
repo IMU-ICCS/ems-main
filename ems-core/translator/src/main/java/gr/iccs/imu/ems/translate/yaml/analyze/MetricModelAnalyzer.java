@@ -568,8 +568,29 @@ public class MetricModelAnalyzer {
         if (template!=null)
             metric.getMetric().setMetricTemplate(template);
 
-        // Process metric level
-        processMetricGrouping(metric, parentNamesKey);
+        // Check if it is a Busy-Status metric
+        if (getSpecBoolean(metricSpec, "busy-status", false)) {
+            log.trace("decomposeMetric: {}: It is a BUSY-STATUS metric", metricNamesKey.name());
+            _TC.addLoadAnnotatedMetric(metric.getName());
+
+            // Add a top-level node to connect busy-status metric
+            String busyStatusMetricName =     //XXX:TODO:  Rename 'xxxLoadMetricXxxx' occurrences with 'xxxBusyStatusMetricXxxx'
+                    String.format(properties.getLoadMetricVariableFormatter(), metric.getName());
+            LoadMetricVariable newMv = LoadMetricVariable.builder()
+                    .name(busyStatusMetricName)
+                    .metricContext(metric)
+                    .componentMetrics(List.of(metric.getMetric()))
+                    .metricTemplate(metric.getMetric().getMetricTemplate())
+                    .build();
+            log.debug("decomposeMetric: {}: New Busy-Status metric variable: {}", metricNamesKey.name(), newMv.getName());
+
+            // Update TC
+            _TC.addLoadAnnotatedDestinationNameToMetricContextName(metric.getName(), busyStatusMetricName);
+            //_TC.addElementToNamePair(newMv, newMv.getName());
+            _TC.getDAG().addTopLevelNode(newMv);
+            _TC.getDAG().addNode(newMv, metric);
+            log.trace("decomposeMetric: {}: New Busy-Status metric added to DAG: {}", metricNamesKey.name(), newMv.getName());
+        }
 
         return metric;
     }
@@ -904,7 +925,7 @@ public class MetricModelAnalyzer {
     }
 
     // ------------------------------------------------------------------------
-    //  Sensor block processing methods
+    //  Sensor processing methods
     // ------------------------------------------------------------------------
 
     private static final String DEFAULT_SENSOR_NAME_SUFFIX = "_SENSOR";

@@ -128,6 +128,35 @@ public class AnalysisUtils {
         return val;
     }
 
+    static Boolean getSpecBoolean(Object o, String field) {
+        try {
+            Map<String, Object> spec = asMap(o);
+            Object oValue = spec.get(field);
+            if (oValue == null) return null;
+            if (oValue instanceof Boolean b) {
+                return b;
+            }
+            if (oValue instanceof String s) {
+                return getBooleanValue(s, false);
+            }
+            throw createException("Block '"+field+"' is not Boolean: " + spec);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static Boolean getSpecBoolean(Object o, String field, boolean defaultValue) {
+        Boolean val = getSpecBoolean(o, field);
+        return val!=null ? val : defaultValue;
+    }
+
+    static Boolean getSpecBoolean(Object o, String field, String exceptionMessage) {
+        Boolean val = getSpecBoolean(o, field);
+        if (val==null)
+            throw createException(exceptionMessage+o);
+        return val;
+    }
+
     static boolean getBooleanValue(String val, boolean defaultValue) {
         if (StringUtils.isBlank(val)) return defaultValue;
         return "true".equalsIgnoreCase(val.trim());

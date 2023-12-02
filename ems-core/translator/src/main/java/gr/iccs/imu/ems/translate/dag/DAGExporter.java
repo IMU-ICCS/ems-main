@@ -65,7 +65,7 @@ public class DAGExporter {
             // See: https://graphviz.org/doc/info/shapes.html#html
             String label;
             String col;
-            boolean isRoot = false, isSensor = false;
+            boolean isRoot = false, isSensor = false, isBusyStatus = false;
             if (node.getName() != null) {
                 if (node.getGrouping() != null) {
                     //label = String.format("%s\n[%s]", node.getName(), node.getGrouping());
@@ -88,6 +88,8 @@ public class DAGExporter {
 
                     isSensor = node.getElement()!=null &&
                             StringUtils.containsIgnoreCase(node.getElement().getClass().getSimpleName(), "Sensor");
+                    isBusyStatus = node.getElement()!=null &&
+                            "LoadMetricVariable".equalsIgnoreCase(node.getElement().getClass().getSimpleName());
                 } else {
                     label = node.getName();
                     col = "#ffffff";
@@ -105,12 +107,13 @@ public class DAGExporter {
             vertexAttributes.put("shape", new DefaultAttribute<>(
                     isRoot || isSensor ? "oval" : "box", AttributeType.STRING));
 
-            //vertexAttributes.put("fillcolor", new DefaultAttribute<>(col, AttributeType.STRING));
-            //vertexAttributes.put("style", new DefaultAttribute<>("filled", AttributeType.STRING));
-            // or
-            vertexAttributes.put("fillcolor", new DefaultAttribute<>(
-                    isSensor ? "white" : col+":white;0.3", AttributeType.STRING));
+            vertexAttributes.put("fillcolor", new DefaultAttribute<>(col+":white;0.3", AttributeType.STRING));
+            if (isSensor)
+                vertexAttributes.put("fillcolor", new DefaultAttribute<>("white", AttributeType.STRING));
+            if (isBusyStatus)
+                vertexAttributes.put("fillcolor", new DefaultAttribute<>("yellow:white;0.3", AttributeType.STRING));
             vertexAttributes.put("style", new DefaultAttribute<>("radial, rounded", AttributeType.STRING));
+            //vertexAttributes.put("style", new DefaultAttribute<>("filled", AttributeType.STRING));
             vertexAttributes.put("gradientangle", new DefaultAttribute<>(60, AttributeType.INT));
 
             /*
