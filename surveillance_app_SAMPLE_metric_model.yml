@@ -205,7 +205,7 @@ spec:
           ref: '[face-detection].[latency]'
           #---
         - name: VideoCaptureCardinality
-          ref: '[video-capture].[instances]'
+          ref: '[video-capture].[vc_instance_number]'
 
 functions:
   - name: my_sgn

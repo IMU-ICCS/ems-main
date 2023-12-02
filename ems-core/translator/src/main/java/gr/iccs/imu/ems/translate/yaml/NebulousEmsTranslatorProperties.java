@@ -46,4 +46,8 @@ public class NebulousEmsTranslatorProperties implements InitializingBean {
 
     // Busy-Status metric settings
     private String busyStatusDestinationNameFormatter = "busy.%s";
+
+    // Orphan metrics
+    private boolean includeOrphanMetrics = true;
+    private String orphanMetricsParentName = "_ORPHANED_METRICS_ROOT_VAR_";
 }

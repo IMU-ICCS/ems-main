@@ -65,7 +65,8 @@ public class DAGExporter {
             // See: https://graphviz.org/doc/info/shapes.html#html
             String label;
             String col;
-            boolean isRoot = false, isSensor = false, isBusyStatus = false;
+            boolean isRoot = false, isSensor = false;
+            boolean isBusyStatus = false, isMetricVar = false;
             if (node.getName() != null) {
                 if (node.getGrouping() != null) {
                     //label = String.format("%s\n[%s]", node.getName(), node.getGrouping());
@@ -90,6 +91,8 @@ public class DAGExporter {
                             StringUtils.containsIgnoreCase(node.getElement().getClass().getSimpleName(), "Sensor");
                     isBusyStatus = node.getElement()!=null &&
                             "BusyStatusMetricVariable".equalsIgnoreCase(node.getElement().getClass().getSimpleName());
+                    isMetricVar = node.getElement()!=null &&
+                            "MetricVariable".equalsIgnoreCase(node.getElement().getClass().getSimpleName());
                 } else {
                     label = node.getName();
                     col = "#ffffff";
@@ -112,6 +115,8 @@ public class DAGExporter {
                 vertexAttributes.put("fillcolor", new DefaultAttribute<>("white", AttributeType.STRING));
             if (isBusyStatus)
                 vertexAttributes.put("fillcolor", new DefaultAttribute<>("yellow:white;0.3", AttributeType.STRING));
+            if (isMetricVar)
+                vertexAttributes.put("fillcolor", new DefaultAttribute<>("orange:white;0.3", AttributeType.STRING));
             vertexAttributes.put("style", new DefaultAttribute<>("radial, rounded", AttributeType.STRING));
             //vertexAttributes.put("style", new DefaultAttribute<>("filled", AttributeType.STRING));
             vertexAttributes.put("gradientangle", new DefaultAttribute<>(60, AttributeType.INT));

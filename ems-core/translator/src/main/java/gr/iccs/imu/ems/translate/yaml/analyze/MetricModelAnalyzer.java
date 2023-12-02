@@ -203,7 +203,7 @@ public class MetricModelAnalyzer {
         decomposeConstraints(_TC, nonMetricSLOs);
 
         // ----- Process orphan metrics (i.e. not used in constraints) -----
-        //XXX:TODO: +++++++++++++++++++++++++++
+        processOrphanMetrics(_TC);
 
         // ----- Infer groupings (levels) -----
         log.debug("Inferring and setting groupings");
@@ -546,9 +546,9 @@ public class MetricModelAnalyzer {
         // Delegate decomposition based on metric type
         MetricContext metric = switch (metricType) {
             case "raw" ->
-                    decomposeRawMetric(_TC, metricSpec, parentNamesKey, parent);
+                    decomposeRawMetric(_TC, metricSpec, parent);
             case "composite" ->
-                    decomposeCompositeMetric(_TC, metricSpec, parentNamesKey, parent);
+                    decomposeCompositeMetric(_TC, metricSpec, parent);
             case "ref" ->
                     processRef(_TC, metricSpec, parentNamesKey, parent);
             default ->
@@ -591,7 +591,7 @@ public class MetricModelAnalyzer {
         return metric;
     }
 
-    private RawMetricContext decomposeRawMetric(TranslationContext _TC, Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent) {
+    private RawMetricContext decomposeRawMetric(TranslationContext _TC, Map<String, Object> metricSpec, NamedElement parent) {
         // Get needed fields
         String metricName = getSpecName(metricSpec);
         Map<String, Object> sensorSpec = asMap(metricSpec.get("sensor"));
@@ -621,7 +621,7 @@ public class MetricModelAnalyzer {
         return rawMetric;
     }
 
-    private CompositeMetricContext decomposeCompositeMetric(TranslationContext _TC, Map<String, Object> metricSpec, NamesKey parentNamesKey, NamedElement parent) {
+    private CompositeMetricContext decomposeCompositeMetric(TranslationContext _TC, Map<String, Object> metricSpec, NamedElement parent) {
         // Get needed fields
         String metricName = getSpecName(metricSpec);
         String formula = getMandatorySpecField(metricSpec, "formula", "Composite Metric '"+metricName+"' without 'formula': ");
@@ -738,6 +738,25 @@ public class MetricModelAnalyzer {
                     .build();
         }
         return null;
+    }
+
+    private void processOrphanMetrics(TranslationContext _TC) {
+        HashSet<NamesKey> orphanMetrics = new HashSet<>($$(_TC).allMetrics.keySet());
+        orphanMetrics.removeAll($$(_TC).metricsUsed.keySet());
+        orphanMetrics.removeAll($$(_TC).constants.keySet());
+        log.debug("Orphan metrics: {}", orphanMetrics);
+        if (properties.isIncludeOrphanMetrics()) {
+            MetricVariable metricVar = MetricVariable.builder()
+                    .name(properties.getOrphanMetricsParentName())
+                    .build();
+            _TC.getDAG().addTopLevelNode(metricVar);
+            orphanMetrics.forEach(metricNamesKey -> {
+                Map<String, Object> metricSpec = asMap($$(_TC).allMetrics.get(metricNamesKey));
+                String parentName = getContainerName(metricSpec);
+                NamesKey parentNamesKey = NamesKey.create(parentName, "DUMMY");
+                decomposeMetric(_TC, metricSpec, parentNamesKey, metricVar);
+            });
+        }
     }
 
 
