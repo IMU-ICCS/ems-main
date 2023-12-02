@@ -202,19 +202,15 @@ public class MetricModelAnalyzer {
         nonMetricSLOs.keySet().removeAll( metricSLOs.keySet() );
         decomposeConstraints(_TC, nonMetricSLOs);
 
-        // ----- Populate component (or data) names in requirements and metrics -----
-        //populateComponentNames();
-        //...also check about ObjectContexts....
+        // ----- Process orphan metrics (i.e. not used in constraints) -----
+        //XXX:TODO: +++++++++++++++++++++++++++
 
         // ----- Infer groupings (levels) -----
         log.debug("Inferring and setting groupings");
         inferGroupings(_TC);
+        log.debug("Grouping inference completed");
 
         // ----- Build each component's SLO set (including those in the scopes it participates) -----
-
-        // -- Updating Translation Context ------------------------------------
-
-
 
         // ----------------------------------------------------------
 
@@ -744,15 +740,6 @@ public class MetricModelAnalyzer {
         return null;
     }
 
-    private MetricContext processMetricGrouping(MetricContext metric, NamesKey parentNamesKey) {
-        /*String groupingStr = getSpecField(metric.getObject(), "level");      //XXX:TODO: ...change to 'grouping'
-        if (StringUtils.isNotBlank(groupingStr)) {
-            Grouping grouping = Grouping.valueOf(groupingStr.trim().toUpperCase());
-            //XXX:TODO: ....shall we do something with this??   This might be also checked during inferGroupings()
-        }*/
-        return metric;
-    }
-
 
     // ------------------------------------------------------------------------
     //  Window block processing methods
@@ -955,7 +942,6 @@ public class MetricModelAnalyzer {
             mapping = null;
 
         LinkedHashMap<String, Object> configuration = new LinkedHashMap<>();
-        configuration.put("type", sensorType);
         if (configObj!=null) configuration.putAll(asMap(configObj));
         if (mapping!=null && StringUtils.isNotBlank(mapping.toString())) configuration.put("mapping", mapping.toString().trim());
         if (configObj!=null) configuration.put("install", asMap(installObj));
@@ -1014,7 +1000,8 @@ public class MetricModelAnalyzer {
         }
 
         sensor.setConfigurationStr( configObj instanceof String s ? s : null );
-        sensor.setAdditionalProperties( configObj instanceof Map m ? m : null );
+        sensor.setAdditionalProperties( configObj instanceof Map m ? m : new LinkedHashMap<>() );
+        sensor.getAdditionalProperties().put("type", sensorType);
 
         // Update TC
         DAGNode sensorNode = _TC.getDAG().addNode(parent, sensor);

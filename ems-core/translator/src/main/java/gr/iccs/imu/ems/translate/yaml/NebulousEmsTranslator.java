@@ -87,8 +87,8 @@ public class NebulousEmsTranslator implements Translator, InitializingBean {
 		log.debug("NebulousEmsTranslator.translate():  Analyzing model... done");
 
 		// transform graph
-		//XXX:TODO: Not sure it is needed in Nebulous (removes MVVs and adds TL metrics above TL metric context),
-		//XXX:TODO: ... but MVVs are not used, neither metrics (only metric contexts).
+		//XXX:TODO: Not sure if it is needed in Nebulous (removes MVVs and adds TL metrics above TL metric contexts,
+		//XXX:TODO: ... but MVVs are not used, neither metrics (only metric contexts)).
 		log.debug("NebulousEmsTranslator.translate():  Transforming DAG...");
 		GraphTransformer transformer = applicationContext.getBean(GraphTransformer.class);
 		transformer.transformGraph(_TC.getDAG());

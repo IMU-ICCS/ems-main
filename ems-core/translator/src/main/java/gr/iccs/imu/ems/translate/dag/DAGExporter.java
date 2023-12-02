@@ -116,16 +116,32 @@ public class DAGExporter {
             //vertexAttributes.put("style", new DefaultAttribute<>("filled", AttributeType.STRING));
             vertexAttributes.put("gradientangle", new DefaultAttribute<>(60, AttributeType.INT));
 
-            /*
-            // Example
-            vertexAttributes.put("color", new DefaultAttribute<>("red", AttributeType.STRING));
-            vertexAttributes.put("fontcolor", new DefaultAttribute<>("yellow", AttributeType.STRING));
-            vertexAttributes.put("fillcolor", new DefaultAttribute<>("cyan:green;0.3", AttributeType.STRING));
-            vertexAttributes.put("style", new DefaultAttribute<>("radial", AttributeType.STRING));
-            vertexAttributes.put("gradientangle", new DefaultAttribute<>(60, AttributeType.INT));
-            */
+            /*if (isSensor) {
+                if (((Sensor) node.getElement()).getAdditionalProperties()!=null) {
+                    String sensorType = ((Sensor) node.getElement()).getAdditionalProperties()
+                            .getOrDefault("type", "").trim().toLowerCase();
+                    String image = switch (sensorType) {
+                        case "netdata" -> "netdata-48x48.png";
+                        default -> null;
+                    };
+                    if (StringUtils.isNotBlank(image)) {
+                        vertexAttributes.put("image", new DefaultAttribute<>(image, AttributeType.STRING));
+                        vertexAttributes.put("imagepos", new DefaultAttribute<>("ml", AttributeType.STRING));
+                    }
+                }
+            }*/
             return vertexAttributes;
         });
+
+        // Format edges
+        exporter.setEdgeAttributeProvider(edge -> {
+            LinkedHashMap<String, Attribute> edgeAttributes = new LinkedHashMap<>();
+//            edgeAttributes.put("dir", new DefaultAttribute<>("back", AttributeType.STRING));
+            edgeAttributes.put("arrowtail", new DefaultAttribute<>("vee", AttributeType.STRING));
+            return edgeAttributes;
+        });
+
+        // Export graph to DOT string
         Writer writer = new StringWriter();
         exporter.exportGraph(dag._graph, writer);
         return writer.toString();
