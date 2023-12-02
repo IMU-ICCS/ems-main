@@ -9,10 +9,12 @@
 
 package gr.iccs.imu.ems.translate.model;
 
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @lombok.Data
@@ -20,6 +22,8 @@ import java.util.Map;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Sensor extends Component {
+    @Builder.Default
+    private Map<String, Object> configuration = new LinkedHashMap<>();
     private String configurationStr;
     private boolean isPush;
 

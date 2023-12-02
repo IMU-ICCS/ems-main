@@ -52,22 +52,15 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
                     addedTopicsSet.add(metricName);
                 }
 
-                // Get sensor configuration (as a list of KeyValuePair's)
-                Map<String,String> sensorConfig = null;
-                if (monitor.getSensor().isPullSensor()) {
-                    // Pull Sensor
-                    sensorConfig = monitor.getSensor().pullSensor().getConfiguration();
-                } else {
-                    // Push Sensor
-                    sensorConfig = monitor.getSensor().pushSensor().getAdditionalProperties();
-                }
+                // Get sensor configuration
+                Map<String,Object> sensorConfig = monitor.getSensor().getConfiguration();;
 
                 // Process Destination aliases, if specified in configuration
                 if (sensorConfig!=null) {
                     String k = sensorConfig.keySet().stream()
                             .filter(key -> StrUtil.compareNormalized(key, EmsConstant.COLLECTOR_DESTINATION_ALIASES))
                             .findAny().orElse(null);
-                    String aliases = (k!=null) ? sensorConfig.get(k) : null;
+                    String aliases = (k!=null && sensorConfig.get(k) instanceof String) ? sensorConfig.get(k).toString() : null;
 
                     if (StringUtils.isNotBlank(aliases)) {
                         for (String alias : aliases.trim().split(EmsConstant.COLLECTOR_DESTINATION_ALIASES_DELIMITERS)) {

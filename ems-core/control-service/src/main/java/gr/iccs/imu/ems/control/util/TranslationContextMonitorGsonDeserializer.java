@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class TranslationContextMonitorGsonDeserializer implements JsonDeserializer<Monitor> {
@@ -66,15 +67,20 @@ public class TranslationContextMonitorGsonDeserializer implements JsonDeserializ
                 pullSensor.setClassName(className);
             }
 
-            pullSensor.setConfiguration( getConfiguration(jsonSensorObject, metricName, componentName, "PullSensor") );
-
             pullSensor.setInterval( getInterval(jsonSensorObject, metricName, componentName, "PullSensor") );
+
+            pullSensor.setConfiguration( castToMapStringObject(
+                    getConfiguration(jsonSensorObject, metricName, componentName, "PullSensor") ) );
 
             sensor = pullSensor;
         } else if (isPush) {
             PushSensor pushSensor = new PushSensor();
             int port = jsonSensorObject.getAsJsonPrimitive("port").getAsInt();
             pushSensor.setPort(port);
+
+            pushSensor.setConfiguration( castToMapStringObject(
+                    getConfiguration(jsonSensorObject, metricName, componentName, "PushSensor") ) );
+
             sensor = pushSensor;
         } else {
             throw new JsonParseException("Monitor.Sensor is neither Pull or Push: "
@@ -139,6 +145,12 @@ public class TranslationContextMonitorGsonDeserializer implements JsonDeserializ
         });
 
         return configPairs;
+    }
+
+    public Map<String, Object> castToMapStringObject(Map<String,String> m) {
+        return m.entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey, Map.Entry::getValue
+        ));
     }
 
     public Interval getInterval(JsonObject jsonObject, String metricName, String componentName, String field) {

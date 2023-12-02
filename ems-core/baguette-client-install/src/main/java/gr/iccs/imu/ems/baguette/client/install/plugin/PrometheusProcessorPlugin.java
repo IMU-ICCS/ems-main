@@ -62,7 +62,8 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
                 log.trace("PrometheusProcessorPlugin: Task #{}: MONITOR: component={}, metric={}", taskCounter, componentName, metricName);
                 if (monitor.getSensor().isPullSensor()) {
                     if (monitor.getSensor().pullSensor().getConfiguration()!=null) {
-                        Map<String, String> config = monitor.getSensor().pullSensor().getConfiguration();
+                        Map<String, String> config = StrUtil.deepFlattenMap(
+                                monitor.getSensor().getConfiguration());
                         log.trace("PrometheusProcessorPlugin: Task #{}: MONITOR with PULL SENSOR: config: {}", taskCounter, config);
 
                         // Get Prometheus related settings
