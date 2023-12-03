@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class RuleGenerator implements InitializingBean {
-    private final static String TRANSLATION_CONFIG = "translation_config";
-    private final static String EPL_VALUE = "epl_value";
+    public final static String TRANSLATION_CONFIG = "translation_config";
+    public final static String EPL_VALUE = "epl_value";
     public final static String EPL_FORMULA_TAG = "%EPL%>";
 
     private final NebulousEmsTranslatorProperties properties;
@@ -586,7 +586,7 @@ public class RuleGenerator implements InitializingBean {
         // No window specified
         if (win==null)
             return ".std:lastevent()";
-        //return "";
+            //return "";
 
         // Sub-feature attribute 'translation_config.epl_value' value provides EPL statement
         // and overrides Window processing
@@ -815,28 +815,23 @@ public class RuleGenerator implements InitializingBean {
     }
 
     private long _winTimeToMillis(long time, String unit) {
-        switch (unit.toLowerCase()) {
-            case "msec": case "millisecond": case "milliseconds":
-                return time;
-            case "sec": case "second": case "seconds":
-                return TimeUnit.MILLISECONDS.convert(time, TimeUnit.SECONDS);
-            case "min": case "minute": case "minutes":
-                return TimeUnit.MILLISECONDS.convert(time, TimeUnit.MINUTES);
-            case "hour": case "hours":
-                return TimeUnit.MILLISECONDS.convert(time, TimeUnit.HOURS);
-            case "day": case "days":
-                return TimeUnit.MILLISECONDS.convert(time, TimeUnit.DAYS);
-            case "week": case "weeks":
-                return TimeUnit.MILLISECONDS.convert(7 * time, TimeUnit.DAYS);
-            case "month": case "months":
+        return switch (unit.toLowerCase()) {
+            case "msec", "millisecond", "milliseconds" -> time;
+            case "sec", "second", "seconds" -> TimeUnit.MILLISECONDS.convert(time, TimeUnit.SECONDS);
+            case "min", "minute", "minutes" -> TimeUnit.MILLISECONDS.convert(time, TimeUnit.MINUTES);
+            case "hour", "hours" -> TimeUnit.MILLISECONDS.convert(time, TimeUnit.HOURS);
+            case "day", "days" -> TimeUnit.MILLISECONDS.convert(time, TimeUnit.DAYS);
+            case "week", "weeks" -> TimeUnit.MILLISECONDS.convert(7 * time, TimeUnit.DAYS);
+            case "month", "months" -> {
                 log.warn("RuleGenerator._winTimeToMillis: NOTE: 'Months' time unit equals to 30 days!");
-                return TimeUnit.MILLISECONDS.convert(30 * time, TimeUnit.DAYS);
-            case "year": case "years":
+                yield TimeUnit.MILLISECONDS.convert(30 * time, TimeUnit.DAYS);
+            }
+            case "year", "years" -> {
                 log.debug("RuleGenerator._winTimeToMillis: NOTE: 'Years' time unit equals to 365 days!");
-                return TimeUnit.MILLISECONDS.convert(365 * time, TimeUnit.DAYS);
-            default:
-                throw new RuntimeException("Unsupported time unit: \"" + unit + "\"");
-        }
+                yield  TimeUnit.MILLISECONDS.convert(365 * time, TimeUnit.DAYS);
+            }
+            default -> throw new RuntimeException("Unsupported time unit: \"" + unit + "\"");
+        };
     }
 
     protected String _generateScheduleClause(Schedule sched, String selector) {

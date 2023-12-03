@@ -18,6 +18,7 @@ import gr.iccs.imu.ems.translate.TranslationContext;
 import gr.iccs.imu.ems.translate.dag.DAGNode;
 import gr.iccs.imu.ems.translate.model.*;
 import gr.iccs.imu.ems.translate.yaml.NebulousEmsTranslatorProperties;
+import gr.iccs.imu.ems.translate.yaml.generate.RuleGenerator;
 import gr.iccs.imu.ems.util.FunctionDefinition;
 import gr.iccs.imu.ems.util.StrUtil;
 import lombok.Data;
@@ -49,40 +50,26 @@ public class MetricModelAnalyzer {
     public void analyzeModel(@NonNull TranslationContext _TC, @NonNull Object metricModel, String modelName) throws Exception {
         log.debug("MetricModelAnalyzer.analyzeModel(): BEGIN: metric-model: {}", metricModel);
 
-        // -- Initialize jsonpath context -------------------------------------
+        // ----- Initialize jsonpath context ----------------------------------
         Configuration jsonpathConfig = Configuration.defaultConfiguration();
         ParseContext parseContext = JsonPath.using(jsonpathConfig);
         DocumentContext ctx = parseContext.parse(metricModel);
 
-        // -- Expand shorthand expressions ------------------------------------
-        log.debug("MetricModelAnalyzer.analyzeModel(): Expanding shorthand expressions in metric model: {}", metricModel);
-        shorthandsExpansionHelper.expandShorthandExpressions(metricModel, modelName, ctx);
-
-        // -- Schematron Validation -------------------------------------------
-        log.debug("MetricModelAnalyzer.analyzeModel(): Validating metric model: {}", metricModel);
-        if (! properties.isSkipModelValidation()) {
-            validator.validateModel(metricModel, modelName);
-            log.debug("MetricModelAnalyzer.analyzeModel(): Metric model is valid: {}", modelName);
-        }
-
-        // -- Model processing ------------------------------------------------
+        // ----- Model processing ---------------------------------------------
         log.debug("MetricModelAnalyzer.analyzeModel(): Analyzing metric model: {}", metricModel);
         Map<String, Object> topLevelModelElements = ctx.read("$", Map.class);
 
         // ----- Define additional translation structures and cache them in _TC -----
         _TC.setExtensionContext(new AdditionalTranslationContextData());
 
-        Map<String, Object> parentSpecs = $$(_TC).parentSpecs;
-        Map<NamesKey, Object> allMetrics = $$(_TC).allMetrics;
-        Map<NamesKey, Object> allConstraints = $$(_TC).allConstraints;
-        Map<NamesKey, Object> allSLOs = $$(_TC).allSLOs;
-
         // set full-name pattern in _TC, for full-name generation
-        if (StringUtils.isNotBlank(properties.getFullNamePattern()))
+        if (StringUtils.isNotBlank(properties.getFullNamePattern())) {
+            log.debug("MetricModelAnalyzer.analyzeModel(): Set full name pattern to: {}", properties.getFullNamePattern());
             _TC.setFullNamePattern(properties.getFullNamePattern());
-        //XXX:TODO: ...Remove {CAMEL} occurrences from TranslationContext class...
+        }
 
         // ----- Process function specifications -----
+        log.debug("MetricModelAnalyzer.analyzeModel(): Process function specs");
         if (topLevelModelElements.containsKey("functions")) {
             List<Object> functionSpecsList = ctx.read("$.functions.*", List.class);
             functionSpecsList.stream().filter(s -> s instanceof Map).forEach(s -> {
@@ -91,6 +78,7 @@ public class MetricModelAnalyzer {
         }
 
         // ----- Get component and scope names -----
+        log.debug("MetricModelAnalyzer.analyzeModel(): Check name uniqueness");
         List<String> componentNamesList = ctx.read("$.spec.components.*.name", List.class);
         List<String> scopeNamesList = ctx.read("$.spec.scopes.*.name", List.class);
         log.debug("Component names: {}", componentNamesList);
@@ -98,117 +86,46 @@ public class MetricModelAnalyzer {
 
         // Check name uniqueness
         checkNameUniqueness(componentNamesList, scopeNamesList);
-
         Set<String> componentNames = new LinkedHashSet<>(componentNamesList);
         Set<String> scopeNames = new LinkedHashSet<>(scopeNamesList);
 
-        // ----- Build component-to-scope mapping -----
-        //XXX:TODO:  .... do we need this?
-        /*Map<String, Set<String>> componentToScopeMap = new LinkedHashMap<>();
-        ctx.read("$.spec.scopes.*", List.class).stream().filter(Objects::nonNull).forEach(scope -> {
-            String sloName = JsonPath.read(scope, "$.name").toString();
-            Object oComponents = ((Map)scope).get("components");
-            Set<String> includedComponents = componentNames;
-            if (oComponents instanceof String s)
-                includedComponents = Arrays.stream(s.split(","))
-                        .map(String::trim).filter(str->!str.isBlank())
-                        .collect(Collectors.toSet());
-            if (oComponents instanceof List l)
-                includedComponents = ((List<Object>) l).stream().filter(Objects::nonNull)
-                        .filter(i->i instanceof String).map(i -> i.toString().trim())
-                        .filter(str -> !str.isBlank()).collect(Collectors.toSet());
-            if (includedComponents.isEmpty())
-                includedComponents = componentNames;
-            Set<String> notFound = includedComponents.stream()
-                    .filter(i -> !componentNames.contains(i)).collect(Collectors.toSet());
-            if (!notFound.isEmpty())
-                throw createException("Scope component(s) "+notFound+" have not been specified in scope: "+sloName);
-            else
-                componentToScopeMap.put(sloName, includedComponents);
-        });
-        log.debug("Component-to-Scope map: {}", componentToScopeMap);*/
-
         // ----- Set container name and make mutable all 'spec' elements (and sub-elements) -----
+        log.debug("MetricModelAnalyzer.analyzeModel(): Set element containers");
         Map<String, Object> modelRoot = asMap(ctx.read("$"));
         Object specNode = modelRoot.get("spec");
         specNode = addContainerNameAndMakeMutable(specNode, null);
         modelRoot.put("spec", specNode);
 
-        // ----- Build artifact directory -----
-
         // ----- Create object contexts for components -----
-        Map<String, ObjectContext> objectContexts = componentNames.stream()
-                .collect(Collectors.toMap(
-                        Function.identity(),
-                        name -> ObjectContext.builder()
-                                .component(Component.builder().name(name).build())
-                                .build()
-                ));
-        $$(_TC).objectContexts.putAll(objectContexts);
+        log.debug("MetricModelAnalyzer.analyzeModel(): Create object contexts");
+        createObjectContexts(_TC, componentNames);
 
-        // ----- Build of flat lists of metrics, constraints and SLOs, and check their specs -----
-        asList(JsonPath.read(modelRoot, "$.spec.*.*")).stream().filter(Objects::nonNull).forEach(spec -> {
-            String parentName = getSpecName(spec);
-            if (StringUtils.isBlank(parentName)) throw createException("Component or Scope with no name: " + spec);
-            parentSpecs.computeIfAbsent(parentName, (key)->spec);
-
-            // Requirements (SLOs) flat list building
-            List<Object> slos = JsonPath.read(spec,
-                    "$[?(@.requirements!=null && @.requirements.*[?(@.type=='slo')])].requirements.*");
-            slos.stream().filter(Objects::nonNull).forEach(sloSpec -> {
-                String sloName = getSpecName(sloSpec);
-                if (StringUtils.isBlank(sloName)) throw createException("SLO spec with no name: " + sloSpec);
-                allSLOs.put(NamesKey.create(parentName, sloName), sloSpec);
-            });
-
-            // Constraints flat list building
-            slos.stream().filter(Objects::nonNull).forEach(sloSpec -> {
-                String sloName = getSpecName(sloSpec);
-                if (StringUtils.isBlank(sloName)) throw createException("SLO spec with no name: " + sloSpec);
-
-                NamesKey sloNamesKey = NamesKey.create(parentName, sloName);
-                Map<String, Object> constraintSpec = asMap(asMap(sloSpec).get("constraint"));
-                NamesKey constraintNamesKey = createNamesKey(sloNamesKey, sloName);
-                allConstraints.put(constraintNamesKey, constraintSpec);
-            });
-
-            // Metrics flat list building
-            List<Object> metrics = JsonPath.read(spec, "$[?(@.metrics!=null)].metrics.*");
-            metrics.stream().filter(Objects::nonNull).forEach(metricSpec -> {
-                String metricName = getSpecName(metricSpec);
-                if (StringUtils.isBlank(metricName)) throw createException("Metric spec with no name: " + metricSpec);
-                NamesKey namesKey = NamesKey.create(parentName, metricName);
-                allMetrics.put(namesKey, metricSpec);
-            });
-        });
-        log.debug("    All Metrics: {}", allMetrics);
-        log.debug("All Constraints: {}", allConstraints);
-        log.debug("       All SLOs: {}", allSLOs);
+        // ----- Build flat lists of metrics, constraints and SLOs, and check their specs -----
+        log.debug("MetricModelAnalyzer.analyzeModel(): Build element lists");
+        buildElementLists(_TC, modelRoot);
+        log.debug("    All Metrics: {}", $$(_TC).allMetrics);
+        log.debug("All Constraints: {}", $$(_TC).allConstraints);
+        log.debug("       All SLOs: {}", $$(_TC).allSLOs);
 
         // ----- Build of constants lists -----
-        asList(JsonPath.read(modelRoot, "$.spec.*.*.metrics.*[?(@.type=='constant')]")).stream().filter(Objects::nonNull).forEach(spec -> {
-            processConstant(_TC, asMap(spec), getContainerName(spec));
-        });
+        log.debug("MetricModelAnalyzer.analyzeModel(): Build constants list");
+        buildConstantsList(_TC, modelRoot);
 
-        // ----- Decompose SLOs with metric constraints to their metric hierarchies -----
-        Map<NamesKey, Object> metricSLOs = allSLOs.entrySet().stream()
-                //.peek(x -> log.warn("-------->  {}", getSpecField(asMap(x.getValue()).get("constraint"), "type") ))
-                .filter(x -> "metric".equals( getSpecField(asMap(x.getValue()).get("constraint"), "type") ))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        decomposeConstraints(_TC, metricSLOs);
-
-        // ----- Decompose SLOs with non-metric constraints -----
-        Map<NamesKey, Object> nonMetricSLOs = new LinkedHashMap<>($$(_TC).allSLOs);
-        nonMetricSLOs.keySet().removeAll( metricSLOs.keySet() );
-        decomposeConstraints(_TC, nonMetricSLOs);
+        // ----- Process SLOs -----
+        log.debug("MetricModelAnalyzer.analyzeModel(): Process SLOs");
+        processSLOs(_TC);
 
         // ----- Process orphan metrics (i.e. not used in constraints) -----
+        log.debug("MetricModelAnalyzer.analyzeModel(): Process orphan metrics");
         processOrphanMetrics(_TC);
 
         // ----- Infer groupings (levels) -----
-        log.debug("Inferring and setting groupings");
+        log.debug("MetricModelAnalyzer.analyzeModel(): Infer and set element groupings");
         inferGroupings(_TC);
-        log.debug("Grouping inference completed");
+
+        //XXX:TODO:  .... do we need these?
+        // ----- Build component-to-scope mapping -----
+//        Map<String, Set<String>> componentToScopeMap = createComponentToScopeMapping(ctx, componentNames);
 
         // ----- Build each component's SLO set (including those in the scopes it participates) -----
 
@@ -275,6 +192,101 @@ public class MetricModelAnalyzer {
         }
         return o;
     }
+
+    private void createObjectContexts(TranslationContext _TC, Set<String> componentNames) {
+        Map<String, ObjectContext> objectContexts = componentNames.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        name -> ObjectContext.builder()
+                                .component(Component.builder().name(name).build())
+                                .build()
+                ));
+        $$(_TC).objectContexts.putAll(objectContexts);
+    }
+
+    private void buildElementLists(TranslationContext _TC, Map<String, Object> modelRoot) {
+        asList(JsonPath.read(modelRoot, "$.spec.*.*")).stream().filter(Objects::nonNull).forEach(spec -> {
+            String parentName = getSpecName(spec);
+            if (StringUtils.isBlank(parentName)) throw createException("Component or Scope with no name: " + spec);
+            $$(_TC).parentSpecs.computeIfAbsent(parentName, (key)->spec);
+
+            // Requirements (SLOs) flat list building
+            List<Object> slos = JsonPath.read(spec,
+                    "$[?(@.requirements!=null && @.requirements.*[?(@.type=='slo')])].requirements.*");
+            slos.stream().filter(Objects::nonNull).forEach(sloSpec -> {
+                String sloName = getSpecName(sloSpec);
+                if (StringUtils.isBlank(sloName)) throw createException("SLO spec with no name: " + sloSpec);
+                $$(_TC).allSLOs.put(NamesKey.create(parentName, sloName), sloSpec);
+            });
+
+            // Constraints flat list building
+            slos.stream().filter(Objects::nonNull).forEach(sloSpec -> {
+                String sloName = getSpecName(sloSpec);
+                if (StringUtils.isBlank(sloName)) throw createException("SLO spec with no name: " + sloSpec);
+
+                NamesKey sloNamesKey = NamesKey.create(parentName, sloName);
+                Map<String, Object> constraintSpec = asMap(asMap(sloSpec).get("constraint"));
+                NamesKey constraintNamesKey = createNamesKey(sloNamesKey, sloName);
+                $$(_TC).allConstraints.put(constraintNamesKey, constraintSpec);
+            });
+
+            // Metrics flat list building
+            List<Object> metrics = JsonPath.read(spec, "$[?(@.metrics!=null)].metrics.*");
+            metrics.stream().filter(Objects::nonNull).forEach(metricSpec -> {
+                String metricName = getSpecName(metricSpec);
+                if (StringUtils.isBlank(metricName)) throw createException("Metric spec with no name: " + metricSpec);
+                NamesKey namesKey = NamesKey.create(parentName, metricName);
+                $$(_TC).allMetrics.put(namesKey, metricSpec);
+            });
+        });
+    }
+
+    private void buildConstantsList(TranslationContext _TC, Map<String, Object> modelRoot) {
+        asList(JsonPath.read(modelRoot, "$.spec.*.*.metrics.*[?(@.type=='constant')]")).stream().filter(Objects::nonNull).forEach(spec -> {
+            processConstant(_TC, asMap(spec), getContainerName(spec));
+        });
+    }
+
+    private void processSLOs(TranslationContext _TC) {
+        // ----- Decompose SLOs with metric constraints to their metric hierarchies -----
+        Map<NamesKey, Object> metricSLOs = $$(_TC).allSLOs.entrySet().stream()
+                //.peek(x -> log.warn("-------->  {}", getSpecField(asMap(x.getValue()).get("constraint"), "type") ))
+                .filter(x -> "metric".equals( getSpecField(asMap(x.getValue()).get("constraint"), "type") ))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        decomposeConstraints(_TC, metricSLOs);
+
+        // ----- Decompose SLOs with non-metric constraints -----
+        Map<NamesKey, Object> nonMetricSLOs = new LinkedHashMap<>($$(_TC).allSLOs);
+        nonMetricSLOs.keySet().removeAll( metricSLOs.keySet() );
+        decomposeConstraints(_TC, nonMetricSLOs);
+    }
+
+    /*private Map<String, Set<String>> createComponentToScopeMapping(DocumentContext ctx, Set<String> componentNames) {
+        Map<String, Set<String>> componentToScopeMap = new LinkedHashMap<>();
+        ctx.read("$.spec.scopes.*", List.class).stream().filter(Objects::nonNull).forEach(scope -> {
+            String sloName = JsonPath.read(scope, "$.name").toString();
+            Object oComponents = ((Map)scope).get("components");
+            Set<String> includedComponents = componentNames;
+            if (oComponents instanceof String s)
+                includedComponents = Arrays.stream(s.split(","))
+                        .map(String::trim).filter(str->!str.isBlank())
+                        .collect(Collectors.toSet());
+            if (oComponents instanceof List l)
+                includedComponents = ((List<Object>) l).stream().filter(Objects::nonNull)
+                        .filter(i->i instanceof String).map(i -> i.toString().trim())
+                        .filter(str -> !str.isBlank()).collect(Collectors.toSet());
+            if (includedComponents.isEmpty())
+                includedComponents = componentNames;
+            Set<String> notFound = includedComponents.stream()
+                    .filter(i -> !componentNames.contains(i)).collect(Collectors.toSet());
+            if (!notFound.isEmpty())
+                throw createException("Scope component(s) "+notFound+" have not been specified in scope: "+sloName);
+            else
+                componentToScopeMap.put(sloName, includedComponents);
+        });
+        log.debug("Component-to-Scope map: {}", componentToScopeMap);
+        return componentToScopeMap;
+    }*/
 
     // ------------------------------------------------------------------------
     //  Custom Function processing methods
@@ -721,13 +733,29 @@ public class MetricModelAnalyzer {
         Object templateObj = metricSpec.get("template");
         if (templateObj instanceof Map templateSpec) {
             String id = getSpecField(templateSpec, "id");
-            String type = getMandatorySpecField(templateSpec, "type", "Metric template without 'type': at metric '" + parentNamesKey.name() + "': " + metricSpec);
+            String type = getMandatorySpecField(templateSpec, "type",
+                    "Metric template without 'type': at metric '" + parentNamesKey.name() + "': " + metricSpec);
             ValueType valueType = ValueType.valueOf(type.trim().toUpperCase() + "_TYPE");
             String dirStr = getSpecField(templateSpec, "direction");
-            short valueDirection = StringUtils.isNotBlank(dirStr) ? Short.parseShort(dirStr.trim()) : 0;    //XXX:TODO: IMPROVE!!!
-            List<Object> range = asList(templateSpec.get("range"));             //XXX:TODO: ...Add it... IMPROVE MetricTemplate class
-            List<Object> values = asList(templateSpec.get("values"));           //XXX:TODO: ...Add it... IMPROVE MetricTemplate class
+            short valueDirection = StringUtils.isNotBlank(dirStr)
+                    ? Short.parseShort(dirStr.trim()) : MetricTemplate.FORWARD_DIRECTION;
+            List<Object> range = asList(templateSpec.get("range"));
+            List<Object> values = asList(templateSpec.get("values"));
             String unit = getSpecField(templateSpec, "unit");
+
+            if (range!=null && (range.size()!=2 || range.get(0)==null || range.get(1)==null))
+                throw createException("Invalid range spec in metric template: "+metricSpec);
+            if (range!=null && ! AnalysisUtils.isDoubleOrInfinity(range.get(0).toString()))
+                throw createException("Invalid lower range bound in metric template: "+metricSpec);
+            if (range!=null && ! AnalysisUtils.isDoubleOrInfinity(range.get(1).toString()))
+                throw createException("Invalid upper range bound in metric template: "+metricSpec);
+            double lowerBound = range!=null ? AnalysisUtils.getDoubleValue(range.get(0).toString().trim()) : Double.NEGATIVE_INFINITY;
+            double upperBound = range!=null ? AnalysisUtils.getDoubleValue(range.get(1).toString().trim()) : Double.POSITIVE_INFINITY;
+            if (lowerBound > upperBound)
+                throw createException("Lower range bound > upper range bound in metric template: "+metricSpec);
+
+            values = values!=null ? values.stream().filter(Objects::nonNull).toList() : null;
+            if (values!=null && values.isEmpty()) values = null;
 
             return MetricTemplate.builder()
                     .object(templateSpec)
@@ -735,6 +763,9 @@ public class MetricModelAnalyzer {
                     .valueType(valueType)
                     .valueDirection(valueDirection)
                     .unit(unit)
+                    .lowerBound(lowerBound)
+                    .upperBound(upperBound)
+                    .allowedValues(values)
                     .build();
         }
         return null;
@@ -826,6 +857,7 @@ public class MetricModelAnalyzer {
                 .timeSize(timeSize)
                 .timeUnit(timeUnit)
                 .processings(processingsList)
+                .subFeatures(getTranslationFeature(windowSpec))
                 .build();
     }
 
@@ -833,10 +865,6 @@ public class MetricModelAnalyzer {
         // Get processing type
         String typeStr = getMandatorySpecField(processingSpec, "type", "Window Processing without 'type': at metric '"+metricNamesKey+"': ");
         WindowProcessingType processingType = WindowProcessingType.valueOf(typeStr.trim().toUpperCase());
-
-        // Get 'function' field
-        String functionStr = getSpecField(processingSpec, "function");
-        //XXX:TODO: .... do something with 'function' or delete it!!
 
         // Process any 'criteria' blocks
         List<Object> criteriaSpecs = asList(processingSpec.get("criteria"));
@@ -855,6 +883,7 @@ public class MetricModelAnalyzer {
                 .processingType(processingType)
                 .groupingCriteria( processingType==WindowProcessingType.GROUP ? criteriaList : null )
                 .rankingCriteria( processingType!=WindowProcessingType.GROUP ? criteriaList : null )
+                .subFeatures(getTranslationFeature(processingSpec))
                 .build();
     }
 
@@ -893,6 +922,29 @@ public class MetricModelAnalyzer {
         }
 
         throw createException("Window Criterion specification not supported: at metric '" + metricNamesKey + "': " + criterionSpec);
+    }
+
+    private List<Feature> getTranslationFeature(Map<String, Object> spec) {
+        String eplStr = getSpecField(spec, "epl");
+        String functionStr = getSpecField(spec, "function");
+        if (StringUtils.isBlank(eplStr))
+            eplStr = functionStr;
+
+        if (StringUtils.isNotBlank(eplStr)) {
+            Attribute eplAttr = Attribute.builder()
+                    .name(RuleGenerator.EPL_VALUE)
+                    .valueType(ValueType.STRING_TYPE)
+                    .value(eplStr)
+                    .build();
+            List<Attribute> translationAttributes = List.of(eplAttr);
+
+            Feature translationFeature = Feature.builder()
+                    .name(RuleGenerator.TRANSLATION_CONFIG)
+                    .attributes(translationAttributes)
+                    .build();
+            return List.of(translationFeature);
+        }
+        return null;
     }
 
     // ------------------------------------------------------------------------

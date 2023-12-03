@@ -8,8 +8,10 @@
 
 package gr.iccs.imu.ems.translate.yaml.analyze;
 
+import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ParseContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +45,12 @@ public class ShorthandsExpansionHelper {
     //  Methods for expanding shorthand expressions
     // ------------------------------------------------------------------------
 
-    void expandShorthandExpressions(Object metricModel, String modelName, DocumentContext ctx) throws Exception {
+    public void expandShorthandExpressions(Object metricModel, String modelName) throws Exception {
+        // -- Initialize jsonpath context -------------------------------------
+        Configuration jsonpathConfig = Configuration.defaultConfiguration();
+        ParseContext parseContext = JsonPath.using(jsonpathConfig);
+        DocumentContext ctx = parseContext.parse(metricModel);
+
         // ----- Expand SLO constraints -----
         List<Object> expandedConstraints = asList(ctx
                 .read("$.spec.*.*.requirements.*[?(@.constraint)]", List.class)).stream()

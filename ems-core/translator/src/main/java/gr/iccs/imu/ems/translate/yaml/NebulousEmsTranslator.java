@@ -11,13 +11,14 @@ package gr.iccs.imu.ems.translate.yaml;
 import gr.iccs.imu.ems.translate.TranslationContext;
 import gr.iccs.imu.ems.translate.Translator;
 import gr.iccs.imu.ems.translate.yaml.analyze.MetricModelAnalyzer;
+import gr.iccs.imu.ems.translate.yaml.analyze.MetricModelValidator;
+import gr.iccs.imu.ems.translate.yaml.analyze.ShorthandsExpansionHelper;
 import gr.iccs.imu.ems.translate.yaml.generate.RuleGenerator;
 import gr.iccs.imu.ems.translate.yaml.transform.GraphTransformer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.Yaml;
 
@@ -30,8 +31,12 @@ import java.nio.file.Paths;
 @RequiredArgsConstructor
 public class NebulousEmsTranslator implements Translator, InitializingBean {
 
-	private final ApplicationContext applicationContext;
 	private final NebulousEmsTranslatorProperties properties;
+	private final ShorthandsExpansionHelper shorthandsExpansionHelper;
+	private final MetricModelValidator validator;
+	private final MetricModelAnalyzer analyzer;
+	private final GraphTransformer transformer;
+	private final RuleGenerator generator;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -77,26 +82,34 @@ public class NebulousEmsTranslator implements Translator, InitializingBean {
 	private TranslationContext translate(Object modelObj, String modelName) throws Exception {
 		log.debug("NebulousEmsTranslator.translate():  BEGIN: metric-model={}", modelObj);
 
-		// initialize data structures
+		// Initialize data structures
 		TranslationContext _TC = new TranslationContext(modelName);
 
-		// Analyze metric model
+		// -- Expand shorthand expressions ------------------------------------
+		log.debug("NebulousEmsTranslator.translate(): Expanding shorthand expressions: {}", modelName);
+		shorthandsExpansionHelper.expandShorthandExpressions(modelObj, modelName);
+
+		// -- Schematron Validation -------------------------------------------
+		log.debug("NebulousEmsTranslator.translate(): Validating metric model: {}", modelName);
+		if (!properties.isSkipModelValidation()) {
+			validator.validateModel(modelObj, modelName);
+			log.debug("MetricModelAnalyzer.analyzeModel(): Metric model is valid: {}", modelName);
+		}
+
+		// -- Analyze metric model --------------------------------------------
 		log.debug("NebulousEmsTranslator.translate():  Analyzing model...");
-		MetricModelAnalyzer modelAnalyzer = applicationContext.getBean(MetricModelAnalyzer.class);
-		modelAnalyzer.analyzeModel(_TC, modelObj, modelName);
+		analyzer.analyzeModel(_TC, modelObj, modelName);
 		log.debug("NebulousEmsTranslator.translate():  Analyzing model... done");
 
-		// transform graph
+		// -- Transform graph -------------------------------------------------
 		//XXX:TODO: Not sure if it is needed in Nebulous (removes MVVs and adds TL metrics above TL metric contexts,
 		//XXX:TODO: ... but MVVs are not used, neither metrics (only metric contexts)).
 		log.debug("NebulousEmsTranslator.translate():  Transforming DAG...");
-		GraphTransformer transformer = applicationContext.getBean(GraphTransformer.class);
 		transformer.transformGraph(_TC.getDAG());
 		log.debug("NebulousEmsTranslator.translate():  Transforming DAG... done");
 
-		// generate EPL rules
+		// -- Generate EPL rules ----------------------------------------------
 		log.debug("NebulousEmsTranslator.translate():  Generating EPL rules...");
-		RuleGenerator generator = applicationContext.getBean(RuleGenerator.class);
 		generator.generateRules(_TC);
 		log.debug("NebulousEmsTranslator.translate():  Generating EPL rules... done");
 

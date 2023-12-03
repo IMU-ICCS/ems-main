@@ -185,15 +185,6 @@ public class AnalysisUtils {
     //  Query methods
     // ------------------------------------------------------------------------
 
-    static boolean isExpression(String s) {
-        return ! isConstant(s);
-    }
-
-    static boolean isConstant(String s) {
-        return //constants.contains(s.trim()) ||
-                isDouble(s);
-    }
-
     static boolean isDouble(String s) {
         try {
             Double.parseDouble(s);
@@ -201,6 +192,21 @@ public class AnalysisUtils {
             return false;
         }
         return true;
+    }
+
+    static boolean isDoubleOrInfinity(String s) {
+        s = s.trim();
+        if (StringUtils.equalsAnyIgnoreCase(s, "-inf", "+inf", "inf")) return true;
+        return isDouble(s);
+    }
+
+    static double getDoubleValue(String s) {
+        s = s.trim();
+        return switch (s.toLowerCase()) {
+            case "-inf" -> Double.NEGATIVE_INFINITY;
+            case "+inf", "inf" -> Double.POSITIVE_INFINITY;
+            default -> Double.parseDouble(s);
+        };
     }
 
     static boolean isComparisonOperator(String s) {

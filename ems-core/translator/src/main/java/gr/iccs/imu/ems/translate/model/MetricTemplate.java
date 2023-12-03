@@ -13,13 +13,22 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.List;
+
 @lombok.Data
 @SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class MetricTemplate extends Feature {
+    public final static short FORWARD_DIRECTION = 1;
+    public final static short BACKWARD_DIRECTION = -1;
+
     private ValueType valueType;
-    private short valueDirection;
+    private short valueDirection = FORWARD_DIRECTION;
     private String unit;
     private MeasurableAttribute attribute;
+
+    private double lowerBound = Double.NEGATIVE_INFINITY;
+    private double upperBound = Double.POSITIVE_INFINITY;
+    private List<Object> allowedValues;
 }
