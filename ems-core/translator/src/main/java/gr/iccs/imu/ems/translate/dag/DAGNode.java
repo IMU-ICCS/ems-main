@@ -16,6 +16,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -30,6 +32,7 @@ public class DAGNode implements Serializable {
     private final String elementName;
     private Grouping grouping;
     private String topicName;
+    private final Map<String,Object> properties = new LinkedHashMap<>();
 
     DAGNode() {
         id = counter.getAndIncrement();
