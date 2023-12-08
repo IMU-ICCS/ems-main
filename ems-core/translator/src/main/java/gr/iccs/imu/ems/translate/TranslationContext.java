@@ -289,6 +289,10 @@ public class TranslationContext implements Serializable {
         return logicalConstraints!=null ? new HashSet<>(logicalConstraints) : new HashSet<>();
     }
 
+    public Set<IfThenConstraint> getIfThenConstraints() {
+        return ifThenConstraints!=null ? new HashSet<>(ifThenConstraints) : new HashSet<>();
+    }
+
     public HashSet<MetricVariable> getCompositeMetricVariables() {
         return CMVar_1!=null ? new HashSet<>(CMVar_1) : new HashSet<>();
     }
