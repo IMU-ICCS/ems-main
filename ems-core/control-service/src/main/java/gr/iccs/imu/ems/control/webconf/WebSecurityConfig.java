@@ -161,7 +161,7 @@ public class WebSecurityConfig implements InitializingBean {
             throw new InvalidParameterException("User form authentication is enabled but username or password is blank");
         if (securityEnabled && apiKeyAuthEnabled && StringUtils.isBlank(apiKeyValue))
             throw new InvalidParameterException("API Key authentication is enabled but no API Key provided or it is blank");
-        if (permittedUrls==null) permittedUrls = new String[0];
+        if (permittedUrls==null) permittedUrls = new String[] { "/favicon.ico", "/health" };
 
         if (securityEnabled && userFormAuthEnabled) {
             log.debug("afterPropertiesSet: Admin Username: {}", username);
@@ -329,8 +329,6 @@ public class WebSecurityConfig implements InitializingBean {
             httpSecurity
                     //.authorizeHttpRequests(
                     //        authorize -> authorize.requestMatchers("/broker/credentials", "/baguette/ref/**").hasAnyRole(ROLE_JWT_TOKEN, ROLE_API_KEY))
-                    .authorizeHttpRequests(
-                            authorize -> authorize.requestMatchers("/favicon.ico", "/health").permitAll())
                     .authorizeHttpRequests(
                             authorize -> authorize.requestMatchers(permittedUrls).permitAll())
                     .authorizeHttpRequests(

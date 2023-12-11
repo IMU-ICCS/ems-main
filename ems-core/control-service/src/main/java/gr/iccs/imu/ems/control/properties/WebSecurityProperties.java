@@ -17,9 +17,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.List;
 
@@ -95,5 +95,6 @@ public class WebSecurityProperties implements InitializingBean {
 
     // Permitted URLs
     private List<String> permittedUrls = Arrays.asList(
-            "/login*", "/logout*", "/favicon.ico", "/admin/login.html", "/admin/favicon.ico", "/admin/assets/**", "/resources/*");
+            "/login*", "/logout*", "/admin/login.html", "/favicon.ico", "/admin/favicon.ico",
+            "/admin/assets/**", "/resources/*", "/health");
 }
