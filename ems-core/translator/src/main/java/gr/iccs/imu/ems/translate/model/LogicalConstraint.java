@@ -9,10 +9,7 @@
 
 package gr.iccs.imu.ems.translate.model;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
@@ -21,6 +18,7 @@ import java.util.List;
 @lombok.Data
 @SuperBuilder
 @NoArgsConstructor
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class LogicalConstraint extends CompositeConstraint {
     private LogicalOperatorType logicalOperator;

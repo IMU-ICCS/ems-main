@@ -17,6 +17,7 @@ import lombok.experimental.SuperBuilder;
 @lombok.Data
 @SuperBuilder
 @NoArgsConstructor
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 // See: eu.melodic.models.interfaces.Interval
 public class Interval extends AbstractInterfaceRootObject {

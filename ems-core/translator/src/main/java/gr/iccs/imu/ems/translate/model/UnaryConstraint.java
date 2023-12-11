@@ -11,6 +11,7 @@ package gr.iccs.imu.ems.translate.model;
 
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Date;
@@ -18,6 +19,7 @@ import java.util.Date;
 @lombok.Data
 @SuperBuilder
 @NoArgsConstructor
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class UnaryConstraint extends Constraint {
     private Date validity;

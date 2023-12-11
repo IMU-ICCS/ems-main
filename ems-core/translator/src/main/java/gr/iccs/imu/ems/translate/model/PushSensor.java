@@ -11,11 +11,13 @@ package gr.iccs.imu.ems.translate.model;
 
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @lombok.Data
 @SuperBuilder
 @NoArgsConstructor
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 // Based on: eu.melodic.models.interfaces.PushSensor
 public class PushSensor extends Sensor {

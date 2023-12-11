@@ -11,6 +11,7 @@ package gr.iccs.imu.ems.translate.model;
 
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
@@ -19,6 +20,7 @@ import java.util.Map;
 @lombok.Data
 @SuperBuilder
 @NoArgsConstructor
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public abstract class AbstractInterfaceRootObject extends AbstractRootObject {
     protected Map<String, Serializable> additionalProperties;
