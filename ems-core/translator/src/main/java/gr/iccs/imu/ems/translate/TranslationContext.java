@@ -34,6 +34,8 @@ public class TranslationContext implements Serializable {
 
     @Getter
     private final String modelName;
+    @Getter
+    private final String modelFileName;
 
     // Decomposition DAG
     @Getter
@@ -147,12 +149,17 @@ public class TranslationContext implements Serializable {
     // Constructors
 
     public TranslationContext(String modelName) {
-        this(true, modelName);
+        this(true, modelName, null);
     }
 
-    public TranslationContext(boolean initializeDag, String modelName) {
+    public TranslationContext(String modelName, String modelFileName) {
+        this(true, modelName, modelFileName);
+    }
+
+    public TranslationContext(boolean initializeDag, String modelName, String modelFileName) {
         // Initialize fields
         this.modelName = modelName;
+        this.modelFileName = modelFileName;
         this.DAG = initializeDag ? new DAG(this::getFullName) : new DAG();
 
         // Element-to-Full-Name staff
