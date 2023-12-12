@@ -10,6 +10,7 @@
 package gr.iccs.imu.ems.control.controller;
 
 import com.google.gson.reflect.TypeToken;
+import gr.iccs.imu.ems.translate.TranslationContext;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -162,6 +163,18 @@ public class ControlServiceController {
         log.info("ControlServiceController.getCurrentAppExecModel(): Current App Exec model: {}", currentAppExecModelId);
 
         return currentAppExecModelId;
+    }
+
+    @GetMapping(value = "/translator/currentTranslationContext", produces = MediaType.APPLICATION_JSON_VALUE)
+    public TranslationContext getCurrentTranslationContext(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        log.debug("ControlServiceController.getCurrentTranslationContext(): Received request");
+        log.trace("ControlServiceController.getCurrentTranslationContext(): JWT token: {}", jwtToken);
+
+        TranslationContext _TC = coordinator.getTranslationContextOfAppModel(coordinator.getCurrentAppModelId());
+        log.info("ControlServiceController.getCurrentAppExecModel(): Current TC model: {}", _TC.getModelName());
+
+        return _TC;
     }
 
     // ---------------------------------------------------------------------------------------------------

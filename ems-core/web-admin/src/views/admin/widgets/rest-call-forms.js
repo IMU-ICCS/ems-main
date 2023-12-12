@@ -18,6 +18,7 @@ export const FORM_TYPE_OPTIONS = [
                 { 'id': 'constants-update', 'text': 'Set constants (add name-value pairs in Payload)', 'url': '/appConstants', 'method': 'POST', 'form': '', 'priority': 3 },
                 { 'id': 'get-app-model', 'text': 'Current App. model', 'url': '/translator/currentAppModel', 'method': 'GET', 'form': '', 'priority': 4 },
                 { 'id': 'get-app-exec-model', 'text': 'Current App. Execution model', 'url': '/translator/currentAppExecModel', 'method': 'GET', 'form': '', 'priority': 5 },
+                { 'id': 'get-curr-tc', 'text': 'Current Translation Context', 'url': '/translator/currentTranslationContext', 'method': 'GET', 'form': '', 'priority': 6 },
             ]
         },
 
