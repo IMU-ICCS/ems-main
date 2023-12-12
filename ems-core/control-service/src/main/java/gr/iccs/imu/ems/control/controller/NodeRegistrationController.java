@@ -35,7 +35,7 @@ public class NodeRegistrationController {
     // Baguette control methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @GetMapping(value = "/baguette/stopServer")
+    @GetMapping("/baguette/stopServer")
     public String baguetteStopServer() {
         log.info("NodeRegistrationController.baguetteStopServer(): Request received");
 
