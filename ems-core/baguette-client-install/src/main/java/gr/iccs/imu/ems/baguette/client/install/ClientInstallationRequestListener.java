@@ -29,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
-import javax.jms.*;
+import jakarta.jms.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;

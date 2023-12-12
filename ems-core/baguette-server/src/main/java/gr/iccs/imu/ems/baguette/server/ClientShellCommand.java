@@ -30,7 +30,7 @@ import org.apache.sshd.server.session.ServerSessionAware;
 import org.cryptacular.util.CertUtil;
 import org.slf4j.event.Level;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;

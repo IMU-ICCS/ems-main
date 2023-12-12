@@ -20,7 +20,7 @@ import org.apache.activemq.command.Message;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
-import javax.jms.JMSException;
+import jakarta.jms.JMSException;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;

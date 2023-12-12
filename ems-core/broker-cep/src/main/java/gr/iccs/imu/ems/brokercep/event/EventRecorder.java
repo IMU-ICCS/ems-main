@@ -22,8 +22,8 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.scheduling.TaskScheduler;
 
-import javax.jms.*;
-import javax.jms.Queue;
+import jakarta.jms.*;
+import jakarta.jms.Queue;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;

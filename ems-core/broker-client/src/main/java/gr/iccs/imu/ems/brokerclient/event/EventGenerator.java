@@ -10,13 +10,13 @@
 package gr.iccs.imu.ems.brokerclient.event;
 
 import gr.iccs.imu.ems.brokerclient.BrokerClient;
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j

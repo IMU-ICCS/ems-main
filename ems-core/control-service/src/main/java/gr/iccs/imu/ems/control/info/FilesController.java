@@ -31,7 +31,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.HandlerMapping;
 
-import javax.validation.constraints.Null;
+import jakarta.validation.constraints.Null;
 import java.io.*;
 import java.net.URLConnection;
 import java.nio.file.Files;

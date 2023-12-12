@@ -30,7 +30,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 
-import javax.jms.JMSException;
+import jakarta.jms.JMSException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.Duration;

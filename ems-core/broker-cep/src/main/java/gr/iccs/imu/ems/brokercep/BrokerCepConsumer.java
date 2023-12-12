@@ -27,7 +27,7 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
-import javax.jms.*;
+import jakarta.jms.*;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Enumeration;

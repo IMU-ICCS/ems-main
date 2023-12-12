@@ -27,7 +27,7 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- Spring-boot dependencies -->
+        <!-- Spring-boot JMS dependencies -->
         <!--<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-activemq</artifactId>
@@ -41,7 +41,6 @@
             <artifactId>activemq-client</artifactId>
             <version>${activemq.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>

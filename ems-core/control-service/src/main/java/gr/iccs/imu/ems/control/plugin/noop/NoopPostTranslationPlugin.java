@@ -12,10 +12,9 @@ package gr.iccs.imu.ems.control.plugin.noop;
 import gr.iccs.imu.ems.control.plugin.PostTranslationPlugin;
 import gr.iccs.imu.ems.control.util.TopicBeacon;
 import gr.iccs.imu.ems.translate.TranslationContext;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
 
 @Slf4j
 @Service

@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.jms.*;
+import jakarta.jms.*;
 import javax.management.ObjectName;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -262,7 +262,7 @@ public class BrokerCepService {
 
         // Create a MessageProducer from the Session to the Topic or Queue
         MessageProducer producer = session.createProducer(destination);
-        producer.setDeliveryMode(javax.jms.DeliveryMode.NON_PERSISTENT);
+        producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
         // Create a message
         //ObjectMessage message = session.createObjectMessage(event);

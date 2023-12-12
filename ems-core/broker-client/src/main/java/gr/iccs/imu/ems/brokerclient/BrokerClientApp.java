@@ -23,9 +23,9 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.*;
+import jakarta.jms.Message;
+import jakarta.jms.Queue;
+import jakarta.jms.*;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;

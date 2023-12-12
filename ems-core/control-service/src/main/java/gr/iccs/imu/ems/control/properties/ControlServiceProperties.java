@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 //import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 import static gr.iccs.imu.ems.util.EmsConstant.EMS_PROPERTIES_PREFIX;
 

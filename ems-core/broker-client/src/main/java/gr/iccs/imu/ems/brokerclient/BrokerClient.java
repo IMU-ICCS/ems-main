@@ -28,7 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.jms.*;
+import jakarta.jms.*;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.ObjectOutputStream;
@@ -242,7 +242,7 @@ public class BrokerClient {
 
         // Create a MessageProducer from the Session to the Topic or Queue
         MessageProducer producer = session.createProducer(destination);
-        producer.setDeliveryMode(javax.jms.DeliveryMode.NON_PERSISTENT);
+        producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
         // Create a messages
         String payloadText = null;
