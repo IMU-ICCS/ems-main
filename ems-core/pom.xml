@@ -52,13 +52,11 @@
         <!-- MathParser version -->
         <mathparser.version>4.2.0</mathparser.version>
         <!-- Lombok version -->
-        <lombok.version>1.18.26</lombok.version>
+        <lombok.version>1.18.30</lombok.version>
         <!-- ActiveMQ (classic) version -->
         <activemq.version>6.0.1</activemq.version>
         <!-- Jasypt version -->
         <jasypt.starter.version>3.0.5</jasypt.starter.version>
-        <!-- Hibernate validator version -->
-        <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
         <!-- Apache SSHD version -->
         <apache-sshd.version>2.10.0</apache-sshd.version>
         <!-- Bouncy Castle version -->
