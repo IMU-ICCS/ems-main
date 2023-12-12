@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.4</version>
+        <version>3.1.6</version>
         <relativePath></relativePath>
     </parent>
 
@@ -54,7 +54,7 @@
         <!-- Lombok version -->
         <lombok.version>1.18.26</lombok.version>
         <!-- ActiveMQ (classic) version -->
-        <activemq.version>5.17.5</activemq.version>
+        <activemq.version>5.17.6</activemq.version>
         <!-- Jasypt version -->
         <jasypt.starter.version>3.0.5</jasypt.starter.version>
         <!-- Hibernate validator version -->
