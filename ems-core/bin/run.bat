@@ -78,7 +78,7 @@ java %EMS_DEBUG_OPTS% %JAVA_OPTS% %JAVA_ADD_OPENS% ^
     -Dscan.packages=%SCAN_PACKAGES% ^
     %CP% ^
     "-Dloader.path=%ESPER_PATH%%EXTRA_LOADER_PATHS%" ^
-    org.springframework.boot.loader.PropertiesLauncher ^
+    org.springframework.boot.loader.launch.PropertiesLauncher ^
     -nolog ^
     "--spring.config.location=%EMS_CONFIG_LOCATION%" ^
     "--logging.config=file:%LOG_CONFIG_FILE%" ^

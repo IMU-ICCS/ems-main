@@ -87,7 +87,7 @@ while :; do
       -Dscan.packages=${SCAN_PACKAGES} \
       ${CP} \
       -Dloader.path=${ESPER_PATH}${EXTRA_LOADER_PATHS} \
-      org.springframework.boot.loader.PropertiesLauncher \
+      org.springframework.boot.loader.launch.PropertiesLauncher \
       "--spring.config.location=${EMS_CONFIG_LOCATION}" \
       "--logging.config=file:$LOG_CONFIG_FILE" \
       $* &

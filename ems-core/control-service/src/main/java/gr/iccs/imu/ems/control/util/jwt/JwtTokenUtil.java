@@ -21,11 +21,11 @@ import org.springframework.context.annotation.ComponentScan;
 
 /**
  * Run:
- * java -cp .\target\control-service.jar  -Dloader.main=jwt.util.gr.iccs.imu.ems.control.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.gr.iccs.imu.ems.util=ERROR org.springframework.boot.loader.PropertiesLauncher createKey
+ * java -cp .\target\control-service.jar  -Dloader.main=jwt.util.gr.iccs.imu.ems.control.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.gr.iccs.imu.ems.util=ERROR org.springframework.boot.loader.launch.PropertiesLauncher createKey
  * -or-
- * java -cp .\target\control-service.jar  -Dloader.main=jwt.util.gr.iccs.imu.ems.control.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.gr.iccs.imu.ems.util=ERROR org.springframework.boot.loader.PropertiesLauncher create [USER]?
+ * java -cp .\target\control-service.jar  -Dloader.main=jwt.util.gr.iccs.imu.ems.control.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.gr.iccs.imu.ems.util=ERROR org.springframework.boot.loader.launch.PropertiesLauncher create [USER]?
  * -or-
- * java -cp .\target\control-service.jar  -Dloader.main=jwt.util.gr.iccs.imu.ems.control.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.gr.iccs.imu.ems.util=ERROR org.springframework.boot.loader.PropertiesLauncher parser [TOKEN]
+ * java -cp .\target\control-service.jar  -Dloader.main=jwt.util.gr.iccs.imu.ems.control.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.gr.iccs.imu.ems.util=ERROR org.springframework.boot.loader.launch.PropertiesLauncher parser [TOKEN]
  */
 @Slf4j
 @SpringBootApplication
