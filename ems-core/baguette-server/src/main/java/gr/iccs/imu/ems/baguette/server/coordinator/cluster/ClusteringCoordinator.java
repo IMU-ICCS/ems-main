@@ -383,7 +383,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
     // ------------------------------------------------------------------------
 
     void sendClusterKey(ClientShellCommand csc, IClusterZone zoneInfo) {
-        csc.sendCommand(String.format("CLUSTER-KEY %s %s %s %s",
+        csc.sendCommand("CLUSTER-KEY %s %s %s %s".formatted(
                 zoneInfo.getClusterKeystoreFile().getName(), zoneInfo.getClusterKeystoreType(),
                 zoneInfo.getClusterKeystorePassword(), zoneInfo.getClusterKeystoreBase64()));
     }

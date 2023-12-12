@@ -228,8 +228,8 @@ public class KeystoreUtil {
     public KeystoreUtil createKeyAndCertWithSAN(String entryName, String dn)
             throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, OperatorCreationException
     {
-        String sanExt = String.format("dns:localhost,ip:127.0.0.1,ip:%s,ip:%s",
-                NetUtil.getDefaultIpAddress(), NetUtil.getPublicIpAddress());
+        String sanExt = "dns:localhost,ip:127.0.0.1,ip:%s,ip:%s"
+                .formatted(NetUtil.getDefaultIpAddress(), NetUtil.getPublicIpAddress());
         return createKeyAndCert(entryName, dn, sanExt);
     }
 

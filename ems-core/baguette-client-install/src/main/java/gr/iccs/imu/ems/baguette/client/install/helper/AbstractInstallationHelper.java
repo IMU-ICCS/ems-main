@@ -281,7 +281,8 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         contents = StringSubstitutor.replace(contents, valueMap);
         String tmpFile = clientTmpDir+"/installEMS_"+System.currentTimeMillis();
         instructionsSet
-                .appendLog(String.format("Copy file from server to temp to client: %s -> %s -> %s", p.toString(), tmpFile, targetFile));
+                .appendLog("Copy file from server to temp to client: %s -> %s -> %s"
+                        .formatted(p.toString(), tmpFile, targetFile));
         return _appendCopyInstructions(instructionsSet, targetFile, tmpFile, contents, clientTmpDir);
     }
 

@@ -70,7 +70,7 @@ public class TranslationContextPrinter {
 				if (StringUtils.isBlank(exportPath)) exportPath = "";
 				exportName = StringUtils.stripToEmpty(exportName);
 				if (exportName.isEmpty()) exportName = "export";
-				String baseFileName = String.format("%s/%s-%d", exportPath, exportName, System.currentTimeMillis());
+				String baseFileName = "%s/%s-%d".formatted(exportPath, exportName, System.currentTimeMillis());
 				List<String> exportFiles;
 				if (dot!=null) {
 					exportFiles = dagExporter.exportDAG(dot, baseFileName, exportFormats, imageWidth);
@@ -180,14 +180,14 @@ public class TranslationContextPrinter {
 			if (key==null) {
 				newMap.put( key+"::"+key, list );
 			} else
-			if (key instanceof NamedElement) {
-				newMap.put( key.getClass().getSimpleName()+"::"+((NamedElement)key).getName(), list );
+			if (key instanceof NamedElement element) {
+				newMap.put( key.getClass().getSimpleName()+"::"+element.getName(), list );
 			} else {
 				newMap.put( key.getClass().getSimpleName()+"::"+key, list );
 			}
 			for (Object val : values) {
-				if (val instanceof NamedElement) {
-					list.add( val.getClass().getSimpleName()+"::"+((NamedElement)val).getName() );
+				if (val instanceof NamedElement element) {
+					list.add( val.getClass().getSimpleName()+"::"+element.getName() );
 				} else {
 					list.add( val.getClass().getSimpleName()+"::"+val );
 				}

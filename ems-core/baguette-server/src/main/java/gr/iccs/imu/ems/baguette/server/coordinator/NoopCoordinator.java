@@ -86,11 +86,11 @@ public class NoopCoordinator implements ServerCoordinator {
     protected boolean _logInvocation(String methodName, Object o, boolean checkStarted) {
         String className = getClass().getSimpleName();
         String str =  (o==null) ? "" : (
-                o instanceof ClientShellCommand ? String.format(". CSC: %s", o) : (
-                        o instanceof NodeRegistryEntry ? String.format(". NRE: %s", o) :
-                                String.format(". Object: %s", o)
-                        )
-                );
+                o instanceof ClientShellCommand
+                        ? ". CSC: %s".formatted(o)
+                        : (o instanceof NodeRegistryEntry
+                                ? ". NRE: %s".formatted(o)
+                                : ". Object: %s".formatted(o)) );
         if (checkStarted && !started) {
             log.warn("{}: {}(): Coordinator has not been started{}", className, methodName, str);
         } else

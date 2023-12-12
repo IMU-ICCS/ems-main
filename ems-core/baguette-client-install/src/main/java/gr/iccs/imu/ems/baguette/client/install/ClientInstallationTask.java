@@ -39,6 +39,7 @@ public class ClientInstallationTask {
     private final NodeRegistryEntry nodeRegistryEntry;
     private final List<InstructionsSet> instructionSets;
     private final TranslationContext translationContext;
+    @Builder.Default
     private boolean nodeMustBeInRegistry = true;
 
     private Callable<String> callback;

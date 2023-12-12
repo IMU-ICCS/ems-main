@@ -408,7 +408,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         setChannelStreams(channel);
         log.debug("SshClientInstaller: task #{}: EXEC: New channel id: {}", taskCounter, channel.getChannelId());
         //streamLogger.getInvertedIn().write(command.getBytes());
-        streamLogger.logMessage(String.format("EXEC: %s\n", command));
+        streamLogger.logMessage("EXEC: %s\n".formatted(command));
         try {
             // Sending command to remote side
             log.debug("SshClientInstaller: task #{}: EXEC: Sending command for execution: {}   (connect timeout: {}ms)", taskCounter, command, connectTimeout);
@@ -444,7 +444,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             return true;
         }
 
-        streamLogger.logMessage(String.format("DOWNLOAD: SCP: %s -> %s\n", remoteFilePath, localFilePath));
+        streamLogger.logMessage("DOWNLOAD: SCP: %s -> %s\n".formatted(remoteFilePath, localFilePath));
         try {
             log.info("SshClientInstaller: Downloading file: task #{}: remote: {} -> local: {}", taskCounter, remoteFilePath, localFilePath);
             ScpClientCreator creator = new DefaultScpClientCreator();
@@ -465,7 +465,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             return true;
         }
 
-        streamLogger.logMessage(String.format("UPLOAD: SCP: %s -> %s\n", localFilePath, remoteFilePath));
+        streamLogger.logMessage("UPLOAD: SCP: %s -> %s\n".formatted(localFilePath, remoteFilePath));
         try {
             long startTm = System.currentTimeMillis();
             log.info("SshClientInstaller: Uploading file: task #{}: local: {} -> remote: {}", taskCounter, localFilePath, remoteFilePath);
@@ -488,7 +488,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             return true;
         }
 
-        streamLogger.logMessage(String.format("WRITE FILE: SCP: %s, content-length=%d \n", remoteFilePath, content.length()));
+        streamLogger.logMessage("WRITE FILE: SCP: %s, content-length=%d \n".formatted(remoteFilePath, content.length()));
         try {
             long timestamp = System.currentTimeMillis();
             /*Collection<PosixFilePermission> permissions = isExecutable
@@ -819,7 +819,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         contents = StringSubstitutor.replace(contents, valueMap);
         log.trace("SshClientInstaller: Task #{}: FILE: {}, final-content:\n{}", taskCounter, targetFile, contents);
 
-        String description = String.format("Copy file from server to temp to client: %s -> %s", sourcePath.toString(), targetFile);
+        String description = "Copy file from server to temp to client: %s -> %s".formatted(sourcePath.toString(), targetFile);
 
         return sshFileWrite(contents, targetFile, isExecutable);
     }

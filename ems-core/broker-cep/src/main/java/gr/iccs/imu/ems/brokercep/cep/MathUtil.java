@@ -182,7 +182,7 @@ public class MathUtil {
 
     protected static boolean checkPattern(String formula, String aggregatorName) {
         int flags = Pattern.CASE_INSENSITIVE;
-        Pattern pat = Pattern.compile(String.format("[^a-zA-Z]%s[^a-zA-Z]", aggregatorName), flags);
+        Pattern pat = Pattern.compile("[^a-zA-Z]%s[^a-zA-Z]".formatted(aggregatorName), flags);
         return pat.matcher(formula).find();
     }
 

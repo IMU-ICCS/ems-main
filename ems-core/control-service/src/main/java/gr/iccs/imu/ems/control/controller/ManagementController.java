@@ -13,19 +13,16 @@ import gr.iccs.imu.ems.control.properties.ControlServiceProperties;
 import gr.iccs.imu.ems.control.util.TopicBeacon;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.jms.JMSException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @Slf4j
 @RestController
@@ -40,36 +37,34 @@ public class ManagementController {
     // Client and Cluster info and control methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/client/list", method = GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/client/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<String> listClients() {
         List<String> clients = coordinator.clientList();
         log.info("ManagementController.listClients(): {}", clients);
         return clients;
     }
 
-    @RequestMapping(value = "/client/list/map", method = GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/client/list/map", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Map<String, String>> listClientMaps() {
         Map<String, Map<String, String>> clients = coordinator.clientMap();
         log.info("ManagementController.listClientMaps(): {}", clients);
         return clients;
     }
 
-    @RequestMapping(value = "/client/command/{clientId}/{command:.+}", method = GET)
+    @GetMapping("/client/command/{clientId}/{command:.+}")
     public String clientCommand(@PathVariable String clientId, @PathVariable String command) {
         log.info("ManagementController.clientCommand(): PARAMS: client={}, command={}", clientId, command);
         return coordinator.clientCommandSend(clientId, command);
     }
 
-    @RequestMapping(value = { "/client/stats", "/client/stats/{clientId}" }, method = GET)
-    public String clientStats(@PathVariable Optional<String> clientIdOpt) {
-        String clientId = clientIdOpt.orElse("*");
+    @GetMapping({ "/client/stats", "/client/stats/{clientId}" })
+    public String clientStats(@PathVariable String clientIdOpt) {
+        String clientId = StringUtils.defaultIfBlank(clientIdOpt, "*");
         log.info("ManagementController.clientStats(): PARAMS: client={}", clientId);
         return coordinator.clientStats(clientId);
     }
 
-    @RequestMapping(value = "/cluster/command/{clusterId}/{command:.+}", method = GET)
+    @GetMapping("/cluster/command/{clusterId}/{command:.+}")
     public String clusterCommand(@PathVariable String clusterId, @PathVariable String command) {
         log.info("ManagementController.clusterCommand(): PARAMS: cluster={}, command={}", clusterId, command);
         return coordinator.clusterCommandSend(clusterId, command);
@@ -79,19 +74,23 @@ public class ManagementController {
     // Event Generation and Debugging methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/event/generate-start/{clientId}/{topicName}/{interval}/{lowerValue}/{upperValue}", method = GET)
-    public String startEventGeneration(@PathVariable String clientId, @PathVariable String topicName, @PathVariable long interval, @PathVariable double lowerValue, @PathVariable double upperValue) {
-        log.info("ManagementController.startEventGeneration(): PARAMS: client={}, topic={}, interval={}, value-range=[{},{}]", clientId, topicName, interval, lowerValue, upperValue);
+    @GetMapping("/event/generate-start/{clientId}/{topicName}/{interval}/{lowerValue}/{upperValue}")
+    public String startEventGeneration(@PathVariable String clientId, @PathVariable String topicName,
+                                       @PathVariable long interval, @PathVariable double lowerValue,
+                                       @PathVariable double upperValue)
+    {
+        log.info("ManagementController.startEventGeneration(): PARAMS: client={}, topic={}, interval={}, value-range=[{},{}]",
+                clientId, topicName, interval, lowerValue, upperValue);
         return coordinator.eventGenerationStart(clientId, topicName, interval, lowerValue, upperValue);
     }
 
-    @RequestMapping(value = "/event/generate-stop/{clientId}/{topicName}", method = GET)
+    @GetMapping("/event/generate-stop/{clientId}/{topicName}")
     public String stopEventGeneration(@PathVariable String clientId, @PathVariable String topicName) {
         log.info("ManagementController.stopEventGeneration(): PARAMS: client={}, topic={}", clientId, topicName);
         return coordinator.eventGenerationStop(clientId, topicName);
     }
 
-    @RequestMapping(value = "/event/send/{clientId}/{topicName}/{value}", method = GET)
+    @GetMapping("/event/send/{clientId}/{topicName}/{value}")
     public String sendEvent(@PathVariable String clientId, @PathVariable String topicName, @PathVariable double value) {
         log.info("ManagementController.sendEvent(): PARAMS: client={}, topic={}, value={}", clientId, topicName, value);
         return coordinator.eventLocalSend(clientId, topicName, value);
@@ -101,17 +100,17 @@ public class ManagementController {
     // EMS shutdown and exit methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/ems/shutdown", method = {GET, POST})
+    @GetMapping(value = "/ems/shutdown")
     public String emsShutdown() {
         log.info("ManagementController.emsShutdown(): Not implemented");
         coordinator.emsShutdownServices();
         return "OK";
     }
 
-    @RequestMapping(value = { "/ems/exit", "/ems/exit/{exitCode}" }, method = {GET, POST})
-    public String emsExit(@PathVariable Optional<Integer> exitCode) {
+    @GetMapping(value = { "/ems/exit", "/ems/exit/{exitCode}" })
+    public String emsExit(@PathVariable Integer exitCode) {
         if (properties.isExitAllowed()) {
-            int _exitCode = exitCode.orElse(properties.getExitCode());
+            int _exitCode = exitCode!=null ? exitCode : properties.getExitCode();
             log.info("ManagementController.emsExit(): exitCode={}", _exitCode);
             coordinator.emsShutdownServices();
             coordinator.emsExit(_exitCode);
@@ -126,19 +125,19 @@ public class ManagementController {
     // EMS status and information query methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/ems/status", method = {GET, POST}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/ems/status", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> emsStatus() {
         log.info("ManagementController.emsStatus(): Not implemented");
         return Collections.emptyMap();
     }
 
-    @RequestMapping(value = "/ems/topology", method = {GET, POST}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/ems/topology", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> emsTopology() {
         log.info("ManagementController.emsTopology(): Not implemented");
         return Collections.emptyMap();
     }
 
-    @RequestMapping(value = { "/beacon", "/beacon/transmit" }, method = GET)
+    @GetMapping({ "/beacon", "/beacon/transmit" })
     public void beaconTransmit() throws JMSException {
         log.info("ManagementController.beaconTransmit(): Invoked");
         coordinator.clientStats("*");
@@ -147,7 +146,7 @@ public class ManagementController {
 
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/health", method = GET)
+    @GetMapping("/health")
     public String health() {
         return "OK";
     }

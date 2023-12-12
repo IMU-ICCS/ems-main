@@ -137,9 +137,8 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
 
     private void processClusterNodeRemovedEvent(Object message) {
         log.debug("SelfHealingPlugin: processClusterNodeRemovedEvent(): BEGIN: message={}", message);
-        if (message instanceof ClusterMembershipEvent) {
+        if (message instanceof ClusterMembershipEvent event) {
             // Get removed node id and address
-            ClusterMembershipEvent event = (ClusterMembershipEvent)message;
             String nodeId = event.subject().id().id();
             String nodeAddress = event.subject().address().host();
             log.debug("SelfHealingPlugin: processClusterNodeRemovedEvent(): node-id={}, node-address={}", nodeId, nodeAddress);
@@ -156,9 +155,8 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
 
     private void processClusterNodeAddedEvent(Object message) {
         log.debug("SelfHealingPlugin: processClusterNodeAddedEvent(): BEGIN: message={}", message);
-        if (message instanceof ClusterMembershipEvent) {
+        if (message instanceof ClusterMembershipEvent event) {
             // Get added node id and address
-            ClusterMembershipEvent event = (ClusterMembershipEvent)message;
             String nodeId = event.subject().id().id();
             String nodeAddress = event.subject().address().host();
             log.debug("SelfHealingPlugin: processClusterNodeAddedEvent(): node-id={}, node-address={}", nodeId, nodeAddress);

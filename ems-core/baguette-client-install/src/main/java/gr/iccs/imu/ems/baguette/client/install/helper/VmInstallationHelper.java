@@ -367,7 +367,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         targetFile = remoteTargetDir + targetFile;
         String contents = new String(Files.readAllBytes(path));
         contents = StringSubstitutor.replace(contents, valueMap);
-        String description = String.format("Copy file from server to temp to client: %s -> %s", path.toString(), targetFile);
+        String description = "Copy file from server to temp to client: %s -> %s".formatted(path.toString(), targetFile);
         return _appendCopyInstructions(instructionsSet, targetFile, description, contents);
     }
 

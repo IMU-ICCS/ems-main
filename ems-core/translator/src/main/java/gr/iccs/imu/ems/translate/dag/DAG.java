@@ -270,8 +270,8 @@ public class DAG {
             else log.debug("DAG.addEdge(): Edge is already in DAG: {} --> {}", elemFrom, elemTo);
             return edge;
         } else {
-            throw new RuntimeException(String.format("Adding edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s",
-                    elemFrom, elemTo, (nodeFrom != null ? nodeFrom.getName() : null), (nodeTo != null ? nodeTo.getName() : null)));
+            throw new RuntimeException("Adding edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s"
+                    .formatted(elemFrom, elemTo, (nodeFrom != null ? nodeFrom.getName() : null), (nodeTo != null ? nodeTo.getName() : null)));
         }
     }
 

@@ -115,7 +115,7 @@ public class ClientShellCommand implements Command, Runnable, ServerSessionAware
 
     public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress, EventBus<String,Object,Object> eventBus, NodeRegistry registry) {
         synchronized (LOCK) {
-            id = String.format("#%05d", counter.getAndIncrement());
+            id = "#%05d".formatted(counter.getAndIncrement());
         }
         this.coordinator = coordinator;
         this.clientAddressOverrideAllowed = allowClientOverrideItsAddress;

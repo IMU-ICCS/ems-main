@@ -156,8 +156,7 @@ public class SshJsClientInstaller extends SshClientInstaller {
                 log.error("SshJsClientInstaller: Task #{}: JS installation script returned NULL: {}", getTaskCounter(), jsScript);
                 return INSTRUCTION_RESULT.FAIL;
             }
-            if (result instanceof Integer) {
-                int code = (int)result;
+            if (result instanceof Integer code) {
                 log.info("SshJsClientInstaller: Task #{}: JS installation script returned: code={}, script: {}", getTaskCounter(), code, jsScript);
                 return code==0 ? INSTRUCTION_RESULT.SUCCESS : INSTRUCTION_RESULT.FAIL;
             } else {

@@ -9,6 +9,7 @@
 
 package gr.iccs.imu.ems.translate.model;
 
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -26,11 +27,14 @@ public class MetricTemplate extends Feature {
     public final static short BACKWARD_DIRECTION = -1;
 
     private ValueType valueType;
+    @Builder.Default
     private short valueDirection = FORWARD_DIRECTION;
     private String unit;
     private MeasurableAttribute attribute;
 
+    @Builder.Default
     private double lowerBound = Double.NEGATIVE_INFINITY;
+    @Builder.Default
     private double upperBound = Double.POSITIVE_INFINITY;
     private List<Object> allowedValues;
 }

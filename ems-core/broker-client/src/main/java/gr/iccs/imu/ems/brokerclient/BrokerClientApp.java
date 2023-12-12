@@ -262,9 +262,8 @@ public class BrokerClientApp {
 
                 // get properties as string
                 String properties;
-                if (message instanceof  ActiveMQMessage) {
+                if (message instanceof  ActiveMQMessage amqMessage) {
                     try {
-                        ActiveMQMessage amqMessage = (ActiveMQMessage) message;
                         properties = amqMessage.getProperties()
                                 .entrySet().stream()
                                 .map(x -> x.getKey() + "=" + x.getValue())
@@ -289,14 +288,12 @@ public class BrokerClientApp {
                 }
 
                 // print message body and info
-                if (message instanceof ObjectMessage) {
-                    ObjectMessage objMessage = (ObjectMessage) message;
+                if (message instanceof ObjectMessage objMessage) {
                     Object obj = objMessage.getObject();
                     String objClass = obj!=null ? obj.getClass().getName() : null;
                     log.trace("BrokerClientApp:  - {}: Received object message: {}: {}", destinationName, objClass, obj);
                     log.info("OBJ: {}: properties: {}\n{}: {}", destinationName, properties, objClass, obj);
-                } else if (message instanceof MapMessage) {
-                    MapMessage mapMessage = (MapMessage) message;
+                } else if (message instanceof MapMessage mapMessage) {
                     Enumeration en = mapMessage.getMapNames();
                     Map<Object,Object> map = new HashMap<>();
                     while (en.hasMoreElements()) {
@@ -305,8 +302,7 @@ public class BrokerClientApp {
                     }
                     log.trace("BrokerClientApp:  - {}: Received map message: {}", destinationName, map);
                     log.info("MAP: {}: properties: {}\n{}", destinationName, properties, map);
-                } else if (message instanceof BytesMessage) {
-                    BytesMessage bytesMessage = (BytesMessage) message;
+                } else if (message instanceof BytesMessage bytesMessage) {
                     byte[] bytes = new byte[(int)bytesMessage.getBodyLength()];
                     bytesMessage.readBytes(bytes);
                     //String str = new String(bytes);
@@ -320,8 +316,7 @@ public class BrokerClientApp {
                     }
                     log.trace("BrokerClientApp:  - {}: Received bytes message: {}", destinationName, bytes);
                     log.info("BYTES: {}: properties: {}\n{}\n{}", destinationName, properties, bytes, obj);
-                } else if (message instanceof TextMessage) {
-                    TextMessage textMessage = (TextMessage) message;
+                } else if (message instanceof TextMessage textMessage) {
                     String text = textMessage.getText();
                     log.trace("BrokerClientApp:  - {}: Received text message: {}", destinationName, text);
                     log.info("TXT: {}: properties: {}\n{}", destinationName, properties, text);
@@ -408,13 +403,13 @@ public class BrokerClientApp {
             String type;
 
             String content;
-            if (amqMessage instanceof ActiveMQTextMessage) {
+            if (amqMessage instanceof ActiveMQTextMessage textMessage) {
                 type = BrokerClient.MESSAGE_TYPE.TEXT.name();
-                content = ((ActiveMQTextMessage)amqMessage).getText();
+                content = textMessage.getText();
             } else
-            if (amqMessage instanceof ActiveMQObjectMessage) {
+            if (amqMessage instanceof ActiveMQObjectMessage objectMessage) {
                 type = BrokerClient.MESSAGE_TYPE.OBJECT.name();
-                Object obj = ((ActiveMQObjectMessage)amqMessage).getObject();
+                Object obj = objectMessage.getObject();
                 /*String objClass = obj!=null ? obj.getClass().getName() : null;
                 content = objClass + ":" + obj.toString();*/
                 try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -425,13 +420,13 @@ public class BrokerClientApp {
                     content = Base64.getEncoder().encodeToString(bytes);
                 }
             } else
-            if (amqMessage instanceof ActiveMQMapMessage) {
+            if (amqMessage instanceof ActiveMQMapMessage mapMessage) {
                 type = BrokerClient.MESSAGE_TYPE.MAP.name();
                 /*content = ((ActiveMQMapMessage)amqMessage).getContentMap()
                         .entrySet().stream()
                         .map(x -> x.getKey() + "=" + x.getValue())
                         .collect(Collectors.joining(",", "{", "}"));*/
-                content = gson.toJson(((ActiveMQMapMessage)amqMessage).getContentMap());
+                content = gson.toJson(mapMessage.getContentMap());
             } else
             if (amqMessage instanceof ActiveMQBytesMessage) {
                 type = BrokerClient.MESSAGE_TYPE.BYTES.name();
@@ -733,11 +728,11 @@ public class BrokerClientApp {
 
     private static String getDestinationName(Message message) throws JMSException {
         Destination d = message.getJMSDestination();
-        if (d instanceof Topic) {
-            return ((Topic)d).getTopicName();
+        if (d instanceof Topic topic) {
+            return topic.getTopicName();
         } else
-        if (d instanceof Queue) {
-            return ((Queue)d).getQueueName();
+        if (d instanceof Queue queue) {
+            return queue.getQueueName();
         } else
             throw new IllegalArgumentException("Argument is not a JMS destination: "+d);
     }

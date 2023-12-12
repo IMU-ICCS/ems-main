@@ -341,7 +341,7 @@ public class TranslationContext implements Serializable {
             valueSet = new HashSet<>();
             map.put(key, valueSet);
         }
-        if (value instanceof List) valueSet.addAll((List) value);
+        if (value instanceof List list) valueSet.addAll(list);
         else valueSet.add(value);
     }
 

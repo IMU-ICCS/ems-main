@@ -313,8 +313,8 @@ public class WebSecurityConfig implements InitializingBean {
                                 && SecurityContextHolder.getContext().getAuthentication() != null
                                 && SecurityContextHolder.getContext().getAuthentication().isAuthenticated();
                         log.trace("WebSecurityConfig: Redirection filters: authenticated={}", isAuthenticated);
-                        if (isAuthenticated && (servletRequest instanceof HttpServletRequest)) {
-                            String uri = ((HttpServletRequest)servletRequest).getRequestURI();
+                        if (isAuthenticated && (servletRequest instanceof HttpServletRequest request)) {
+                            String uri = request.getRequestURI();
                             log.trace("WebSecurityConfig: Redirection filters: Request uri={}", uri);
                             if (StringUtils.startsWithAny(uri, loginUrl, loginPage)) {
                                 log.debug("WebSecurityConfig: Redirection filter: Redirecting {} to {}...", uri, loginSuccessUrl);

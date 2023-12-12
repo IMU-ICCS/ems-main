@@ -34,8 +34,8 @@ public class LogMessageUpdateInterceptor extends AbstractMessageInterceptor {
     @Override
     public void intercept(Message message) {
         try {
-            if (eventRecorder!=null && message instanceof ActiveMQMessage)
-                eventRecorder.recordEvent((ActiveMQMessage)message);
+            if (eventRecorder!=null && message instanceof ActiveMQMessage activeMQMessage)
+                eventRecorder.recordEvent(activeMQMessage);
         } catch (Exception e) {
             log.error("LogMessageUpdateInterceptor:  EXCEPTION: ", e);
         }

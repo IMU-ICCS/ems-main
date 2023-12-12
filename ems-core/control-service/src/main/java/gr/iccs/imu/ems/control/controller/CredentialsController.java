@@ -21,17 +21,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @Slf4j
 @RestController
@@ -52,8 +45,9 @@ public class CredentialsController {
     // ------------------------------------------------------------------------------------------------------------
 
 //    @PreAuthorize(ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY)
-    @RequestMapping(value = "/broker/credentials", method = {GET,POST})
-    public HttpEntity<Map> getBrokerCredentials(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    @GetMapping(value = "/broker/credentials")
+    public HttpEntity<Map> getBrokerCredentials(
+            @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
         log.info("CredentialsController.getBrokerCredentials(): BEGIN");
         log.trace("CredentialsController.getBrokerCredentials(): JWT token: {}", jwtToken);
@@ -78,19 +72,18 @@ public class CredentialsController {
     }
 
 //    @PreAuthorize(ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY)
-    @RequestMapping(value = "/baguette/ref/{ref}", method = {GET,POST},
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public HttpEntity<Map> getNodeCredentials(@PathVariable("ref") Optional<String> optRef,
+    @GetMapping(value = "/baguette/ref/{ref}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public HttpEntity<Map> getNodeCredentials(@PathVariable String optRef,
                                               @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
         log.info("CredentialsController.getNodeCredentials(): BEGIN: ref={}", optRef);
         log.trace("CredentialsController.getNodeCredentials(): JWT token: {}", jwtToken);
 
-        if (StringUtils.isBlank(optRef.orElse(null)))
+        if (StringUtils.isBlank(optRef))
             throw new IllegalArgumentException("The 'ref' parameter is mandatory");
 
         // Check if it is EMS server ref
-        if (credentialsCoordinator.getReference().equals(optRef.get())) {
+        if (credentialsCoordinator.getReference().equals(optRef)) {
             if (coordinator.getBaguetteServer()==null || !coordinator.getBaguetteServer().isServerRunning()) {
                 log.warn("CredentialsController.getNodeCredentials(): Baguette Server is not started");
                 return null;
@@ -108,7 +101,7 @@ public class CredentialsController {
             }
             String key = coordinator.getBaguetteServer().getServerPubkey();
 
-            log.debug("CredentialsController.getNodeCredentials(): Retrieved EMS server connection info by reference: ref={}", optRef.get());
+            log.debug("CredentialsController.getNodeCredentials(): Retrieved EMS server connection info by reference: ref={}", optRef);
 
             // Prepare response
             Map<String,String> response = new HashMap<>();
@@ -124,11 +117,11 @@ public class CredentialsController {
         }
 
         // Retrieve node credentials
-        NodeRegistryEntry entry = coordinator.getBaguetteServer().getNodeRegistry().getNodeByReference(optRef.get());
+        NodeRegistryEntry entry = coordinator.getBaguetteServer().getNodeRegistry().getNodeByReference(optRef);
         if (entry==null) {
-            throw new IllegalArgumentException("Not found Node with reference: "+optRef.get());
+            throw new IllegalArgumentException("Not found Node with reference: "+optRef);
         }
-        log.debug("CredentialsController.getNodeCredentials(): Retrieved node by reference: ref={}", optRef.get());
+        log.debug("CredentialsController.getNodeCredentials(): Retrieved node by reference: ref={}", optRef);
 
         // Prepare response
         Map<String,String> response = new HashMap<>();
@@ -148,7 +141,7 @@ public class CredentialsController {
     // EMS One-Time-Password (OTP) endpoints
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/ems/otp/new", method = {GET, POST})
+    @GetMapping(value = "/ems/otp/new")
     public String newOtp() {
         log.info("CredentialsController.newOtp(): BEGIN");
         String newOtp = webSecurityConfig.otpCreate();
@@ -156,7 +149,7 @@ public class CredentialsController {
         return newOtp;
     }
 
-    @RequestMapping(value = "/ems/otp/remove/{otp}", method = {GET, POST})
+    @GetMapping(value = "/ems/otp/remove/{otp}")
     public String removeOtp(@PathVariable String otp) {
         log.info("CredentialsController.removeOtp(): BEGIN");
         if ("*".equals(otp))

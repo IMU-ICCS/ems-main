@@ -203,7 +203,7 @@ public class StrUtil {
                             */
                             typeName = "unknown_type";
                         }
-                        formatter = String.format("StrConverter: Invalid %s value: str=%s, Exception: ", typeName, str);
+                        formatter = "StrConverter: Invalid %s value: str=%s, Exception: ".formatted(typeName, str);
                     }
                     log.warn(formatter, e);
                 }

@@ -13,29 +13,21 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import gr.iccs.imu.ems.baguette.server.BaguetteServer;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
-import gr.iccs.imu.ems.control.properties.ControlServiceProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 public class NodeRegistrationController {
-    private final ControlServiceProperties properties;
     private final ControlServiceCoordinator coordinator;
     private final NodeRegistrationCoordinator nodeRegistrationCoordinator;
 
@@ -43,7 +35,7 @@ public class NodeRegistrationController {
     // Baguette control methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/baguette/stopServer", method = {GET, POST})
+    @GetMapping(value = "/baguette/stopServer")
     public String baguetteStopServer() {
         log.info("NodeRegistrationController.baguetteStopServer(): Request received");
 
@@ -54,9 +46,9 @@ public class NodeRegistrationController {
         return "OK";
     }
 
-    @RequestMapping(value = { "/baguette/registerNode", "/baguette/node/register" }, method = POST,
+    @PostMapping(value = { "/baguette/registerNode", "/baguette/node/register" },
             consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String baguetteRegisterNode(@RequestBody String jsonNode, HttpServletRequest request) throws Exception {
+    public String baguetteRegisterNode(@RequestBody String jsonNode, HttpServletRequest request) {
         log.info("NodeRegistrationController.baguetteRegisterNode(): Invoked");
         log.debug("NodeRegistrationController.baguetteRegisterNode(): Node json:\n{}", jsonNode);
 
@@ -72,7 +64,8 @@ public class NodeRegistrationController {
             response = nodeRegistrationCoordinator.registerNode(request, nodeMap,
                     coordinator.getTranslationContextOfAppModel(coordinator.getCurrentAppModelId()));
         } catch (Exception e) {
-            log.error("NodeRegistrationController.baguetteRegisterNode(): EXCEPTION while registering node: map={}\n", nodeMap, e);
+            log.error("NodeRegistrationController.baguetteRegisterNode(): EXCEPTION while registering node: map={}\n",
+                    nodeMap, e);
             response = "ERROR "+e.getMessage();
         }
 
@@ -81,9 +74,8 @@ public class NodeRegistrationController {
         return response;
     }
 
-    @RequestMapping(value = "/baguette/node/unregister/{ipAddress:.+}", method = {GET, POST},
-            produces = MediaType.TEXT_PLAIN_VALUE)
-    public String baguetteUnregisterNode(@PathVariable String ipAddress, HttpServletRequest request) throws Exception {
+    @GetMapping(value = "/baguette/node/unregister/{ipAddress:.+}", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String baguetteUnregisterNode(@PathVariable String ipAddress, HttpServletRequest request) {
         log.info("NodeRegistrationController.baguetteUnregisterNode(): Invoked");
         log.debug("NodeRegistrationController.baguetteUnregisterNode(): Node IP address:\n{}", ipAddress);
 
@@ -101,8 +93,8 @@ public class NodeRegistrationController {
         return response;
     }
 
-    @RequestMapping(value = "/baguette/node/list", method = GET)
-    public Collection<String> baguetteNodeList() throws Exception {
+    @GetMapping("/baguette/node/list")
+    public Collection<String> baguetteNodeList() {
         log.info("NodeRegistrationController.baguetteNodeList(): Invoked");
 
         Collection<String> addresses = coordinator.getBaguetteServer().getNodeRegistry().getNodeAddresses();
@@ -111,8 +103,7 @@ public class NodeRegistrationController {
         return addresses;
     }
 
-    @RequestMapping(value = "/baguette/node/reinstall/{ipAddress:.+}", method = {GET, POST},
-            produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/baguette/node/reinstall/{ipAddress:.+}", produces = MediaType.TEXT_PLAIN_VALUE)
     public String baguetteNodeReinstall(@PathVariable String ipAddress) throws Exception {
         log.info("NodeRegistrationController.baguetteNodeReinstall(): Invoked");
         log.info("NodeRegistrationController.baguetteNodeReinstall(): Node IP address: {}", ipAddress);
@@ -129,9 +120,8 @@ public class NodeRegistrationController {
         return response;
     }
 
-    @RequestMapping(value = "/baguette/getNodeInfoByAddress/{ipAddress:.+}", method = {GET, POST},
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public NodeRegistryEntry baguetteGetNodeInfoByAddress(@PathVariable String ipAddress) throws Exception {
+    @GetMapping(value = "/baguette/getNodeInfoByAddress/{ipAddress:.+}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public NodeRegistryEntry baguetteGetNodeInfoByAddress(@PathVariable String ipAddress) {
         log.info("NodeRegistrationController.baguetteGetNodeInfoByAddress(): ip-address={}", ipAddress);
 
         BaguetteServer baguette = coordinator.getBaguetteServer();
@@ -142,9 +132,8 @@ public class NodeRegistrationController {
         return nodeInfo;
     }
 
-    @RequestMapping(value = "/baguette/getNodeNameByAddress/{ipAddress:.+}", method = {GET, POST},
-            produces = MediaType.TEXT_PLAIN_VALUE)
-    public String baguetteGetNodeNameByAddress(@PathVariable String ipAddress) throws Exception {
+    @GetMapping(value = "/baguette/getNodeNameByAddress/{ipAddress:.+}", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String baguetteGetNodeNameByAddress(@PathVariable String ipAddress) {
         log.info("NodeRegistrationController.baguetteGetNodeNameByAddress(): ip-address={}", ipAddress);
 
         BaguetteServer baguette = coordinator.getBaguetteServer();

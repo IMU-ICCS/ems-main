@@ -10,7 +10,6 @@
 package gr.iccs.imu.ems.brokercep.cep;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +24,6 @@ public class CepExtensions {
 
     // Register Single-Row Functions methods
 
-    @Autowired
     public CepExtensions(ApplicationContext appContext) {
         CepService cepService = appContext.getBean(CepService.class);
         cepService.addSingleRowFunction("EVAL", CepEvalFunction.class.getName(), "eval");

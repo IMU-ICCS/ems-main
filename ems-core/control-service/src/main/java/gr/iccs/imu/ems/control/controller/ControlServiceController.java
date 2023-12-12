@@ -28,9 +28,6 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -47,8 +44,7 @@ public class ControlServiceController {
     // Application Model methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = { "/appModel", "/appModelJson" }, method = POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = { "/appModel", "/appModelJson" }, consumes = MediaType.APPLICATION_JSON_VALUE)
     public String newAppModel(@RequestBody String requestStr,
                               @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
@@ -81,8 +77,7 @@ public class ControlServiceController {
 
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = {"/appExecModel", "/appExecModelJson"}, method = POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = {"/appExecModel", "/appExecModelJson"}, consumes = MediaType.APPLICATION_JSON_VALUE)
     public String newAppExecModel(@RequestBody String requestStr,
                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
@@ -107,8 +102,7 @@ public class ControlServiceController {
         return "OK";
     }
 
-    @RequestMapping(value = {"/cpConstants", "/appConstants"}, method = POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = {"/cpConstants", "/appConstants"}, consumes = MediaType.APPLICATION_JSON_VALUE)
     public String setConstants(@RequestBody String requestStr,
                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
@@ -146,7 +140,7 @@ public class ControlServiceController {
     // Translator results methods
     // ---------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/translator/currentAppModel", method = {GET,POST})
+    @GetMapping(value = "/translator/currentAppModel")
     public String getCurrentAppModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
         log.debug("ControlServiceController.getCurrentAppModel(): Received request");
@@ -158,7 +152,7 @@ public class ControlServiceController {
         return currentAppModelId;
     }
 
-    @RequestMapping(value = "/translator/currentAppExecModel", method = {GET,POST})
+    @GetMapping(value = "/translator/currentAppExecModel")
     public String getCurrentAppExecModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
         log.debug("ControlServiceController.getCurrentAppExecModel(): Received request");

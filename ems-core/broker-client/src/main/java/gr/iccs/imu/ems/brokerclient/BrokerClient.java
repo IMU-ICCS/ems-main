@@ -249,10 +249,10 @@ public class BrokerClient {
         Message message;
         switch (messageType) {
             case MAP:
-                if (event instanceof Map) {
+                if (event instanceof Map map) {
                     final MapMessage mapMsg = session.createMapMessage();
-                    for (Object key : ((Map) event).keySet()) {
-                        Object val = ((Map) event).get(key);
+                    for (Object key : map.keySet()) {
+                        Object val = map.get(key);
                         String k = key != null ? key.toString() : null;
                         mapMsg.setObject(k, val);
                     }
@@ -272,8 +272,8 @@ public class BrokerClient {
                 break;
             case BYTES:
                 byte[] bytesArr;
-                if (event instanceof byte[]) {
-                    bytesArr = (byte[]) event;
+                if (event instanceof byte[] bytes) {
+                    bytesArr = bytes;
                 } else {
                     try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                          ObjectOutputStream out = new ObjectOutputStream(bos))

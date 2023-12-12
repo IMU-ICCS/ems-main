@@ -283,8 +283,8 @@ public class BrokerCepService {
     }
 
     private void addEventPropertiesToMessage(Serializable event, Message message) {
-        if (event instanceof EventMap) {
-            Map<String, Object> eventProperties = ((EventMap) event).getEventProperties();
+        if (event instanceof EventMap map) {
+            Map<String, Object> eventProperties = map.getEventProperties();
             if (eventProperties!=null) {
                 eventProperties.forEach((pName,pValue)->{
                     try {

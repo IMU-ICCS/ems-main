@@ -30,8 +30,8 @@ public class CepEvalAggregator implements AggregationMethod {
     public void enter(Object value) {
         log.debug("CepEvalAggregator.enter(): aggregator-hash={}, input={}, hash={}", hashCode(), value, value.hashCode());
         traceValue("ENTER-BEFORE", value, null, true);
-        if (value instanceof Object[])
-            entries.put(Arrays.hashCode((Object[]) value), (Object[]) value);      // 0:formula, 1:stream-names, 2+:EventMap
+        if (value instanceof Object[] objects)
+            entries.put(Arrays.hashCode(objects), objects);      // 0:formula, 1:stream-names, 2+:EventMap
         else
             log.error("CepEvalAggregator.enter(): ERROR: WRONG ARG TYPE: Expected Object[]: aggregator-hash={}, input={}, input-type={}", hashCode(), value, value.getClass().getName());
         traceValue("ENTER-AFTER", value, null, true);
@@ -167,9 +167,8 @@ public class CepEvalAggregator implements AggregationMethod {
                 Object currentEntry = entry[i + 2];
 
                 // If entry is a Pair then extract first value (must be an EventMap or Map)
-                if (currentEntry instanceof Pair) {
-                    Pair pair = (Pair)currentEntry;
-                    Object firstInPair = ((Pair)currentEntry).getFirst();
+                if (currentEntry instanceof Pair pair) {
+                    Object firstInPair = pair.getFirst();
                     log.trace("CepEvalAggregator.getValue():  First: {} -- {}", pair.getFirst().getClass().getName(), pair.getFirst());
                     log.trace("CepEvalAggregator.getValue(): Second: {} -- {}", pair.getSecond().getClass().getName(), pair.getSecond());
                     if (firstInPair instanceof HashMap)
@@ -235,15 +234,14 @@ public class CepEvalAggregator implements AggregationMethod {
             log.trace("CepEvalAggregator.logValue: LOG-VALUE: {}:       CLASS: {}", logPrefix, oVal.getClass().getName());
             log.trace("CepEvalAggregator.logValue: LOG-VALUE: {}:        HASH: {}", logPrefix, oVal.hashCode());
             EventMap event = null;
-            if (oVal instanceof Pair) {
-                Pair p = (Pair)oVal;
+            if (oVal instanceof Pair p) {
                 log.trace("CepEvalAggregator.logValue: LOG-VALUE: {}:         1-ST: {}", logPrefix, p.getFirst());
                 log.trace("CepEvalAggregator.logValue: LOG-VALUE: {}:         2-ND: {}", logPrefix, p.getSecond());
                 traceValue(logPrefix+"-PAIR-1ST", p.getFirst(), null, false);
                 traceValue(logPrefix+"-PAIR-2ND", p.getSecond(), null, false);
                 if (p.getFirst() instanceof EventMap) event = (EventMap) p.getFirst();
             }
-            else if (oVal instanceof EventMap) event = (EventMap) oVal;
+            else if (oVal instanceof EventMap map) event = map;
             if (event!=null)
                 log.trace("CepEvalAggregator.logValue: LOG-VALUE: {}:        E-ID: {}", logPrefix, event.getEventId());
             else

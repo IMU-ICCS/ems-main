@@ -376,7 +376,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
                 })
                 .sorted(Comparator.comparing(m -> m.get("id")))
                 .collect(Collectors.toMap(m -> m.get("id"), m -> m,
-                        (u,v) -> { throw new IllegalStateException(String.format("Duplicate key %s", u)); },
+                        (u,v) -> { throw new IllegalStateException("Duplicate key %s".formatted(u)); },
                         LinkedHashMap::new));
     }
 

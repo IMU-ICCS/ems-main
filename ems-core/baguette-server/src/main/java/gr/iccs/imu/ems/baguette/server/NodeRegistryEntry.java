@@ -95,8 +95,8 @@ public class NodeRegistryEntry {
 
     private void _canUpdateEntry(@NonNull STATE newState) {
         if (! canChangeStateTo(newState)) {
-            throw new IllegalStateException(String.format("Cannot change NodeRegistryEntry state from %s to %s: client-id=%s, client-address=%s",
-                    state, newState, clientId, ipAddress));
+            throw new IllegalStateException("Cannot change NodeRegistryEntry state from %s to %s: client-id=%s, client-address=%s"
+                    .formatted(state, newState, clientId, ipAddress));
         }
     }
 

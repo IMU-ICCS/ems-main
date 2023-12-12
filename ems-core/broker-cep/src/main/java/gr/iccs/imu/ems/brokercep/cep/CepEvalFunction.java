@@ -51,7 +51,7 @@ public class CepEvalFunction {
             String entryName = names[i].trim();
             Object entryValue = maps[i].get("metricValue");
             log.debug(">> eval(map):   maps-entry: {} = {} / {}", entryName, entryValue, entryValue.getClass().getName());
-            if (entryValue instanceof String) entryValue = Double.parseDouble((String)entryValue);
+            if (entryValue instanceof String str) entryValue = Double.parseDouble(str);
             args.put(entryName, (Double) entryValue);
         }
         log.debug(">> eval(map):   map-args: {}", args);
@@ -97,12 +97,12 @@ public class CepEvalFunction {
                         pairs[i].getSecond(), pairs[i].getSecond()==null ? null : pairs[i].getSecond().getClass().getName());
             Object eventObj = pairs[i].getFirst();
             double value;
-            if (eventObj instanceof EventMap)
-                value = ((EventMap)eventObj).getMetricValue();
+            if (eventObj instanceof EventMap map)
+                value = map.getMetricValue();
             else if (eventObj instanceof Map)
                 value = (double) (StrUtil.castToMapStringObject(eventObj)).get("metricValue");
-            else if (eventObj instanceof Double)
-                value = (double) eventObj;
+            else if (eventObj instanceof Double doubleValue)
+                value = doubleValue;
             else
                 throw new IllegalArgumentException("Encountered unsupported Event type in Pair: "+eventObj.getClass().getName()+", event: "+eventObj);
             args.put(names[i].trim(), value);
@@ -146,9 +146,9 @@ public class CepEvalFunction {
 
         // Check the number of arguments and the number of provided values match
         if (argNames.size() != values.length)
-            throw new IllegalArgumentException(String.format(
-                    "evalMath: The number of provided values do not match the number of formula arguments: #args=%d != #values=%d",
-                    argNames.size(), values.length));
+            throw new IllegalArgumentException(
+                    "evalMath: The number of provided values do not match the number of formula arguments: #args=%d != #values=%d"
+                            .formatted(argNames.size(), values.length));
 
         // Map values onto arguments, using the order of appearance (i.e. 1st value->1st arg, 2nd value->2nd arg...)
         final AtomicInteger i = new AtomicInteger(0);
@@ -215,7 +215,7 @@ public class CepEvalFunction {
     }
 
     public static Object prop(Object eventObj, String propertyName, Object defaultValue) {
-        EventMap event = eventObj instanceof EventMap ? ((EventMap) eventObj) : null;
+        EventMap event = eventObj instanceof EventMap em ? em : null;
         log.debug(">> ---------------------------------------------------------------------------");
         log.debug(">> prop:   event-object:  {}", eventObj);
         log.debug(">> prop:    event-class:  {}", eventObj!=null ? eventObj.getClass() : null);

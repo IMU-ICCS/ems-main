@@ -144,8 +144,8 @@ public class ServerCoordinatorTimeWin implements ServerCoordinator {
             int brokerPort = broker.getClientPort();
             if (brokerIpAddress == null || brokerIpAddress.trim().isEmpty() || brokerPort <= 0)
                 throw new Exception("ServerCoordinatorTimeWin: startPhase1(): Unable to get broker IP address or Port: " + broker);
-            this.brokerCfgIpAddressCmd = String.format("SET-PARAM bin/broker.cfg-template BROKER_IP_ADDR %s bin/broker.cfg", brokerIpAddress);
-            this.brokerCfgPortCmd = String.format("SET-PARAM bin/broker.cfg-template BROKER_PORT %d bin/broker.cfg", brokerPort);
+            this.brokerCfgIpAddressCmd = "SET-PARAM bin/broker.cfg-template BROKER_IP_ADDR %s bin/broker.cfg".formatted(brokerIpAddress);
+            this.brokerCfgPortCmd = "SET-PARAM bin/broker.cfg-template BROKER_PORT %d bin/broker.cfg".formatted(brokerPort);
         } catch (Exception ex) {
             this.brokerCfgIpAddressCmd = null;
             this.brokerCfgPortCmd = null;

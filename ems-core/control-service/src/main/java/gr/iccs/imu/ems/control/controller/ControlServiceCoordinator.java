@@ -508,7 +508,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     private String getTcFileName(@NonNull String appModelId, @NonNull String fileName) {
         appModelId = StringUtils.removeStart(appModelId, "/");
-        return String.format(fileName, appModelId.replaceAll("[^\\p{L}\\d]", "_"));
+        return fileName.formatted(appModelId.replaceAll("[^\\p{L}\\d]", "_"));
     }
 
     private Map<String, Double> retrieveConstantsFromAppExecModel(String appExecModelId, TranslationContext _TC, EMS_STATE emsState) {

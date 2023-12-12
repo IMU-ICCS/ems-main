@@ -149,8 +149,7 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean,
 	}
 
 	private void processPlainMessage(ActiveMQMessage mesg) throws JMSException {
-		if (mesg instanceof TextMessage) {
-			TextMessage txtMesg = (TextMessage) mesg;
+		if (mesg instanceof TextMessage txtMesg) {
 			String topicName = mesg.getDestination().getPhysicalName();
 			log.trace("BrokerAdvisoryWatcher.onMessage(): Text Message received: topic={}, message={}", topicName, txtMesg.getText());
 		} else {
@@ -160,8 +159,7 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean,
 	}
 
 	private void processAdvisoryMessage(DataStructure ds) throws JMSException {
-		if (ds instanceof DestinationInfo) {
-			DestinationInfo info = (DestinationInfo) ds;
+		if (ds instanceof DestinationInfo info) {
 			ActiveMQDestination destination = info.getDestination();
 			boolean isAdd = info.isAddOperation();
 			boolean isDel = info.isRemoveOperation();

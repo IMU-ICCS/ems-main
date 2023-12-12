@@ -46,12 +46,12 @@ public class SystemInfoProvider implements IEmsInfoProvider {
 
         RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
         long uptime = runtimeBean.getUptime() / 1000;
-        String vmInfo = String.format("%s, ver.%s, by %s", runtimeBean.getVmName(), runtimeBean.getVmVersion(), runtimeBean.getVmVendor());
+        String vmInfo = "%s, ver.%s, by %s".formatted(runtimeBean.getVmName(), runtimeBean.getVmVersion(), runtimeBean.getVmVendor());
         sysInfo.put("jvm-info", vmInfo);
         sysInfo.put("jvm-uptime", uptime);
 
         OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
-        String osInfo = String.format("OS %s, %s, v.%s, processors: %d, avg. load: %.02f", osBean.getName(), osBean.getArch(), osBean.getVersion(),
+        String osInfo = "OS %s, %s, v.%s, processors: %d, avg. load: %.02f".formatted(osBean.getName(), osBean.getArch(), osBean.getVersion(),
                 osBean.getAvailableProcessors(), osBean.getSystemLoadAverage());
         sysInfo.put("os-info", osInfo);
 

@@ -386,7 +386,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         }
 
         public String toString() {
-            return String.format("extracted: %d, published: %d, skipped: %d, failed: %d", getCountTotal(), countSuccess, countSkipped, countErrors);
+            return "extracted: %d, published: %d, skipped: %d, failed: %d".formatted(getCountTotal(), countSuccess, countSkipped, countErrors);
         }
     }
 }

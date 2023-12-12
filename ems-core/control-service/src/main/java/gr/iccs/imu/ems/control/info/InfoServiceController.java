@@ -118,7 +118,7 @@ public class InfoServiceController implements InitializingBean {
 
     @GetMapping("/info/client-metrics/get/{clientIds}")
     public Mono<Map<String,Object>> clientMetricsGet(
-            @PathVariable("clientIds") List<String> clientIds, HttpServletRequest request)
+            @PathVariable List<String> clientIds, HttpServletRequest request)
     {
         log.info("clientMetricsGet(): baguette-client-ids={} --- client: {}:{}", clientIds, request.getRemoteAddr(), request.getRemotePort());
         Map<String,Object> message = createClientMetricsResult(null, -1L, clientIds);
@@ -128,14 +128,14 @@ public class InfoServiceController implements InitializingBean {
 
     @GetMapping("/info/client-metrics/stream/{clientIds}")
     public Flux<ServerSentEvent<Map<String,Object>>> clientMetricsStream(
-            @PathVariable("clientIds") List<String> clientIds,
-            @QueryParam("interval") Optional<Integer> interval,
+            @PathVariable List<String> clientIds,
+            @QueryParam("interval") Integer interval,
             HttpServletRequest request)
     {
         String sid = UUID.randomUUID().toString();
         log.info("clientMetricsStream(): interval={}, baguette-client-ids={} --- client: {}:{}, Stream-Id: {}",
                 interval, clientIds, request.getRemoteAddr(), request.getRemotePort(), sid);
-        int intervalInSeconds = interval.orElse(-1);
+        int intervalInSeconds = interval!=null ? interval : -1;
         if (intervalInSeconds<1) intervalInSeconds = properties.getMetricsStreamUpdateInterval();
         log.debug("clientMetricsStream(): effective-interval={}", intervalInSeconds);
 
@@ -153,7 +153,7 @@ public class InfoServiceController implements InitializingBean {
     }
 
     @GetMapping("/info/client-metrics/clear/{clientIds}")
-    public String clientMetricsClear(@PathVariable("clientIds") List<String> clientIds, HttpServletRequest request) {
+    public String clientMetricsClear(@PathVariable List<String> clientIds, HttpServletRequest request) {
         log.info("clientMetricsClear(): baguette-client-ids={} --- client: {}:{}",
                 clientIds, request.getRemoteAddr(), request.getRemotePort());
         emsInfoService.clearClientMetricValues();
@@ -164,9 +164,10 @@ public class InfoServiceController implements InitializingBean {
 
     @GetMapping("/info/all-metrics/get/{clientIds}")
     public Mono<Map<String,Object>> allMetricsGet(
-            @PathVariable("clientIds") List<String> clientIds, HttpServletRequest request, @AuthenticationPrincipal UserDetails user)
+            @PathVariable List<String> clientIds, HttpServletRequest request, @AuthenticationPrincipal UserDetails user)
     {
-        log.info("allMetricsGet(): baguette-client-ids={} --- client: {}:{}", clientIds, request.getRemoteAddr(), request.getRemotePort());
+        log.info("allMetricsGet(): baguette-client-ids={} --- client: {}:{}",
+                clientIds, request.getRemoteAddr(), request.getRemotePort());
         Map<String,Object> message1 = createServerMetricsResult(null, -1L, user);
         Map<String,Object> message2 = createClientMetricsResult(null, -1L, clientIds);
         Map<String,Object> message = new LinkedHashMap<>();
@@ -178,15 +179,15 @@ public class InfoServiceController implements InitializingBean {
 
     @GetMapping("/info/all-metrics/stream/{clientIds}")
     public Flux<ServerSentEvent<Map<String,Object>>> allMetricsStream(
-            @PathVariable("clientIds") List<String> clientIds,
-            @QueryParam("interval") Optional<Integer> interval,
+            @PathVariable List<String> clientIds,
+            @QueryParam("interval") Integer interval,
             HttpServletRequest request,
             @AuthenticationPrincipal UserDetails user)
     {
         String sid = UUID.randomUUID().toString();
         log.info("allMetricsStream(): interval={}, baguette-client-ids={} --- client: {}:{}, Stream-Id: {}",
                 interval, clientIds, request.getRemoteAddr(), request.getRemotePort(), sid);
-        int intervalInSeconds = interval.orElse(-1);
+        int intervalInSeconds = interval!=null ? interval : -1;
         if (intervalInSeconds<1) intervalInSeconds = properties.getMetricsStreamUpdateInterval();
         log.debug("allMetricsStream(): effective-interval={}", intervalInSeconds);
 

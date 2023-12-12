@@ -40,14 +40,14 @@ public class Sensor extends Component {
     }
 
     public PullSensor pullSensor() {
-        if (this instanceof PullSensor)
-            return (PullSensor) this;
+        if (this instanceof PullSensor sensor)
+            return sensor;
         throw new IllegalArgumentException("Not a Pull sensor: " + this.getName());
     }
 
     public PushSensor pushSensor() {
-        if (this instanceof PushSensor)
-            return (PushSensor) this;
+        if (this instanceof PushSensor sensor)
+            return sensor;
         throw new IllegalArgumentException("Not a Push sensor: " + this.getName());
     }
 }

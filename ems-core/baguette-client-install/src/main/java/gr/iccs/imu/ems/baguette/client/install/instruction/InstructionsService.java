@@ -59,8 +59,8 @@ public class InstructionsService implements EnvironmentAware {
         log.trace("InstructionsService: checkCondition: Expression result: {}", result);
         if (result==null)
             throw new IllegalArgumentException("Condition evaluation returned null: " + condition);
-        if (result instanceof Boolean)
-            return (Boolean)result;
+        if (result instanceof Boolean booleanValue)
+            return booleanValue;
         throw new IllegalArgumentException("Condition evaluation returned a non-boolean value: " + result + ", condition:  " + condition+", resolved condition: "+ conditionResolved);
     }
 

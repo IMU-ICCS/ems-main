@@ -250,21 +250,21 @@ public class EventRecorder extends LinkedHashMap<String, Object> implements Runn
 
     protected String getDestinationName(Message message) throws JMSException {
         Destination d = message.getJMSDestination();
-        if (d instanceof Topic) {
-            return ((Topic)d).getTopicName();
+        if (d instanceof Topic topic) {
+            return topic.getTopicName();
         } else
-        if (d instanceof Queue) {
-            return ((Queue)d).getQueueName();
+        if (d instanceof Queue queue) {
+            return queue.getQueueName();
         } else
             throw new IllegalArgumentException("Argument is not a JMS destination: "+d);
     }
 
     protected PayloadAndType extractPayloadAndType(Message message) throws JMSException {
-        if (message instanceof TextMessage) {
-            return new PayloadAndType("TEXT", ((TextMessage)message).getText());
+        if (message instanceof TextMessage textMessage) {
+            return new PayloadAndType("TEXT", textMessage.getText());
         } else
-        if (message instanceof ObjectMessage) {
-            Serializable o = ((ObjectMessage) message).getObject();
+        if (message instanceof ObjectMessage objectMessage) {
+            Serializable o = objectMessage.getObject();
             return new PayloadAndType("OBJECT", o==null ? null : o.toString());
         } else
             throw new IllegalArgumentException("Unsupported message type: "+message.getClass().getName());

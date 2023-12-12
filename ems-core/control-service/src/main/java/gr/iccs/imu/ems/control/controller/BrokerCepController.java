@@ -12,14 +12,12 @@ package gr.iccs.imu.ems.control.controller;
 import gr.iccs.imu.ems.brokercep.EventCache;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collection;
 import java.util.List;
-
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 @Slf4j
 @RestController
@@ -28,7 +26,7 @@ public class BrokerCepController {
 
     private final EventCache eventCache;
 
-    @RequestMapping(value = { "/brokercep/last-events/{howmany}", "/brokercep/last-events" }, method=GET)
+    @GetMapping({ "/brokercep/last-events/{howmany}", "/brokercep/last-events" })
     public Collection<EventCache.CacheEntry> getLastEvents(@PathVariable(required = false) Integer howmany) {
         log.info("BrokerCepController.getLastEvents(): howmany={}", howmany);
 

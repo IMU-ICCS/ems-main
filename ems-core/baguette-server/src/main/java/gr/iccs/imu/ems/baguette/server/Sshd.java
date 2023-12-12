@@ -155,7 +155,7 @@ public class Sshd {
                                 Thread.sleep(period);
                             } catch (InterruptedException ex) {
                             }
-                            String msg = String.format("Heartbeat %d", System.currentTimeMillis());
+                            String msg = "Heartbeat %d".formatted(System.currentTimeMillis());
                             log.debug("--> Heartbeat: {}", msg);
                             for (ClientShellCommand csc : ClientShellCommand.getActive()) {
                                 csc.sendToClient(msg, Level.DEBUG);

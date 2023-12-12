@@ -97,9 +97,9 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
             log.trace("EventMap.<init>: key={}, value={}", k, v);
             this.put(k, v);
         });
-        if (map instanceof EventMap) {
-            Map<String, Object> properties = ((EventMap) map).getEventProperties();
-            if (properties!=null && properties.size()>0)
+        if (map instanceof EventMap eventMap) {
+            Map<String, Object> properties = eventMap.getEventProperties();
+            if (properties!=null && ! properties.isEmpty())
                 setEventProperties(new LinkedHashMap<>(properties));
         }
         checkEvent();
@@ -127,7 +127,7 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
 
     // Convert Object to EventMap
     public static EventMap toEventMap(@NonNull Object o) {
-        if (o instanceof EventMap) return (EventMap) o;
+        if (o instanceof EventMap map) return map;
         if (o instanceof Map) return new EventMap(StrUtil.castToMapStringObject(o) );
         return parseEventMap(o.toString());
     }
@@ -219,8 +219,8 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
         Object v = get(METRIC_VALUE_NAME);
         if (v==null)
             throw new NullPointerException("No '"+METRIC_VALUE_NAME+"' found in EventMap: "+this);
-        if (v instanceof Double) return (Double) v;
-        if (v instanceof Number) return ((Number)v).doubleValue();
+        if (v instanceof Double doubleValue) return doubleValue;
+        if (v instanceof Number numberValue) return numberValue.doubleValue();
         return Double.parseDouble(removeQuotes(v));
     }
 
@@ -228,8 +228,8 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
         Object v = get(TIMESTAMP_NAME);
         if (v==null)
             throw new NullPointerException("No '"+TIMESTAMP_NAME+"' found in EventMap: "+this);
-        if (v instanceof Long) return (Long) v;
-        if (v instanceof Number) return ((Number)v).longValue();
+        if (v instanceof Long longValue) return longValue;
+        if (v instanceof Number numberValue) return numberValue.longValue();
         return Long.parseLong(removeQuotes(v));
     }
 
