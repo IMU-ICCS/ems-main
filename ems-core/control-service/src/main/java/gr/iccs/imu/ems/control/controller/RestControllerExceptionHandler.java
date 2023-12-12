@@ -15,7 +15,9 @@ import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -50,8 +52,10 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
         }
 
         // Return error response
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
         ErrorType error = new ErrorType(httpStatus, ex);
-        return new ResponseEntity<>(error, error.getReason());
+        return new ResponseEntity<>(error, headers, error.getReason());
     }
 
     @Data
