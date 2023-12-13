@@ -35,6 +35,7 @@ jasypt:
 ### Misc
 spring.output.ansi.enabled: ALWAYS
 spring.jackson.default-property-inclusion: non_null
+spring.threads.virtual.enabled: true
 
 
 ################################################################################
