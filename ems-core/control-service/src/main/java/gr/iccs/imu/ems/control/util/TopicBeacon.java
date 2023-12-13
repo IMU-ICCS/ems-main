@@ -21,6 +21,7 @@ import gr.iccs.imu.ems.control.controller.ControlServiceCoordinator;
 import gr.iccs.imu.ems.control.plugin.BeaconPlugin;
 import gr.iccs.imu.ems.control.properties.TopicBeaconProperties;
 import gr.iccs.imu.ems.translate.TranslationContext;
+import jakarta.jms.JMSException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,6 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 
-import jakarta.jms.JMSException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.Duration;
@@ -184,7 +184,8 @@ public class TopicBeacon implements InitializingBean {
                 .getMetricConstraints()
                 .forEach(c -> {
                     String message = gson.toJson(c);
-                    log.debug("Topic Beacon: Transmitting Metric Constraint threshold info: message={}, topics={}",message, properties.getThresholdTopics());
+                    log.debug("Topic Beacon: Transmitting Metric Constraint threshold info: message={}, topics={}",
+                            message, properties.getThresholdTopics());
                     try {
                         sendEventToTopics(message, properties.getThresholdTopics());
                     } catch (JMSException e) {
