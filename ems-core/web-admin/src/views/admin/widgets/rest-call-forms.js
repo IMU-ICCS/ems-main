@@ -72,7 +72,7 @@ export const FORM_TYPE_OPTIONS = [
             'options': [
                 { 'id': 'd-stop-baguette', 'text': 'Stop Baguette Server', 'url': '/baguette/stopServer', 'method': 'GET', 'form': '', 'priority': 1 },
                 { 'id': 'd-shutdown', 'text': 'EMS server shutdown', 'url': '/ems/shutdown', 'method': 'GET', 'form': '', 'priority': 2 },
-                { 'id': 'd-exit', 'text': 'EMS server shutdown and Exit', 'url': '/ems/exit', 'method': 'GET', 'form': '', 'priority': 3 },
+                { 'id': 'd-exit', 'text': 'EMS server shutdown and Exit', 'url': '/ems/exit/0', 'method': 'GET', 'form': '', 'priority': 3 },
                 { 'id': 'd-restart', 'text': 'EMS server shutdown and Restart', 'url': '/ems/exit/99', 'method': 'GET', 'form': '', 'priority': 4 }
             ]
         }
