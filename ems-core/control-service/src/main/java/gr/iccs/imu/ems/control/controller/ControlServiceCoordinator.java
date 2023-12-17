@@ -299,10 +299,10 @@ public class ControlServiceCoordinator implements InitializingBean {
         }
 
         // Retrieve Metric Variable Values (MVV) from App Exec model - i.e. constants
-        Map<String, Double> constants = new HashMap<>();
+        Map<String, Double> constants = new HashMap<>( _TC.getConstantDefaults() );
         if (!properties.isSkipMvvRetrieve()) {
             if (StringUtils.isNotBlank(appExecModelId)) {
-                constants = retrieveConstantsFromAppExecModel(appExecModelId, _TC, EMS_STATE.INITIALIZING);
+                constants.putAll( retrieveConstantsFromAppExecModel(appExecModelId, _TC, EMS_STATE.INITIALIZING) );
             } else {
                 log.warn("ControlServiceCoordinator._processAppModel(): No App Exec model has been provided");
             }

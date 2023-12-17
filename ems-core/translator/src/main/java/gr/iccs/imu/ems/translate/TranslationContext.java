@@ -47,7 +47,7 @@ public class TranslationContext implements Serializable {
 
     // Extension translation context helper methods
     public Object $() { return extensionContext; }
-    public <T> T $(Class<T> c) { return (T) extensionContext; }
+    public <T> T $(Class<T> c) { return c.cast(extensionContext); }
 
     // Event-to-Action map
     @Getter
@@ -124,6 +124,9 @@ public class TranslationContext implements Serializable {
 
     // Top-Level metric names
     protected final Set<String> topLevelMetricNames = new LinkedHashSet<>();
+
+    // Constants defaults
+    protected final Map<String, Double> constantsDefaults = new LinkedHashMap<>();
 
     // Export files
     @Getter @Setter
@@ -204,6 +207,7 @@ public class TranslationContext implements Serializable {
         this.loadAnnotatedDestinationToMetricContextNameMap.putAll(_TC.loadAnnotatedDestinationToMetricContextNameMap);
         this.loadAnnotatedMetricsSet.addAll(_TC.loadAnnotatedMetricsSet);
         this.topLevelMetricNames.addAll(_TC.topLevelMetricNames);
+        this.constantsDefaults.putAll(_TC.constantsDefaults);
         this.exportFiles.addAll(_TC.exportFiles);
         this.fullNamePattern = cloneObject(_TC.fullNamePattern);
     }
@@ -736,6 +740,21 @@ public class TranslationContext implements Serializable {
     public Set<String> getTopLevelMetricNames() {
         if (topLevelMetricNames==null || topLevelMetricNames.isEmpty()) populateTopLevelMetricNames();
         return topLevelMetricNames!=null ? new HashSet<>(topLevelMetricNames) : Collections.emptySet();
+    }
+
+    // ====================================================================================================================================================
+    // Constants helper methods
+
+    public void addConstantDefault(String constantName, double defaultValue) {
+        this.constantsDefaults.put(constantName, defaultValue);
+    }
+
+    public void addConstantDefaults(Map<String,Double> constantsDefaults) {
+        this.constantsDefaults.putAll(constantsDefaults);
+    }
+
+    public Map<String, Double> getConstantDefaults() {
+        return new LinkedHashMap<>(this.constantsDefaults);
     }
 
     // ====================================================================================================================================================
