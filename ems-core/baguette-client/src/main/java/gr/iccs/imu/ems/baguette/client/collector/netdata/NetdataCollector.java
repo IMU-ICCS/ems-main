@@ -50,19 +50,8 @@ public class NetdataCollector extends gr.iccs.imu.ems.common.collector.netdata.N
             if (grp!=null)
                 topics.addAll(grp.getEventTypeNames());
         }
-        log.warn("Collectors::Netdata: activeGroupingChanged: New Allowed Topics for active grouping: {} -- {}", newGrouping, topics);
-        List<String> tmpList = new ArrayList<>(topics);
-        Map<String,String> tmpMap = null;
-        if (properties.getAllowedTopics()!=null) {
-            tmpMap = properties.getAllowedTopics().stream()
-                    .map(s -> s.split(":", 2))
-                    .collect(Collectors.toMap(a -> a[0], a -> a.length>1 ? a[1]: ""));
-        }
-        log.warn("Collectors::Netdata: activeGroupingChanged: New Allowed Topics -- Topics Map: {} -- {}", tmpList, tmpMap);
-        synchronized (this) {
-            this.allowedTopics = tmpList;
-            this.topicMap = tmpMap;
-        }
+        log.info("Collectors::Netdata: activeGroupingChanged: New Allowed Topics for active grouping: {} -- {}", newGrouping, topics);
+        processAllowedTopics(topics);
     }
 
 }

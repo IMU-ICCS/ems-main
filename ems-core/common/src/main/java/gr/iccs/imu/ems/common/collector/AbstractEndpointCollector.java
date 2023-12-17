@@ -61,8 +61,8 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
 
     protected boolean started;
     protected ScheduledFuture<?> runner;
-    protected List<String> allowedTopics;
-    protected Map<String, String> topicMap;
+    protected Set<String> allowedTopics;
+    protected Map<String, Set<String>> topicMap;
 
     protected Map<String, Integer> errorsMap = new HashMap<>();
     protected Map<String,ScheduledFuture<?>> ignoredNodes = new HashMap<>();
@@ -72,18 +72,27 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
     @Override
     public void afterPropertiesSet() {
         log.debug("Collectors::{}: properties: {}", collectorId, properties);
-        this.allowedTopics = properties.getAllowedTopics()==null
-                ? null
-                : properties.getAllowedTopics().stream()
-                        .map(s -> s.split(":")[0])
-                        .collect(Collectors.toList());
-        this.topicMap = properties.getAllowedTopics()==null
-                ? null
-                : properties.getAllowedTopics().stream()
-                        .map(s -> s.split(":", 2))
-                        .collect(Collectors.toMap(a -> a[0], a -> a.length>1 ? a[1]: ""));
+        processAllowedTopics(properties.getAllowedTopics());
 
         registerInternalEvents("ABSTRACT");
+    }
+
+    public void processAllowedTopics(Collection<String> allowedTopicsSpec) {
+        Set<String> topicsSet = allowedTopicsSpec == null
+                ? null : properties.getAllowedTopics().stream()
+                        .map(s -> s.split(":")[0])
+                        .collect(Collectors.toSet());
+        Map<String, Set<String>> topicsMap = properties.getAllowedTopics() == null
+                ? null : properties.getAllowedTopics().stream()
+                .map(s -> s.split(":", 2))
+                .collect(Collectors.groupingBy(a -> a[0],
+                        Collectors.mapping(a -> a.length > 1 ? a[1] : "", Collectors.toSet())));
+
+        log.info("Collectors::{}: New Allowed Topics: {} -- Topics Map: {}", collectorId, topicsSet, topicsMap);
+        synchronized (this) {
+            this.allowedTopics = topicsSet;
+            this.topicMap = topicsMap;
+        }
     }
 
     public synchronized void start() {
@@ -250,13 +259,13 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
 
         Map<String,String> nodeEvents = getInternalEvents();
         try {
-            sendEvent(nodeEvents.get(EVENT_COLLECTION_START), nodeAddress);
+            sendToEventBus(nodeEvents.get(EVENT_COLLECTION_START), nodeAddress);
             _collectAndPublishData(nodeAddress);
-            sendEvent(nodeEvents.get(EVENT_COLLECTION_END), nodeAddress);
+            sendToEventBus(nodeEvents.get(EVENT_COLLECTION_END), nodeAddress);
 
             //if (Optional.ofNullable(errorsMap.put(nodeAddress, 0)).orElse(0)>0) sendEvent(ABSTRACT_ENDPOINT_CONN_OK, nodeAddress);
-            sendEvent(nodeEvents.get(EVENT_CONN_OK), nodeAddress);
-            sendEvent(nodeEvents.get(EVENT_NODE_OK), nodeAddress);
+            sendToEventBus(nodeEvents.get(EVENT_CONN_OK), nodeAddress);
+            sendToEventBus(nodeEvents.get(EVENT_NODE_OK), nodeAddress);
             errorsMap.put(nodeAddress, 0);
             return COLLECTION_RESULT.OK;
         } catch (Throwable t) {
@@ -266,14 +275,14 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
                     collectorId, nodeAddress, errors, getExceptionMessages(t));
             log.debug("Collectors::{}: Exception while collecting metrics from node: {}, #errors={}\n", collectorId, nodeAddress, errors, t);
 
-            sendEvent(nodeEvents.get(EVENT_COLLECTION_ERROR), nodeAddress, "errors="+errors);
-            sendEvent(nodeEvents.get(EVENT_CONN_ERROR), nodeAddress, "errors="+errors);
+            sendToEventBus(nodeEvents.get(EVENT_COLLECTION_ERROR), nodeAddress, "errors="+errors);
+            sendToEventBus(nodeEvents.get(EVENT_CONN_ERROR), nodeAddress, "errors="+errors);
 
             if (errorLimit<=0 || errors >= errorLimit) {
                 log.warn("Collectors::{}: Too many consecutive errors occurred while attempting to collect metrics from node: {}, num-of-errors={}", collectorId, nodeAddress, errors);
                 log.warn("Collectors::{}: Pausing collection from Node: {}", collectorId, nodeAddress);
                 ignoredNodes.put(nodeAddress, null);
-                sendEvent(nodeEvents.get(EVENT_NODE_FAILED), nodeAddress);
+                sendToEventBus(nodeEvents.get(EVENT_NODE_FAILED), nodeAddress);
             }
             return COLLECTION_RESULT.ERROR;
         }
@@ -288,7 +297,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         return sb.substring(4);
     }
 
-    private void sendEvent(String topic, String nodeAddress, String...extra) {
+    private void sendToEventBus(String topic, String nodeAddress, String...extra) {
         Map<String,String> message = new HashMap<>();
         message.put("address", nodeAddress);
         for (String e : extra) {
@@ -342,32 +351,48 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         }
     }
 
-    protected CollectorContext.PUBLISH_RESULT publishMetricEvent(String metricName, double metricValue, long timestamp, String nodeAddress) {
+    protected List<CollectorContext.PUBLISH_RESULT> publishMetricEvent(String metricName, double metricValue, long timestamp, String nodeAddress) {
         EventMap event = new EventMap(metricValue, 1, timestamp);
         return publishMetricEvent(metricName, event, nodeAddress);
     }
 
-    protected CollectorContext.PUBLISH_RESULT publishMetricEvent(String metricName, EventMap event, String nodeAddress) {
+    protected List<CollectorContext.PUBLISH_RESULT> publishMetricEvent(String metricName, EventMap event, String nodeAddress) {
         boolean createTopic = properties.isCreateTopic();
         try {
-            String originalTopic = metricName;
             boolean createDestination = (createTopic || allowedTopics!=null && allowedTopics.contains(metricName));
-            if (topicMap!=null) {
-                String targetTopic = topicMap.get(metricName);
-                if (targetTopic!=null && !targetTopic.isEmpty())
-                    metricName = targetTopic;
+            List<CollectorContext.PUBLISH_RESULT> results = new ArrayList<>();
+            boolean sendToOriginal = true;
+            Set<String> topicsSet;
+            if (topicMap!=null && (topicsSet = topicMap.get(metricName))!=null && ! topicsSet.isEmpty()) {
+                for (String targetTopic : topicsSet) {
+                    if (StringUtils.isNotBlank(targetTopic)) {
+                        results.add( sendEvent(targetTopic, metricName, new EventMap(event), nodeAddress, createDestination) );
+                        sendToOriginal = false;
+                    }
+                }
             }
-            event.setEventProperty(EmsConstant.EVENT_PROPERTY_SOURCE_ADDRESS, nodeAddress);
-            event.getEventProperties().put(EmsConstant.EVENT_PROPERTY_EFFECTIVE_DESTINATION, metricName);
-            event.getEventProperties().put(EmsConstant.EVENT_PROPERTY_ORIGINAL_DESTINATION, originalTopic);
-            log.debug("Collectors::{}:    Publishing metric: {}: {}", collectorId, metricName, event.getMetricValue());
-            CollectorContext.PUBLISH_RESULT result = collectorContext.sendEvent(null, metricName, event, createDestination);
-            log.trace("Collectors::{}:    Publishing metric: {}: {} -> result: {}", collectorId, metricName, event.getMetricValue(), result);
-            return result;
+            if (sendToOriginal) {
+                results.add(sendEvent(metricName, metricName, event, nodeAddress, createDestination));
+            }
+            return results;
         } catch (Exception e) {
             log.warn("Collectors::{}:    Publishing metric failed: ", collectorId, e);
-            return CollectorContext.PUBLISH_RESULT.ERROR;
+            return Collections.singletonList( CollectorContext.PUBLISH_RESULT.ERROR );
         }
+    }
+
+    private CollectorContext.PUBLISH_RESULT sendEvent(String metricName, String originalTopic, EventMap event, String nodeAddress, boolean createDestination) {
+        event.setEventProperty(EmsConstant.EVENT_PROPERTY_SOURCE_ADDRESS, nodeAddress);
+        event.getEventProperties().put(EmsConstant.EVENT_PROPERTY_EFFECTIVE_DESTINATION, metricName);
+        event.getEventProperties().put(EmsConstant.EVENT_PROPERTY_ORIGINAL_DESTINATION, originalTopic);
+        log.debug("Collectors::{}:    Publishing metric: {}: {}", collectorId, metricName, event.getMetricValue());
+        CollectorContext.PUBLISH_RESULT result = collectorContext.sendEvent(null, metricName, event, createDestination);
+        log.trace("Collectors::{}:    Publishing metric: {}: {} -> result: {}", collectorId, metricName, event.getMetricValue(), result);
+        return result;
+    }
+
+    protected void updateStats(List<CollectorContext.PUBLISH_RESULT> publishResults, ProcessingStats stats) {
+        publishResults.forEach(r -> updateStats(r, stats));
     }
 
     protected void updateStats(CollectorContext.PUBLISH_RESULT publishResult, ProcessingStats stats) {

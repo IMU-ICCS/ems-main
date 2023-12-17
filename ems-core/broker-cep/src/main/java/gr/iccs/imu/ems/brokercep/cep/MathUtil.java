@@ -10,13 +10,11 @@
 package gr.iccs.imu.ems.brokercep.cep;
 
 import gr.iccs.imu.ems.util.FunctionDefinition;
+import gr.iccs.imu.ems.util.NetUtil;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.mariuszgromada.math.mxparser.Constant;
-import org.mariuszgromada.math.mxparser.Expression;
-import org.mariuszgromada.math.mxparser.Function;
-import org.mariuszgromada.math.mxparser.mXparser;
+import org.mariuszgromada.math.mxparser.*;
 import org.mariuszgromada.math.mxparser.parsertokens.FunctionVariadic;
 import org.mariuszgromada.math.mxparser.parsertokens.Token;
 
@@ -26,8 +24,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class MathUtil {
-    private static Map<String, Function> functions = new HashMap<>();
-    private static Map<String, Constant> constants = new HashMap<>();
+    static {
+        License.iConfirmNonCommercialUse("EMS-"+ NetUtil.getIpAddress());
+    }
+    private static final Map<String, Function> functions = new HashMap<>();
+    private static final Map<String, Constant> constants = new HashMap<>();
 
     // ------------------------------------------------------------------------
 
