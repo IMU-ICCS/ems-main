@@ -115,6 +115,10 @@ public class NodeRegistrationCoordinator implements InitializingBean {
         updateRegistrationInfo(nodeMapFlattened, baseUrl);
         log.trace("NodeRegistrationCoordinator.registerNode(): updated flattened node info map: \n{}", nodeMapFlattened);
 
+        // Update node registration info with OS name, BASE_URL, IP_SETTING, and CLIENT_ID
+        updateTranslationInfo(nodeMapFlattened, translationContext);
+        log.trace("NodeRegistrationCoordinator.registerNode(): updated flattened node info map: \n{}", nodeMapFlattened);
+
         // Register node to Baguette server
         NodeRegistryEntry entry;
         try {
@@ -227,6 +231,14 @@ public class NodeRegistrationCoordinator implements InitializingBean {
         nodeMap.put("BASE_URL", baseUrl);
         nodeMap.put("CLIENT_ID", clientId);
         nodeMap.put("IP_SETTING", ipSetting);
+    }
+
+    void updateTranslationInfo(Map<String, String> nodeMap, TranslationContext translationContext) {
+        // Add model and application info
+        nodeMap.put("TC_MODEL_NAME", StringUtils.defaultIfBlank(translationContext.getModelName(), ""));
+        nodeMap.put("TC_MODEL_FILE_NAME", StringUtils.defaultIfBlank(translationContext.getModelFileName(), ""));
+        nodeMap.put("TC_APP_ID", StringUtils.defaultIfBlank(translationContext.getAppId(), ""));
+        nodeMap.put("TC_APP_NAME", StringUtils.defaultIfBlank(translationContext.getAppName(), ""));
     }
 
     public String getServerIpAddress() {

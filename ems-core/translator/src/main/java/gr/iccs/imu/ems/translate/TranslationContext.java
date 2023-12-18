@@ -37,6 +37,11 @@ public class TranslationContext implements Serializable {
     @Getter
     private final String modelFileName;
 
+    @Getter @Setter
+    private String appId;
+    @Getter @Setter
+    private String appName;
+
     // Decomposition DAG
     @Getter
     @JsonIgnore
