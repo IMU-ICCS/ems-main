@@ -688,8 +688,9 @@ public class ClientShellCommand implements Command, Runnable, ServerSessionAware
         log.debug("sendGroupingConfiguration: id={}, grouping={}, grouping-config={}", id, grouping, gc);
         try {
             String allStr = serializeToString(gc);
-            log.info("sendGroupingConfiguration: Serialization of Grouping configuration for {}: {}", grouping, allStr);
-            sendToClient("SET-GROUPING-CONFIG " + allStr);
+            log.debug("sendGroupingConfiguration: Serialization of Grouping configuration for {}: {}", grouping, allStr);
+            sendToClient("SET-GROUPING-CONFIG " + allStr, Level.DEBUG);
+            log.info("sendGroupingConfiguration: Sent grouping configuration for {}", grouping);
         } catch (IOException ex) {
             log.error("sendGroupingConfiguration: Exception while serializing Grouping configuration: ", ex);
             log.error("sendGroupingConfiguration: SET-GROUPING-CONFIG command *NOT* sent to client");

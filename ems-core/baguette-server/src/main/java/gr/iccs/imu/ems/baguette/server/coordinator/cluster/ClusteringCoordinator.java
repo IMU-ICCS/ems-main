@@ -22,6 +22,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
+import org.slf4j.event.Level;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -385,7 +386,8 @@ public class ClusteringCoordinator extends NoopCoordinator {
     void sendClusterKey(ClientShellCommand csc, IClusterZone zoneInfo) {
         csc.sendCommand("CLUSTER-KEY %s %s %s %s".formatted(
                 zoneInfo.getClusterKeystoreFile().getName(), zoneInfo.getClusterKeystoreType(),
-                zoneInfo.getClusterKeystorePassword(), zoneInfo.getClusterKeystoreBase64()));
+                zoneInfo.getClusterKeystorePassword(), zoneInfo.getClusterKeystoreBase64()), Level.DEBUG);
+        log.info("sendClusterKey: Sent cluster key to node {}", csc.getClientIpAddress());
     }
 
     void sendCommandToZone(String command, List<ClientShellCommand> zoneNodes) {
