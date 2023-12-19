@@ -115,7 +115,7 @@ public class NodeRegistrationCoordinator implements InitializingBean {
         updateRegistrationInfo(nodeMapFlattened, baseUrl);
         log.trace("NodeRegistrationCoordinator.registerNode(): updated flattened node info map: \n{}", nodeMapFlattened);
 
-        // Update node registration info with OS name, BASE_URL, IP_SETTING, and CLIENT_ID
+        // Update node registration info with APP_ID, APP_NAME, MODEL_NAME, and MODEL_FILE_NAME
         updateTranslationInfo(nodeMapFlattened, translationContext);
         log.trace("NodeRegistrationCoordinator.registerNode(): updated flattened node info map: \n{}", nodeMapFlattened);
 
