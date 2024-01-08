@@ -601,6 +601,7 @@
                         <version>1.2.0</version>
                         <executions>
                             <execution>
+                                <id>read-docker-image-properties</id>
                                 <phase>validate</phase>
                                 <goals>
                                     <goal>read-project-properties</goal>
@@ -707,6 +708,36 @@
                                 <goals>
                                     <goal>build</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Write actual docker image properties to file -->
+                    <plugin>
+                        <groupId>com.internetitem</groupId>
+                        <artifactId>write-properties-file-maven-plugin</artifactId>
+                        <version>1.0.1</version>
+                        <executions>
+                            <execution>
+                                <id>write-docker-image-properties-file</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>write-properties-file</goal>
+                                </goals>
+                                <configuration>
+                                    <filename>docker-image.properties</filename>
+                                    <outputDirectory>${project.build.directory}/</outputDirectory>
+                                    <properties>
+                                        <property>
+                                            <name>docker.image.name</name>
+                                            <value>${docker.image.name}</value>
+                                        </property>
+                                        <property>
+                                            <name>docker.image.tag</name>
+                                            <value>${docker.image.tag}</value>
+                                        </property>
+                                    </properties>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
