@@ -7,18 +7,20 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-ARG BUILDER_IMAGE=eclipse-temurin:21.0.1_12-jre
-ARG RUN_IMAGE=eclipse-temurin:21.0.1_12-jre
+ARG BUILDER_IMAGE=eclipse-temurin
+ARG BUILDER_IMAGE_TAG=21.0.1_12-jre
+ARG RUN_IMAGE=eclipse-temurin
+ARG RUN_IMAGE_TAG=21.0.1_12-jre
 
 # ----------------- Builder image -----------------
-FROM $BUILDER_IMAGE as ems-server-builder
+FROM $BUILDER_IMAGE:$BUILDER_IMAGE_TAG as ems-server-builder
 #FROM vegardit/graalvm-maven:latest-java17
 WORKDIR /app
 COPY jars/control-service.jar .
 RUN java -Djarmode=layertools -jar control-service.jar extract
 
 # -----------------   Run image   -----------------
-FROM $RUN_IMAGE
+FROM $RUN_IMAGE:$RUN_IMAGE_TAG
 
 # Setup environment
 ENV BASEDIR /opt/ems-server
@@ -51,13 +53,13 @@ WORKDIR ${BASEDIR}
 # Download a JRE suitable for running EMS clients, and
 # offer it for download
 ENV JRE_LINUX_PACKAGE zulu21.30.15-ca-jre21.0.1-linux_x64.tar.gz
-RUN mkdir -p ${PUBLIC_DIR}/resources
-RUN curl https://cdn.azul.com/zulu/bin/${JRE_LINUX_PACKAGE} --output ${PUBLIC_DIR}/resources/${JRE_LINUX_PACKAGE}
+RUN mkdir -p ${PUBLIC_DIR}/resources && \
+    wget --progress=dot:giga -O ${PUBLIC_DIR}/resources/${JRE_LINUX_PACKAGE} https://cdn.azul.com/zulu/bin/${JRE_LINUX_PACKAGE}
 
 # Copy resource files to image
-ADD --chown=${EMS_USER}:${EMS_USER} bin ${BIN_DIR}
-ADD --chown=${EMS_USER}:${EMS_USER} config ${CONFIG_DIR}
-ADD --chown=${EMS_USER}:${EMS_USER} public_resources ${PUBLIC_DIR}
+COPY --chown=${EMS_USER}:${EMS_USER} bin ${BIN_DIR}
+COPY --chown=${EMS_USER}:${EMS_USER} config ${CONFIG_DIR}
+COPY --chown=${EMS_USER}:${EMS_USER} public_resources ${PUBLIC_DIR}
 
 RUN mkdir ${LOGS_DIR} && \
     chmod +rx ${BIN_DIR}/*.sh
