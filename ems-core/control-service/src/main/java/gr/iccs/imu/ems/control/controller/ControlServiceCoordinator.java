@@ -142,7 +142,7 @@ public class ControlServiceCoordinator implements InitializingBean {
     private void initTranslator() {
         log.debug("ControlServiceCoordinator.initTranslator():  Translator implementations: {}", translatorImplementations);
         if (translatorImplementations.size() == 1) {
-            translator = translatorImplementations.get(0);
+            translator = translatorImplementations.getFirst();
         } else if (translatorImplementations.isEmpty()) {
             throw new IllegalArgumentException("No Translator implementations found");
         } else {
@@ -280,7 +280,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         }
 
         // Run TranslationContext plugins
-        if (translationContextPlugins!=null && translationContextPlugins.size()>0) {
+        if (translationContextPlugins!=null && !translationContextPlugins.isEmpty()) {
             log.info("ControlServiceCoordinator._processAppModel(): Running {} TranslationContext plugins", translationContextPlugins.size());
             translationContextPlugins.stream().filter(Objects::nonNull).forEach(plugin -> {
                 log.debug("ControlServiceCoordinator._processAppModel(): Calling TranslationContext plugin: {}", plugin.getClass().getName());
@@ -548,7 +548,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             log.debug("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Upperware grouping: {}", upperwareGrouping);
             Set<String> eventTypeNames = _TC.getG2T().get(upperwareGrouping);
             log.debug("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Configuration of Event Types: {}", eventTypeNames);
-            if (eventTypeNames == null || eventTypeNames.size() == 0)
+            if (eventTypeNames == null || eventTypeNames.isEmpty())
                 throw new RuntimeException("Broker-CEP: No event types for GLOBAL grouping");
 
             // Clear any previous event types, statements or function definitions and register the new ones
