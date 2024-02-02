@@ -114,9 +114,9 @@ control:
   #skip-broker-cep: true
   #skip-baguette: true
   #skip-collectors: true
-  #skip-metasolver: true
-  #skip-notification: true
-  upperware-grouping: GLOBAL
+  skip-metasolver: true
+  skip-notification: true
+  #upperware-grouping: GLOBAL
 
   ### Debug settings - Load/Save translation results
   tc-load-file: ${EMS_TC_LOAD_FILE:${EMS_TC_FILE:${LOGS_DIR:${EMS_CONFIG_DIR}/../logs}/_TC.json}}

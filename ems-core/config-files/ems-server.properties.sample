@@ -111,9 +111,9 @@ control.log-requests = ${EMS_LOG_REQUESTS:false}
 #control.skip-broker-cep = true
 #control.skip-baguette = true
 #control.skip-collectors = true
-#control.skip-metasolver = true
-#control.skip-notification = true
-control.upperware-grouping = GLOBAL
+control.skip-metasolver = true
+control.skip-notification = true
+#control.upperware-grouping = GLOBAL
 
 ### Debug settings - Load/Save translation results
 control.tc-load-file = ${EMS_TC_LOAD_FILE:${EMS_TC_FILE:${LOGS_DIR:${EMS_CONFIG_DIR}/../logs}/_TC.json}}
