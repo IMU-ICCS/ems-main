@@ -58,7 +58,7 @@
         <!-- Jasypt version -->
         <jasypt.starter.version>3.0.5</jasypt.starter.version>
         <!-- Apache SSHD version -->
-        <apache-sshd.version>2.11.0</apache-sshd.version>
+        <apache-sshd.version>2.12.0</apache-sshd.version>
         <!-- Bouncy Castle version -->
         <bouncy-castle.version>1.77</bouncy-castle.version>
         <!-- Guava version -->
