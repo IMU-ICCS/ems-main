@@ -382,7 +382,7 @@
                         </fileSet>
                     </fileSets>
                     <algorithms>
-                        <algorithm>MD5</algorithm>
+                        <algorithm>SHA256</algorithm>
                     </algorithms>
                     <individualFiles>true</individualFiles>
                     <failOnError>true</failOnError>
@@ -440,8 +440,8 @@
                                     <destinationFile>../public_resources/resources/baguette-client.tgz</destinationFile>
                                 </fileSet>
                                 <fileSet>
-                                    <sourceFile>${project.build.directory}/baguette-client-installation-package.tgz.md5</sourceFile>
-                                    <destinationFile>../public_resources/resources/baguette-client.tgz.md5</destinationFile>
+                                    <sourceFile>${project.build.directory}/baguette-client-installation-package.tgz.sha256</sourceFile>
+                                    <destinationFile>../public_resources/resources/baguette-client.tgz.sha256</destinationFile>
                                 </fileSet>
                                 <fileSet>
                                     <sourceFile>../baguette-client/bin/install.sh</sourceFile>
