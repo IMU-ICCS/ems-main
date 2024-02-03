@@ -19,6 +19,6 @@ public class EmsRelease {
     public final static String EMS_COPYRIGHT =
             "Copyright (C) 2017-2025 Institute of Communication and Computer Systems (imu.iccs.gr)";
     public final static String EMS_LICENSE = "Mozilla Public License, v2.0";
-    public final static String EMS_DESCRIPTION = String.format("\n%s (%s), ver. %s, %s\n%s\n",
+    public final static String EMS_DESCRIPTION = String.format("\n%s (%s), v.%s, %s\n%s\n",
             EMS_NAME, EMS_ID, EMS_VERSION, EMS_LICENSE, EMS_COPYRIGHT);
 }

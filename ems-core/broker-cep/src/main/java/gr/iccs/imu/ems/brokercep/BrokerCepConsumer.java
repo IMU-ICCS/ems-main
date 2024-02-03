@@ -14,6 +14,8 @@ import gr.iccs.imu.ems.brokercep.cep.CepService;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.brokercep.properties.BrokerCepProperties;
 import gr.iccs.imu.ems.util.StrUtil;
+import jakarta.jms.*;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.broker.BrokerService;
@@ -27,11 +29,12 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
-import jakarta.jms.*;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -58,6 +61,9 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
     private boolean shuttingDown;
 
     private final EventCache eventCache;
+
+    @Getter
+    private final List<MessageListener> listeners = new LinkedList<>();
 
     @Override
     public void afterPropertiesSet() {
@@ -224,6 +230,10 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
                 log.warn("BrokerCepConsumer.onMessage(): Message ignored: type={}", message.getClass().getName());
             }
             eventCounter.incrementAndGet();
+
+            // Notify listeners
+            listeners.forEach(l -> l.onMessage(message));
+
         } catch (Exception ex) {
             log.error("BrokerCepConsumer.onMessage(): EXCEPTION: ", ex);
             eventFailuresCounter.incrementAndGet();
