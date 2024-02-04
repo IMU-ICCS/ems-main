@@ -15,7 +15,7 @@ package gr.iccs.imu.ems.util;
 public class EmsRelease {
     public final static String EMS_ID = "ems";
     public final static String EMS_NAME = "Event Management System";
-    public final static String EMS_VERSION = "7.0.0-SNAPSHOT";
+    public final static String EMS_VERSION = EmsRelease.class.getPackage().getImplementationVersion();
     public final static String EMS_COPYRIGHT =
             "Copyright (C) 2017-2025 Institute of Communication and Computer Systems (imu.iccs.gr)";
     public final static String EMS_LICENSE = "Mozilla Public License, v2.0";
