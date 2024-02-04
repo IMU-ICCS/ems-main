@@ -247,10 +247,17 @@ public class ControlServiceCoordinator implements InitializingBean {
             return;
         }
 
+        // Execute callback after acquiring lock
         try {
             callback.run();
         } catch (Exception ex) {
-            setCurrentEmsState(EMS_STATE.ERROR, ex.getMessage());
+            StringBuilder sb = new StringBuilder(ex.getClass().getName()).append(": ").append(ex.getMessage());
+            Throwable t = ex;
+            while (t.getCause()!=null) {
+                t = t.getCause();
+                sb.append(", caused by: ").append(t.getClass().getName()).append(": ").append(t.getMessage());
+            }
+            setCurrentEmsState(EMS_STATE.ERROR, sb.toString());
 
             String mesg = "ControlServiceCoordinator."+caller+": EXCEPTION: " + ex;
             log.error(mesg, ex);
@@ -262,6 +269,15 @@ public class ControlServiceCoordinator implements InitializingBean {
         } finally {
             // Release lock of this coordinator
             inUse.compareAndSet(true, false);
+        }
+
+        // Invoke requestInfo callback if provided
+        if (requestInfo.getCallback()!=null) {
+            requestInfo.getCallback().accept(Map.of(
+                    "ems-state", StringUtils.defaultIfBlank(getCurrentEmsState().name(), "UNKNOWN"),
+                    "ems-state-message", StringUtils.defaultIfBlank(getCurrentEmsStateMessage(), ""),
+                    "ems-state-change-timestamp", getCurrentEmsStateChangeTimestamp()
+            ));
         }
     }
 
