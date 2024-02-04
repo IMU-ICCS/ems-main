@@ -289,7 +289,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         // Translate model into Translation Context (with EPL rules etc.)
         TranslationContext _TC;
         if (!properties.isSkipTranslation()) {
-            _TC = translateAppModelAndStore(appModelId);
+            _TC = translateAppModelAndStore(appModelId, requestInfo.getApplicationId());
         } else {
             log.warn("ControlServiceCoordinator._processAppModel(): Skipping translation due to configuration");
             _TC = loadStoredTranslationContext(appModelId);
@@ -434,13 +434,13 @@ public class ControlServiceCoordinator implements InitializingBean {
         setCurrentEmsState(EMS_STATE.READY, null);
     }
 
-    private TranslationContext translateAppModelAndStore(String appModelId) {
+    private TranslationContext translateAppModelAndStore(String appModelId, String applicationId) {
         final TranslationContext _TC;
         setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving and translating model");
 
         // Translate application model into a TranslationContext object
         log.info("ControlServiceCoordinator.translateAppModelAndStore(): Model translation: model-id={}", appModelId);
-        _TC = translator.translate(appModelId);
+        _TC = translator.translate(appModelId, applicationId);
         _TC.populateTopLevelMetricNames();
         log.debug("ControlServiceCoordinator.translateAppModelAndStore(): Model translation: RESULTS: {}", _TC);
 
