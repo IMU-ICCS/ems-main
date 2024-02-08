@@ -13,7 +13,7 @@
 
 ### Don't touch the next lines!!
 EMS_IP_SETTING=${P_EMS_IP_SETTING:PUBLIC_IP}
-EMS_SERVER_ADDRESS=${EMS_IP_SETTING:PUBLIC_IP}
+EMS_SERVER_ADDRESS=${${EMS_IP_SETTING}}
 DOLLAR=$
 
 ### Password Encoder settings

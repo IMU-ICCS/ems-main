@@ -46,6 +46,9 @@ if "%LOG_FILE%"=="" (
 :: Set shell encoding to UTF-8 (in order to display banner correctly)
 chcp 65001
 
+:: Create default models directory
+mkdir %BASEDIR%\models
+
 :: Run EMS server
 rem Uncomment next line to set JAVA runtime options
 rem set JAVA_OPTS=-Djavax.net.debug=all

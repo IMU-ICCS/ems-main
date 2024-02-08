@@ -52,6 +52,9 @@ export LANG=C.UTF-8
 # Setup TERM & INT signal handler
 trap 'echo "Signaling EMS to exit"; kill -TERM "${emsPid}"; wait "${emsPid}"; ' SIGTERM SIGINT
 
+# Create default models directory
+mkdir ${BASEDIR}/models
+
 # Run EMS server
 # Uncomment next line to set JAVA runtime options
 #JAVA_OPTS=-Djavax.net.debug=all
