@@ -280,7 +280,7 @@ public class TopicBeacon implements InitializingBean {
         for (String topicName : topics) {
             log.trace("Topic Beacon: Sending event to topic: event={}, topic={}", event, topicName);
             brokerCepService.publishSerializable(
-                    brokerCepService.getBrokerCepProperties().getBrokerUrlForClients(),
+                    brokerCepService.getBrokerCepProperties().getBrokerUrlForConsumer(),
                     brokerCepService.getBrokerUsername(),
                     brokerCepService.getBrokerPassword(),
                     topicName,
