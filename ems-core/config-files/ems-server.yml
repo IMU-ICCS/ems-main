@@ -570,7 +570,7 @@ baguette.client.install:
   sessionRecordingDir: ${LOGS_DIR:${EMS_CONFIG_DIR}/../logs}
 
   ### Baguette and Netdata installation parameters (for condition checking)
-  parameters:
+  #parameters:
 
     #SKIP_IGNORE_CHECK: true
     #SKIP_DETECTION: true
@@ -579,9 +579,9 @@ baguette.client.install:
     #SKIP_JRE_INSTALLATION: true
     #SKIP_START: true
 
-    BAGUETTE_INSTALLATION_MIN_PROCESSORS: 2
-    BAGUETTE_INSTALLATION_MIN_RAM: 2*1024*1024
-    BAGUETTE_INSTALLATION_MIN_DISK_FREE: 1024*1024
+    #BAGUETTE_INSTALLATION_MIN_PROCESSORS: 2
+    #BAGUETTE_INSTALLATION_MIN_RAM: 2*1024*1024
+    #BAGUETTE_INSTALLATION_MIN_DISK_FREE: 1024*1024
 
   ### Settings for resolving Node state after baguette client installation
   #clientInstallVarName: '__EMS_CLIENT_INSTALL__'
