@@ -11,8 +11,9 @@
 ### Global settings
 ################################################################################
 
-### Don't touch the next line!!
-EMS_SERVER_ADDRESS=${${control.IP_SETTING}}
+### Don't touch the next lines!!
+EMS_IP_SETTING=${P_EMS_IP_SETTING:PUBLIC_IP}
+EMS_SERVER_ADDRESS=${EMS_IP_SETTING:PUBLIC_IP}
 DOLLAR=$
 
 ### Password Encoder settings
