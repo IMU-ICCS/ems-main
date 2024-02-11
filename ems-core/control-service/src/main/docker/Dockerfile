@@ -61,8 +61,10 @@ COPY --chown=${EMS_USER}:${EMS_USER} bin ${BIN_DIR}
 COPY --chown=${EMS_USER}:${EMS_USER} config ${CONFIG_DIR}
 COPY --chown=${EMS_USER}:${EMS_USER} public_resources ${PUBLIC_DIR}
 
+# Create 'logs', and 'models' directories. Make bin/*.sh scripts executable
 RUN mkdir ${LOGS_DIR} && \
-    chmod +rx ${BIN_DIR}/*.sh
+    chmod +rx ${BIN_DIR}/*.sh && \
+    mkdir -p ${EMS_HOME}/models
 
 # Copy files from builder container
 COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/dependencies          ${BASEDIR}
