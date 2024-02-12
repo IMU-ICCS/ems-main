@@ -205,7 +205,8 @@ brokercep:
   # Authentication and Authorization settings
   authentication-enabled: true
   #additional-broker-credentials: aaa/111, bbb/222, morphemic/morphemic
-  additional-broker-credentials: 'ENC(axeJUxNHajYfBffUwvuT3kwTgLTpRliDMz/ZQ9hROZ3BNOv0Idw72NJsawzIZRuZ)'
+  #additional-broker-credentials: 'ENC(axeJUxNHajYfBffUwvuT3kwTgLTpRliDMz/ZQ9hROZ3BNOv0Idw72NJsawzIZRuZ)'
+  additional-broker-credentials: ${EMS_ADDITIONAL_BROKER_CREDENTIALS}
   authorization-enabled: false
 
   # Broker instance settings

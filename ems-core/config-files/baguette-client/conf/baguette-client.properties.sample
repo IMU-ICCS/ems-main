@@ -11,9 +11,9 @@
 ###                     EMS - Baguette Client properties                     ###
 ################################################################################
 
-#password-encoder-class = password.gr.iccs.imu.ems.util.AsterisksPasswordEncoder
-#password-encoder-class = password.gr.iccs.imu.ems.util.IdentityPasswordEncoder
-#password-encoder-class = password.gr.iccs.imu.ems.util.PresentPasswordEncoder
+#password-encoder-class = gr.iccs.imu.ems.util.password.AsterisksPasswordEncoder
+#password-encoder-class = gr.iccs.imu.ems.util.password.IdentityPasswordEncoder
+#password-encoder-class = gr.iccs.imu.ems.util.password.PresentPasswordEncoder
 
 ### Jasypt encryptor settings (using old settings until encrypted texts are updated)
 jasypt.encryptor.algorithm = PBEWithMD5AndDES
@@ -68,7 +68,7 @@ server-password = ${BAGUETTE_SERVER_PASSWORD}
 # Collectors settings
 # -----------------------------------------------------------------------------
 
-#collector-classes = netdata.collector.gr.iccs.imu.ems.baguette.client.NetdataCollector
+#collector-classes = gr.iccs.imu.ems.baguette.client.collector.netdata.NetdataCollector
 
 collector.netdata.enable = true
 collector.netdata.delay = 10000
@@ -180,7 +180,8 @@ brokercep.ssl.key-entry-ext-san = dns:localhost,ip:127.0.0.1,ip:${DEFAULT_IP},ip
 # Authentication and Authorization settings
 brokercep.authentication-enabled = true
 #brokercep.additional-broker-credentials = aaa/111, bbb/222, morphemic/morphemic
-brokercep.additional-broker-credentials = ENC(axeJUxNHajYfBffUwvuT3kwTgLTpRliDMz/ZQ9hROZ3BNOv0Idw72NJsawzIZRuZ)
+#brokercep.additional-broker-credentials = ENC(axeJUxNHajYfBffUwvuT3kwTgLTpRliDMz/ZQ9hROZ3BNOv0Idw72NJsawzIZRuZ)
+brokercep.additional-broker-credentials = ${EMS_ADDITIONAL_BROKER_CREDENTIALS}
 brokercep.authorization-enabled = false
 
 # Broker instance settings
@@ -194,14 +195,14 @@ brokercep.broker-using-shutdown-hook = false
 
 # Message interceptors
 brokercep.message-interceptors[0].destination = >
-brokercep.message-interceptors[0].className = interceptor.broker.gr.iccs.imu.ems.brokercep.SequentialCompositeInterceptor
+brokercep.message-interceptors[0].className = gr.iccs.imu.ems.brokercep.broker.interceptor.SequentialCompositeInterceptor
 brokercep.message-interceptors[0].params[0] = #SourceAddressMessageUpdateInterceptor
 brokercep.message-interceptors[0].params[1] = #MessageForwarderInterceptor
 brokercep.message-interceptors[0].params[2] = #NodePropertiesMessageUpdateInterceptor
 
-brokercep.message-interceptors-specs.SourceAddressMessageUpdateInterceptor.className = interceptor.broker.gr.iccs.imu.ems.brokercep.SourceAddressMessageUpdateInterceptor
-brokercep.message-interceptors-specs.MessageForwarderInterceptor.className = interceptor.broker.gr.iccs.imu.ems.brokercep.MessageForwarderInterceptor
-brokercep.message-interceptors-specs.NodePropertiesMessageUpdateInterceptor.className = interceptor.broker.gr.iccs.imu.ems.brokercep.NodePropertiesMessageUpdateInterceptor
+brokercep.message-interceptors-specs.SourceAddressMessageUpdateInterceptor.className = gr.iccs.imu.ems.brokercep.broker.interceptor.SourceAddressMessageUpdateInterceptor
+brokercep.message-interceptors-specs.MessageForwarderInterceptor.className = gr.iccs.imu.ems.brokercep.broker.interceptor.MessageForwarderInterceptor
+brokercep.message-interceptors-specs.NodePropertiesMessageUpdateInterceptor.className = gr.iccs.imu.ems.brokercep.broker.interceptor.NodePropertiesMessageUpdateInterceptor
 
 # Message forward destinations (MessageForwarderInterceptor must be included in 'message-interceptors' property)
 #brokercep.message-forward-destinations[0].connection-string = tcp://localhost:51515
