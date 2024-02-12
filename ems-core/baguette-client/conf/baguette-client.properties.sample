@@ -163,12 +163,14 @@ brokercep.broker-url-for-clients = ${brokercep.broker-protocol}://${EMS_CLIENT_A
 brokercep.ssl.keystore-file = ${EMS_CONFIG_DIR}/client-broker-keystore.p12
 brokercep.ssl.keystore-type = PKCS12
 #brokercep.ssl.keystore-password = melodic
-brokercep.ssl.keystore-password = ENC(ISMbn01HVPbtRPkqm2Lslg==)
+#brokercep.ssl.keystore-password = ENC(ISMbn01HVPbtRPkqm2Lslg==)
+brokercep.ssl.keystore-password = ${EMS_KEYSTORE_PASSWORD}
 # Trust store
 brokercep.ssl.truststore-file = ${EMS_CONFIG_DIR}/client-broker-truststore.p12
 brokercep.ssl.truststore-type = PKCS12
 #brokercep.ssl.truststore-password = melodic
-brokercep.ssl.truststore-password = ENC(ISMbn01HVPbtRPkqm2Lslg==)
+#brokercep.ssl.truststore-password = ENC(ISMbn01HVPbtRPkqm2Lslg==)
+brokercep.ssl.truststore-password = ${EMS_TRUSTSTORE_PASSWORD}
 # Certificate
 brokercep.ssl.certificate-file = ${EMS_CONFIG_DIR}/client-broker.crt
 # Key-and-Cert data

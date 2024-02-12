@@ -186,12 +186,14 @@ brokercep:
     # Key store settings
     keystore-file: ${EMS_CONFIG_DIR}/client-broker-keystore.p12
     keystore-type: PKCS12
-    keystore-password: 'ENC(ISMbn01HVPbtRPkqm2Lslg==)'  # melodic
+    #keystore-password: 'ENC(ISMbn01HVPbtRPkqm2Lslg==)'  # melodic
+    keystore-password: ${EMS_KEYSTORE_PASSWORD}
 
     # Trust store settings
     truststore-file: ${EMS_CONFIG_DIR}/client-broker-truststore.p12
     truststore-type: PKCS12
-    truststore-password: 'ENC(ISMbn01HVPbtRPkqm2Lslg==)'  # melodic
+    #truststore-password: 'ENC(ISMbn01HVPbtRPkqm2Lslg==)'  # melodic
+    truststore-password: ${EMS_TRUSTSTORE_PASSWORD}
 
     # Certificate settings
     certificate-file: ${EMS_CONFIG_DIR}/client-broker.crt
