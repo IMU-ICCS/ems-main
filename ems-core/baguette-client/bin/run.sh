@@ -12,17 +12,26 @@
 PREVWORKDIR=`pwd`
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 cd ${BASEDIR}
+
 EMS_CONFIG_DIR=${BASEDIR}/conf
 #PAASAGE_CONFIG_DIR=${BASEDIR}/conf
 EMS_CONFIG_LOCATION=optional:file:$EMS_CONFIG_DIR/ems-client.yml,optional:file:$EMS_CONFIG_DIR/ems-client.properties,optional:file:$EMS_CONFIG_DIR/baguette-client.yml,optional:file:$EMS_CONFIG_DIR/baguette-client.properties
 LOG_FILE=${BASEDIR}/logs/output.txt
 TEE_FILE=${BASEDIR}/logs/tee.txt
-JASYPT_PASSWORD=password
+#JASYPT_PASSWORD=password
+
 [ -z "${JAVA_HOME}" ] && [ -d "${BASEDIR}/jre" ] && JAVA_HOME=${BASEDIR}/jre
-export EMS_CONFIG_DIR PAASAGE_CONFIG_DIR LOG_FILE JASYPT_PASSWORD JAVA_HOME
+#export EMS_CONFIG_DIR PAASAGE_CONFIG_DIR LOG_FILE JASYPT_PASSWORD JAVA_HOME
+export EMS_CONFIG_DIR LOG_FILE JAVA_HOME
 
 # Update path
 PATH=${JAVA_HOME}/bin:$PATH
+
+# Source external environment variables file
+if [ "$EMS_EXTRA_ENV_VARS_FILE" != "" ]; then
+  echo "Sourcing $EMS_EXTRA_ENV_VARS_FILE..."
+  source $EMS_EXTRA_ENV_VARS_FILE
+fi
 
 # Check if baguette client is already running
 #PID=`jps | grep BaguetteClient | cut -d " " -f 1`

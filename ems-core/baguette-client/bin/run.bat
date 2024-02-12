@@ -12,14 +12,18 @@ setlocal
 set PWD=%~dp0
 cd %PWD%..
 set BASEDIR=%cd%
+
 IF NOT DEFINED EMS_CONFIG_DIR set EMS_CONFIG_DIR=%BASEDIR%\conf
 :: IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\conf
 IF NOT DEFINED EMS_CONFIG_LOCATION set EMS_CONFIG_LOCATION=optional:file:%EMS_CONFIG_DIR%\ems-client.yml,optional:file:%EMS_CONFIG_DIR%\ems-client.properties,optional:file:%EMS_CONFIG_DIR%\baguette-client.yml,optional:file:%EMS_CONFIG_DIR%\baguette-client.properties
-IF NOT DEFINED JASYPT_PASSWORD set JASYPT_PASSWORD=password
+:: IF NOT DEFINED JASYPT_PASSWORD set JASYPT_PASSWORD=password
 IF NOT DEFINED JAVA_HOME IF EXIST %BASEDIR%\jre\ set JAVA_HOME=%BASEDIR%/jre
 
 :: Update path
 set PATH=%JAVA_HOME%\bin;%PATH%
+
+:: Source external environment variables file
+if DEFINED EMS_EXTRA_ENV_VARS_FILE CALL %EMS_EXTRA_ENV_VARS_FILE%
 
 :: Copy dependencies if missing
 if exist pom.xml (

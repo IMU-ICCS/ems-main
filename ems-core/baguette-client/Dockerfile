@@ -38,6 +38,7 @@ ARG INSTALLATION_PACKAGE=baguette-client-installation-package.tgz
 # Copy Baguette Client files
 COPY --chown=${EMS_USER}:${EMS_USER} target/$INSTALLATION_PACKAGE /tmp
 RUN tar zxvf /tmp/$INSTALLATION_PACKAGE -C /opt && rm -f /tmp/$INSTALLATION_PACKAGE
+COPY --chown=${EMS_USER}:${EMS_USER} conf/* ${EMS_HOME}/conf/
 
 EXPOSE 61610
 EXPOSE 61616
