@@ -21,7 +21,7 @@ RUN apt-get update \
 # Add an EMS user
 ARG EMS_USER=emsuser
 ARG EMS_HOME=/opt/baguette-client
-RUN mkdir ${EMS_HOME} && \
+RUN mkdir -p ${EMS_HOME} && \
     addgroup ${EMS_USER} && \
     adduser --home ${EMS_HOME} --no-create-home --ingroup ${EMS_USER} --disabled-password ${EMS_USER} && \
     chown ${EMS_USER}:${EMS_USER} ${EMS_HOME}
