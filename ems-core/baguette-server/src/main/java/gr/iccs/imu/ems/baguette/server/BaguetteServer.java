@@ -27,9 +27,11 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -162,13 +164,27 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         if (server == null) {
             eventBus.subscribe(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, this);
 
+            // Start SSH server
             log.info("BaguetteServer.startServer(): Starting SSH server...");
             nodeRegistry.setCoordinator(coordinator);
             Sshd server = new Sshd();
             server.start(config, coordinator, eventBus, nodeRegistry);
-            server.setNodeRegistry(getNodeRegistry());
+            //server.setNodeRegistry(getNodeRegistry());
             this.server = server;
             log.info("BaguetteServer.startServer(): Starting SSH server... done");
+
+            // Store Baguette Server connection info in a properties file
+            if (StringUtils.isNotBlank(config.getConnectionInfoFile())) {
+                String connInfoFileName = config.getConnectionInfoFile();
+                Properties prop = new Properties();
+                prop.putAll(server.getServerConnectionInfo());
+                try (FileWriter writer = new FileWriter(Paths.get(connInfoFileName).toFile())) {
+                    prop.store(writer, "Baguette Server connection info");
+                    log.info("BaguetteServer.startServer(): Stored connection info in file: {}", connInfoFileName);
+                } catch (Exception e) {
+                    log.error("BaguetteServer.startServer(): Failed to store connection info in file: {}, Exception: ", connInfoFileName, e);
+                }
+            }
         } else {
             log.info("BaguetteServer.startServer(): SSH server is already running");
         }
