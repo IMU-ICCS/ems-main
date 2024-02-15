@@ -199,7 +199,7 @@ brokercep:
     certificate-file: ${EMS_CONFIG_DIR}/client-broker.crt
 
     # key generation settings
-    key-entry-generate: IF-IP-CHANGED
+    key-entry-generate: ALWAYS
     key-entry-name: ${EMS_CLIENT_ADDRESS}
     key-entry-dname: 'CN=${EMS_CLIENT_ADDRESS},OU=Information Management Unit (IMU),O=Institute of Communication and Computer Systems (ICCS),L=Athens,ST=Attika,C=GR'
     key-entry-ext-san: 'dns:localhost,ip:127.0.0.1,ip:${DEFAULT_IP},ip:${PUBLIC_IP}'

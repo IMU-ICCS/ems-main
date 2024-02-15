@@ -174,7 +174,7 @@ brokercep.ssl.truststore-password = ${EMS_TRUSTSTORE_PASSWORD}
 # Certificate
 brokercep.ssl.certificate-file = ${EMS_CONFIG_DIR}/client-broker.crt
 # Key-and-Cert data
-brokercep.ssl.key-entry-generate = IF-IP-CHANGED
+brokercep.ssl.key-entry-generate = ALWAYS
 brokercep.ssl.key-entry-name = ${EMS_CLIENT_ADDRESS}
 brokercep.ssl.key-entry-dname = CN=${EMS_CLIENT_ADDRESS},OU=Information Management Unit (IMU),O=Institute of Communication and Computer Systems (ICCS),L=Athens,ST=Attika,C=GR
 brokercep.ssl.key-entry-ext-san = dns:localhost,ip:127.0.0.1,ip:${DEFAULT_IP},ip:${PUBLIC_IP}
