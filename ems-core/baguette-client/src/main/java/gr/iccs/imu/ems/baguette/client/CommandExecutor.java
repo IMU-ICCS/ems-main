@@ -376,10 +376,10 @@ public class CommandExecutor {
                 generator.setBrokerUrl(brokerCepService.getBrokerCepProperties().getBrokerUrlForClients());
                 generator.setBrokerUsername(brokerCepService.getBrokerUsername());
                 generator.setBrokerPassword(brokerCepService.getBrokerPassword());
-                generator.setDestinationName(destination);
                 */
-                EventGenerator generator = new EventGenerator((destinationName,event) ->
+                EventGenerator generator = new EventGenerator((destinationName, event) ->
                         sendEvent(null, destinationName, event)==CollectorContext.PUBLISH_RESULT.SENT);
+                generator.setDestinationName(destination);
                 generator.setLevel(1);
                 generator.setInterval(interval);
                 generator.setLowerValue(lower);
