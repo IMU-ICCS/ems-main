@@ -184,6 +184,8 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
                 } catch (Exception e) {
                     log.error("BaguetteServer.startServer(): Failed to store connection info in file: {}, Exception: ", connInfoFileName, e);
                 }
+            } else {
+                log.info("BaguetteServer.startServer(): No connection info file specified. Skip storing connection info.");
             }
         } else {
             log.info("BaguetteServer.startServer(): SSH server is already running");
