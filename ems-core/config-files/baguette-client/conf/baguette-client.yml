@@ -174,8 +174,8 @@ brokercep:
   # Broker connectors
   broker-url:
     - ${brokercep.broker-protocol}://0.0.0.0:${brokercep.broker-port}?${BROKER_URL_PROPERTIES}
-    - tcp://127.0.0.1:61616?${BROKER_URL_PROPERTIES}
-    - stomp://127.0.0.1:61610?${BROKER_URL_PROPERTIES}
+    - tcp://${BROKER_URL_ADDRESS_INSECURE:127.0.0.1}:61616?${BROKER_URL_PROPERTIES}
+    - stomp://${BROKER_URL_ADDRESS_INSECURE:127.0.0.1}:61616?${BROKER_URL_PROPERTIES}
 
   # Broker URLs for (EMS) consumer and clients
   broker-url-for-consumer: tcp://127.0.0.1:61616?${CLIENT_URL_PROPERTIES}
