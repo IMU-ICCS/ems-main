@@ -91,7 +91,7 @@ public class CredentialsController {
         return entity;
     }
 
-    //    @PreAuthorize(ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY)
+//    @PreAuthorize(ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY)
     @GetMapping(value = "/baguette/ref/{ref}", produces = MediaType.APPLICATION_JSON_VALUE)
     public HttpEntity<Map> getNodeCredentials(@PathVariable String ref,
                                               @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
