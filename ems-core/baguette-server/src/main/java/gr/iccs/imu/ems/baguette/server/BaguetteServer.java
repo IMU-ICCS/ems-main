@@ -149,6 +149,8 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
 
     public BrokerCepService getBrokerCepService() { return brokerCepService; }
 
+    public Map<String, String> getServerConnectionInfo() { return server.getServerConnectionInfo(); }
+
     public String getServerPubkey() { return server.getPublicKey(); }
 
     public String getServerPubkeyFingerprint() { return server.getPublicKeyFingerprint(); }

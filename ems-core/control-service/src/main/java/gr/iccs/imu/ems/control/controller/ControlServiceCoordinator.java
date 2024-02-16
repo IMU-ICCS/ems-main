@@ -13,6 +13,7 @@ import com.google.gson.GsonBuilder;
 import gr.iccs.imu.ems.baguette.server.BaguetteServer;
 import gr.iccs.imu.ems.baguette.server.NodeRegistry;
 import gr.iccs.imu.ems.baguette.server.ServerCoordinator;
+import gr.iccs.imu.ems.baguette.server.coordinator.NoopCoordinator;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.brokercep.BrokerCepStatementSubscriber;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
@@ -106,8 +107,11 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        setCurrentEmsState(EMS_STATE.INITIALIZING, "Starting ControlServiceCoordinator...");
+
         initTranslator();
         initMvvService();
+        startBaguetteServer();
 
         // Run configuration checks and throw exceptions early (before actually using EMS)
         if (properties.isSkipTranslation()) {
@@ -119,6 +123,8 @@ public class ControlServiceCoordinator implements InitializingBean {
         log.debug("ControlServiceCoordinator.afterPropertiesSet():    Post-translation plugins: {}", postTranslationPlugins);
         log.debug("ControlServiceCoordinator.afterPropertiesSet():  TranslationContext plugins: {}", translationContextPlugins);
         log.debug("ControlServiceCoordinator.afterPropertiesSet():          MetaSolver plugins: {}", metasolverPlugins);
+
+        setCurrentEmsState(EMS_STATE.IDLE, "ControlServiceCoordinator started");
     }
 
     private void initMvvService() {
@@ -154,6 +160,15 @@ public class ControlServiceCoordinator implements InitializingBean {
         log.debug("ControlServiceCoordinator.initTranslator():  Translator implementation selected: {}", translator);
 
         log.info("ControlServiceCoordinator.initTranslator(): Effective translator: {}", translator.getClass().getName());
+    }
+
+    private void startBaguetteServer() {
+        log.debug("ControlServiceCoordinator.startBaguetteServer(): Starting Baguette Server...");
+        try {
+            baguetteServer.startServer(new NoopCoordinator());
+        } catch (Exception ex) {
+            log.error("ControlServiceCoordinator.startBaguetteServer(): EXCEPTION while starting Baguette server: ", ex);
+        }
     }
 
     // ------------------------------------------------------------------------------------------------------------
