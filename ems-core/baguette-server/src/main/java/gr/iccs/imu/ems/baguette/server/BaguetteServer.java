@@ -9,6 +9,7 @@
 
 package gr.iccs.imu.ems.baguette.server;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import gr.iccs.imu.ems.baguette.server.properties.BaguetteServerProperties;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.common.recovery.RecoveryConstant;
@@ -31,6 +32,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
@@ -51,6 +54,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
     @Getter
     private final SelfHealingManager<NodeRegistryEntry> selfHealingManager;
     private final TaskScheduler taskScheduler;
+    private final ObjectMapper objectMapper;
 
     private Sshd server;
 
@@ -178,11 +182,8 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
             // Store Baguette Server connection info in a properties file
             if (StringUtils.isNotBlank(config.getConnectionInfoFile())) {
                 String connInfoFileName = config.getConnectionInfoFile();
-                Properties prop = new Properties();
-                prop.putAll(server.getServerConnectionInfo());
-                try (FileWriter writer = new FileWriter(Paths.get(connInfoFileName).toFile())) {
-                    prop.store(writer, "Baguette Server connection info");
-                    log.info("BaguetteServer.startServer(): Stored connection info in file: {}", connInfoFileName);
+                try {
+                    storeConnectionInfo(connInfoFileName, server);
                 } catch (Exception e) {
                     log.error("BaguetteServer.startServer(): Failed to store connection info in file: {}, Exception: ", connInfoFileName, e);
                 }
@@ -191,6 +192,23 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
             }
         } else {
             log.info("BaguetteServer.startServer(): SSH server is already running");
+        }
+    }
+
+    private void storeConnectionInfo(String connInfoFileName, Sshd server) throws IOException {
+        Path connInfoPath = Paths.get(connInfoFileName);
+        if (StringUtils.endsWithIgnoreCase(connInfoFileName, ".json")) {
+            String content = objectMapper
+                    .writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(server.getServerConnectionInfo());
+            Files.writeString(connInfoPath, content);
+        } else {
+            Properties prop = new Properties();
+            prop.putAll(server.getServerConnectionInfo());
+            try (FileWriter writer = new FileWriter(connInfoPath.toFile())) {
+                prop.store(writer, "Baguette Server connection info");
+                log.info("BaguetteServer.startServer(): Stored connection info in file: {}", connInfoFileName);
+            }
         }
     }
 
