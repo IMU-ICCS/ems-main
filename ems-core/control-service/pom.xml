@@ -508,6 +508,7 @@
                                     <include>sysmon.sh</include>
                                     <include>detect.sh</include>
                                     <include>jwtutil.sh</include>
+                                    <include>k8s-helper.sh</include>
                                     <filtering>false</filtering>
                                 </resource>
                                 <resource>
