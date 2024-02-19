@@ -9,7 +9,7 @@
 #
 
 EMS_CLIENT_K8S_CONFIG_MAP_NAME=ems-client-configmap
-EMS_CLIENT_K8S_CONFIG_MAP_FILE=$EMS_CONFIG_DIR/ems-client-configmap.json
+EMS_CLIENT_K8S_CONFIG_MAP_FILE=ems-client-configmap.json
 K8S_OUTPUT_DIR=$EMS_CONFIG_DIR/k8s
 K8S_OUTPUT_FILE=$K8S_OUTPUT_DIR/cfgmap_output.json
 
