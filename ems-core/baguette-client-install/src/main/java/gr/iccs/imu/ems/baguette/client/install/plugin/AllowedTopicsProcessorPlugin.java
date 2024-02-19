@@ -23,8 +23,8 @@ import java.util.*;
 
 /**
  * Installation context processor plugin for generating 'allowed-topics' setting
- * used in baguette-client[.yml/.properties] config. file.
- * It set the 'COLLECTOR_ALLOWED_TOPICS' variable in pre-registration context.
+ * used in baguette-client[.yml/.properties] configuration file.
+ * It sets the 'COLLECTOR_ALLOWED_TOPICS' variable in pre-registration context.
  */
 @Slf4j
 @Data
@@ -53,7 +53,7 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
                 }
 
                 // Get sensor configuration
-                Map<String,Object> sensorConfig = monitor.getSensor().getConfiguration();;
+                Map<String,Object> sensorConfig = monitor.getSensor().getConfiguration();
 
                 // Process Destination aliases, if specified in configuration
                 if (sensorConfig!=null) {
