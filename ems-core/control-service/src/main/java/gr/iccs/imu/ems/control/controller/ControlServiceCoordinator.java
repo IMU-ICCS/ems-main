@@ -18,6 +18,7 @@ import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.brokercep.BrokerCepStatementSubscriber;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.control.collector.netdata.ServerNetdataCollector;
+import gr.iccs.imu.ems.control.plugin.AppModelPlugin;
 import gr.iccs.imu.ems.control.plugin.MetasolverPlugin;
 import gr.iccs.imu.ems.control.plugin.PostTranslationPlugin;
 import gr.iccs.imu.ems.control.plugin.TranslationContextPlugin;
@@ -73,6 +74,8 @@ public class ControlServiceCoordinator implements InitializingBean {
     private final WebClient webClient;
     private final PasswordUtil passwordUtil;
     private final EventBus<String,Object,Object> eventBus;
+
+    private final List<AppModelPlugin> appModelPluginList;
 
     private final List<Translator> translatorImplementations;
     private Translator translator;                      // Will be populated in 'afterPropertiesSet()'
@@ -301,6 +304,17 @@ public class ControlServiceCoordinator implements InitializingBean {
     protected void _processAppModels(String appModelId, String appExecModelId, ControlServiceRequestInfo requestInfo) {
         log.info("ControlServiceCoordinator._processAppModel(): BEGIN: app-model-id={}, app-exec-model-id={}, request-info={}", appModelId, appExecModelId, requestInfo);
 
+        // Run pre-processing plugins
+        log.debug("ControlServiceCoordinator._processAppModel(): appModelPluginList: {}", appModelPluginList);
+        if (appModelPluginList!=null) {
+            for (AppModelPlugin plugin : appModelPluginList) {
+                if (plugin!=null) {
+                    log.debug("ControlServiceCoordinator._processAppModel():   Calling preProcessingNewAppModel on plugin: {}", plugin);
+                    plugin.preProcessingNewAppModel(appModelId, requestInfo);
+                }
+            }
+        }
+
         // Translate model into Translation Context (with EPL rules etc.)
         TranslationContext _TC;
         if (!properties.isSkipTranslation()) {
@@ -385,6 +399,17 @@ public class ControlServiceCoordinator implements InitializingBean {
             notifyOthers(appModelId, requestInfo, EMS_STATE.INITIALIZING);
         } else {
             log.warn("ControlServiceCoordinator._processAppModel(): Skipping notification due to configuration");
+        }
+
+        // Run post-processing plugins
+        log.debug("ControlServiceCoordinator._processAppModel(): appModelPluginList: {}", appModelPluginList);
+        if (appModelPluginList!=null) {
+            for (AppModelPlugin plugin : appModelPluginList) {
+                if (plugin!=null) {
+                    log.debug("ControlServiceCoordinator._processAppModel():   Calling postProcessingNewAppModel on plugin: {}", plugin);
+                    plugin.postProcessingNewAppModel(appModelId, requestInfo, _TC);
+                }
+            }
         }
 
         this.currentTC = _TC;
