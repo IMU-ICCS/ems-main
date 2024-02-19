@@ -9,7 +9,6 @@
 
 package gr.iccs.imu.ems.baguette.server;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import gr.iccs.imu.ems.baguette.server.properties.BaguetteServerProperties;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.common.recovery.RecoveryConstant;
@@ -28,13 +27,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,7 +49,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
     @Getter
     private final SelfHealingManager<NodeRegistryEntry> selfHealingManager;
     private final TaskScheduler taskScheduler;
-    private final ObjectMapper objectMapper;
+    private final ConfigWriteService configWriteService;
 
     private Sshd server;
 
@@ -180,35 +175,18 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
             log.info("BaguetteServer.startServer(): Starting SSH server... done");
 
             // Store Baguette Server connection info in a properties file
-            if (StringUtils.isNotBlank(config.getConnectionInfoFile())) {
-                String connInfoFileName = config.getConnectionInfoFile();
-                try {
-                    storeConnectionInfo(connInfoFileName, server);
-                } catch (Exception e) {
-                    log.error("BaguetteServer.startServer(): Failed to store connection info in file: {}, Exception: ", connInfoFileName, e);
-                }
-            } else {
-                log.info("BaguetteServer.startServer(): No connection info file specified. Skip storing connection info.");
+            try {
+                configWriteService
+                        .getOrCreateConfigFile(
+                                EmsConstant.EMS_CLIENT_k8S_CONFIG_MAP_FILE,
+                                EmsConstant.EMS_CLIENT_k8S_CONFIG_MAP_FORMAT)
+                        .putAll(server.getServerConnectionInfo());
+            } catch (Exception e) {
+                log.error("BaguetteServer.startServer(): Failed to store connection info in ems-client-config-map: {}, Exception: ",
+                        EmsConstant.EMS_CLIENT_k8S_CONFIG_MAP_FILE, e);
             }
         } else {
             log.info("BaguetteServer.startServer(): SSH server is already running");
-        }
-    }
-
-    private void storeConnectionInfo(String connInfoFileName, Sshd server) throws IOException {
-        Path connInfoPath = Paths.get(connInfoFileName);
-        if (StringUtils.endsWithIgnoreCase(connInfoFileName, ".json")) {
-            String content = objectMapper
-                    .writerWithDefaultPrettyPrinter()
-                    .writeValueAsString(server.getServerConnectionInfo());
-            Files.writeString(connInfoPath, content);
-        } else {
-            Properties prop = new Properties();
-            prop.putAll(server.getServerConnectionInfo());
-            try (FileWriter writer = new FileWriter(connInfoPath.toFile())) {
-                prop.store(writer, "Baguette Server connection info");
-                log.info("BaguetteServer.startServer(): Stored connection info in file: {}", connInfoFileName);
-            }
         }
     }
 
