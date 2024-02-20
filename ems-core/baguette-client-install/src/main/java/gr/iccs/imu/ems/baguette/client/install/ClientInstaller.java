@@ -9,6 +9,7 @@
 
 package gr.iccs.imu.ems.baguette.client.install;
 
+import gr.iccs.imu.ems.baguette.client.install.installer.K8sClientInstaller;
 import gr.iccs.imu.ems.baguette.client.install.installer.SshClientInstaller;
 import gr.iccs.imu.ems.baguette.client.install.installer.SshJsClientInstaller;
 import gr.iccs.imu.ems.baguette.server.BaguetteServer;
@@ -127,6 +128,12 @@ public class ClientInstaller implements InitializingBean {
 
             return executeVmOrBaremetalTask(task, taskCounter);
         } else
+        if ("K8S".equalsIgnoreCase(task.getType())) {
+            if (baguetteServer.getNodeRegistry().getCoordinator()==null)
+                throw new IllegalStateException("Baguette Server Coordinator has not yet been initialized");
+
+            return executeKubernetesTask(task, taskCounter);
+        } else
         //if ("DIAGNOSTICS".equalsIgnoreCase(task.getType())) {
         if (task.getTaskType()==TASK_TYPE.DIAGNOSTICS) {
             return executeDiagnosticsTask(task, taskCounter);
@@ -205,6 +212,21 @@ public class ClientInstaller implements InitializingBean {
 
     private boolean executeVmOrBaremetalTask(ClientInstallationTask task, long taskCounter) {
         return executeInstaller(task, taskCounter, (t,c) -> ! t.getInstructionSets().isEmpty(), this::executeVmTask);
+    }
+
+    private boolean executeKubernetesTask(ClientInstallationTask task, long taskCounter) {
+        return executeInstaller(task, taskCounter, (t,c) -> true, (t,c) -> {
+            boolean result;
+            log.info("ClientInstaller: Using K8sClientInstaller for task #{}", taskCounter);
+            result = K8sClientInstaller.builder()
+                    .task(task)
+                    .taskCounter(taskCounter)
+                    .properties(properties)
+                    .build()
+                    .execute();
+            log.info("ClientInstaller: Task execution result #{}: success={}", taskCounter, result);
+            return result;
+        });
     }
 
     private boolean executeDiagnosticsTask(ClientInstallationTask task, long taskCounter) {
