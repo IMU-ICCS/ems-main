@@ -31,7 +31,6 @@ import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.boot.web.embedded.tomcat.TomcatWebServer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.nio.file.*;
@@ -43,12 +42,9 @@ import java.util.stream.Collectors;
  * Baguette Client installation helper
  */
 @Slf4j
-@Service
 public abstract class AbstractInstallationHelper implements InitializingBean, ApplicationListener<WebServerInitializedEvent>, InstallationHelper {
     protected final static String LINUX_OS_FAMILY = "LINUX";
     protected final static String WINDOWS_OS_FAMILY = "WINDOWS";
-
-    protected static AbstractInstallationHelper instance = null;
 
     @Autowired
     @Getter @Setter
@@ -60,14 +56,9 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
     protected boolean isServerSecure;
     protected String serverCert;
 
-    public synchronized static AbstractInstallationHelper getInstance() {
-        return instance;
-    }
-
     @Override
     public void afterPropertiesSet() {
         log.debug("AbstractInstallationHelper.afterPropertiesSet(): class={}: configuration: {}", getClass().getName(), properties);
-        AbstractInstallationHelper.instance = this;
     }
 
     @Override
