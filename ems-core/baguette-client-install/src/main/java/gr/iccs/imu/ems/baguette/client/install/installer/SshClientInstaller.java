@@ -7,8 +7,9 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package gr.iccs.imu.ems.baguette.client.install;
+package gr.iccs.imu.ems.baguette.client.install.installer;
 
+import gr.iccs.imu.ems.baguette.client.install.*;
 import gr.iccs.imu.ems.baguette.client.install.instruction.INSTRUCTION_RESULT;
 import gr.iccs.imu.ems.baguette.client.install.instruction.Instruction;
 import gr.iccs.imu.ems.baguette.client.install.instruction.InstructionsService;

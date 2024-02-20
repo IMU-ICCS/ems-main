@@ -9,6 +9,8 @@
 
 package gr.iccs.imu.ems.baguette.client.install;
 
+import gr.iccs.imu.ems.baguette.client.install.installer.SshClientInstaller;
+import gr.iccs.imu.ems.baguette.client.install.installer.SshJsClientInstaller;
 import gr.iccs.imu.ems.baguette.server.BaguetteServer;
 import gr.iccs.imu.ems.baguette.server.ClientShellCommand;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
