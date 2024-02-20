@@ -14,25 +14,22 @@ import gr.iccs.imu.ems.baguette.server.ClientShellCommand;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.common.plugin.PluginManager;
-import lombok.NoArgsConstructor;
+import jakarta.jms.JMSException;
+import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import jakarta.jms.JMSException;
-import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiFunction;
 
 import static gr.iccs.imu.ems.baguette.client.install.ClientInstallationTask.TASK_TYPE;
 
@@ -41,18 +38,16 @@ import static gr.iccs.imu.ems.baguette.client.install.ClientInstallationTask.TAS
  */
 @Slf4j
 @Service
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class ClientInstaller implements InitializingBean {
     private static ClientInstaller singleton;
 
-    @Autowired
-    private ClientInstallationProperties properties;
-    @Autowired
-    private BrokerCepService brokerCepService;
-    @Autowired
-    private BaguetteServer baguetteServer;
-    @Autowired
-    private PluginManager pluginManager;
+    private final ClientInstallationProperties properties;
+    private final BrokerCepService brokerCepService;
+    private final BaguetteServer baguetteServer;
+    private final PluginManager pluginManager;
+
+    private final List<ClientInstallerPlugin> clientInstallerPluginList;
 
     private final AtomicLong taskCounter = new AtomicLong();
     private ExecutorService executorService;
@@ -139,7 +134,10 @@ public class ClientInstaller implements InitializingBean {
         return false;
     }
 
-    private boolean executeVmOrBaremetalTask(ClientInstallationTask task, long taskCounter) {
+    private boolean executeInstaller(ClientInstallationTask task, long taskCounter,
+                                     BiFunction<ClientInstallationTask,Long,Boolean> condition,
+                                     BiFunction<ClientInstallationTask,Long,Boolean> installerExecution)
+    {
         NodeRegistryEntry entry = baguetteServer.getNodeRegistry().getNodeByAddress(task.getAddress());
         if (task.isNodeMustBeInRegistry() && entry==null)
             throw new IllegalStateException("Node entry has been removed from Node Registry before installation: Node IP address: "+ task.getAddress());
@@ -156,7 +154,7 @@ public class ClientInstaller implements InitializingBean {
         }
 
         boolean success;
-        if (! task.getInstructionSets().isEmpty()) {
+        if (condition==null || condition.apply(task, taskCounter)) {
             // Starting installation
             entry.nodeInstalling(task);
 
@@ -166,7 +164,7 @@ public class ClientInstaller implements InitializingBean {
                     .forEach(plugin -> ((InstallationContextProcessorPlugin) plugin).processBeforeInstallation(task, taskCounter));
 
             log.debug("ClientInstaller: INSTALLATION: Executing installation task: task-counter={}, task={}", taskCounter, task);
-            success = executeVmTask(task, taskCounter);
+            success = installerExecution.apply(task, taskCounter);
             log.debug("ClientInstaller: NODE_REGISTRY_ENTRY after installation execution: \n{}", task.getNodeRegistryEntry());
 
             if (entry.getState() == NodeRegistryEntry.STATE.INSTALLING) {
@@ -179,7 +177,7 @@ public class ClientInstaller implements InitializingBean {
             pluginManager.getActivePlugins(InstallationContextProcessorPlugin.class)
                     .forEach(plugin -> ((InstallationContextProcessorPlugin) plugin).processAfterInstallation(task, taskCounter, success));
         } else {
-            log.debug("ClientInstaller: SKIP INSTALLATION: Task has no instructions sets. Skipping execution: Node IP address: "+ task.getAddress());
+            log.debug("ClientInstaller: SKIP INSTALLATION: due to condition. Skipping execution: Node IP address: "+ task.getAddress());
             success = true;
         }
 
@@ -201,6 +199,10 @@ public class ClientInstaller implements InitializingBean {
 
         log.debug("ClientInstaller: Installation outcome: {}", success ? "Success" : "Error");
         return success;
+    }
+
+    private boolean executeVmOrBaremetalTask(ClientInstallationTask task, long taskCounter) {
+        return executeInstaller(task, taskCounter, (t,c) -> ! t.getInstructionSets().isEmpty(), this::executeVmTask);
     }
 
     private boolean executeDiagnosticsTask(ClientInstallationTask task, long taskCounter) {
