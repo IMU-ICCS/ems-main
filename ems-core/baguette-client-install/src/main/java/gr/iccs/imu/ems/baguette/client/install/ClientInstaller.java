@@ -17,6 +17,8 @@ import gr.iccs.imu.ems.baguette.server.ClientShellCommand;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.common.plugin.PluginManager;
+import gr.iccs.imu.ems.util.ConfigWriteService;
+import gr.iccs.imu.ems.util.PasswordUtil;
 import jakarta.jms.JMSException;
 import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
@@ -51,6 +53,8 @@ public class ClientInstaller implements InitializingBean {
     private final PluginManager pluginManager;
 
     private final List<ClientInstallerPlugin> clientInstallerPluginList;
+    private final ConfigWriteService configWriteService;
+    private final PasswordUtil passwordUtil;
 
     private final AtomicLong taskCounter = new AtomicLong();
     private ExecutorService executorService;
@@ -222,6 +226,8 @@ public class ClientInstaller implements InitializingBean {
                     .task(task)
                     .taskCounter(taskCounter)
                     .properties(properties)
+                    .configWriteService(configWriteService)
+                    .passwordUtil(passwordUtil)
                     .build()
                     .execute();
             log.info("ClientInstaller: Task execution result #{}: success={}", taskCounter, result);

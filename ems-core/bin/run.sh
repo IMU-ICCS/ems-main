@@ -56,7 +56,7 @@ trap 'echo "Signaling EMS to exit"; kill -TERM "${emsPid}"; wait "${emsPid}"; ' 
 mkdir ${BASEDIR}/models
 
 # Start K8S helper script
-while true ; do $BASEDIR/bin/k8s-helper.sh; sleep 30; done &
+#while true ; do $BASEDIR/bin/k8s-helper.sh; sleep 30; done &
 
 # Run EMS server
 # Uncomment next line to set JAVA runtime options
