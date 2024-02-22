@@ -80,7 +80,7 @@ collector.netdata.allowed-topics = ${COLLECTOR_ALLOWED_TOPICS}
 collector.netdata.error-limit = 3
 collector.netdata.pause-period = 60
 
-collector.prometheus.enable = false
+collector.prometheus.enable = true
 collector.prometheus.delay = 10000
 collector.prometheus.url = http://127.0.0.1:9090/metrics
 collector.prometheus.urlOfNodesWithoutClient = http://%s:9090/metrics
@@ -183,7 +183,7 @@ brokercep.ssl.key-entry-ext-san = dns:localhost,ip:127.0.0.1,ip:${DEFAULT_IP},ip
 brokercep.authentication-enabled = true
 #brokercep.additional-broker-credentials = aaa/111, bbb/222, morphemic/morphemic
 #brokercep.additional-broker-credentials = ENC(axeJUxNHajYfBffUwvuT3kwTgLTpRliDMz/ZQ9hROZ3BNOv0Idw72NJsawzIZRuZ)
-brokercep.additional-broker-credentials = ${EMS_ADDITIONAL_BROKER_CREDENTIALS}
+brokercep.additional-broker-credentials = ${EMS_CLIENT_ADDITIONAL_BROKER_CREDENTIALS}
 brokercep.authorization-enabled = false
 
 # Broker instance settings

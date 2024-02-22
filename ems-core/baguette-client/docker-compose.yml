@@ -48,7 +48,7 @@ services:
       # AMQ broker settings
       - EMS_KEYSTORE_PASSWORD=
       - EMS_TRUSTSTORE_PASSWORD=
-      - EMS_ADDITIONAL_BROKER_CREDENTIALS=
+      - EMS_CLIENT_ADDITIONAL_BROKER_CREDENTIALS=
     ports:
       - 11016:61616
       - 11017:61617
