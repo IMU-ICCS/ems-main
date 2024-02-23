@@ -120,7 +120,7 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
     }
 
     private void deployOnCluster(boolean dryRun) throws IOException {
-        String serviceAccountPath = getConfig("EMS_CLIENT_SERVICE_ACCOUNT_SECRETS_PATH", K8S_SERVICE_ACCOUNT_SECRETS_PATH_DEFAULT);
+        String serviceAccountPath = getConfig("K8S_SERVICE_ACCOUNT_SECRETS_PATH", K8S_SERVICE_ACCOUNT_SECRETS_PATH_DEFAULT);
         String masterUrl = getConfig("KUBERNETES_SERVICE_HOST", null);
         String caCert = Files.readString(Paths.get(serviceAccountPath, "ca.crt"));
         String token = Files.readString(Paths.get(serviceAccountPath, "token"));
