@@ -28,6 +28,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.util.StreamUtils;
@@ -38,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -47,7 +49,9 @@ import java.util.Map;
 @Getter
 public class K8sClientInstaller implements ClientInstallerPlugin {
     private static final String K8S_SERVICE_ACCOUNT_SECRETS_PATH_DEFAULT = "/var/run/secrets/kubernetes.io/serviceaccount";
+    private static final String APP_CONFIG_MAP_NAME_DEFAULT = "monitoring-configmap";
     private static final String EMS_CLIENT_CONFIG_MAP_NAME_DEFAULT = "ems-client-configmap";
+
     private static final String EMS_CLIENT_DAEMONSET_SPECIFICATION_FILE_DEFAULT = "/ems-client-daemonset.yaml";
     private static final String EMS_CLIENT_DAEMONSET_NAME_DEFAULT = "ems-client-daemonset";
     private static final String EMS_CLIENT_DAEMONSET_IMAGE_REPOSITORY_DEFAULT = "registry.gitlab.com/nebulous-project/ems-main/ems-client";
@@ -60,6 +64,10 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
     private final ConfigWriteService configWriteService;
     private final PasswordUtil passwordUtil;
 
+    private String additionalCredentials;   // Those specified in EMS_CLIENT_ADDITIONAL_BROKER_CREDENTIALS, plus one generated
+    private String brokerUsername;
+    private String brokerPassword;
+
     @Builder
     public K8sClientInstaller(ClientInstallationTask task, long taskCounter, ClientInstallationProperties properties,
                               ConfigWriteService configWriteService, PasswordUtil passwordUtil)
@@ -69,6 +77,24 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
         this.properties = properties;
         this.configWriteService = configWriteService;
         this.passwordUtil = passwordUtil;
+
+        initializeAdditionalCredentials();
+    }
+
+    private void initializeAdditionalCredentials() {
+        brokerUsername = getConfig("EMS_CLIENT_BROKER_USERNAME", "user-" + RandomStringUtils.randomAlphanumeric(32));
+        brokerPassword = getConfig("EMS_CLIENT_BROKER_PASSWORD", RandomStringUtils.randomAlphanumeric(32));
+
+        StringBuilder sb = new StringBuilder(getConfig("EMS_CLIENT_ADDITIONAL_BROKER_CREDENTIALS", ""));
+        if (StringUtils.isNotBlank(sb))
+            sb.append(", ");
+        sb.append(brokerUsername).append("/").append(brokerPassword);
+        additionalCredentials = sb.toString();
+    }
+
+    private String getConfig(@NonNull String key, String defaultValue) {
+        String value = System.getenv(key);
+        return value==null ? defaultValue : value;
     }
 
     @Override
@@ -84,11 +110,6 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
         if (success) log.info("K8sClientInstaller: Task completed successfully #{}", taskCounter);
         else log.info("K8sClientInstaller: Error occurred while executing task #{}", taskCounter);
         return true;
-    }
-
-    private String getConfig(@NonNull String key, String defaultValue) {
-        String value = System.getenv(key);
-        return value==null ? defaultValue : value;
     }
 
     private void deployOnCluster() throws IOException {
@@ -163,8 +184,33 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
     }
 
     private void createAppConfigMap(boolean dryRun, KubernetesClient client, String namespace) {
-        //XXX:TODO: +++++++++++++++
-        log.warn(">>>>>>>> createAppConfigMap: +++++++++++++ TODO ++++++++++++++++");
+        log.debug("K8sClientInstaller.createAppConfigMap: BEGIN: dry-run={}, namespace={}", dryRun, namespace);
+
+        // Get ems client configmap name
+        String configMapName = getConfig("APP_CONFIG_MAP_NAME", APP_CONFIG_MAP_NAME_DEFAULT);
+        log.debug("K8sClientInstaller:     App configMap: name: {}", configMapName);
+
+        // Get App ems-client-related configuration
+        Map<String, String> configMapMap = new LinkedHashMap<>();
+        configMapMap.put("BROKER_USERNAME", brokerUsername);
+        configMapMap.put("BROKER_PASSWORD", brokerPassword);
+        log.debug("K8sClientInstaller:     App configMap: data:\n{}", configMapMap);
+
+        // Create ems client configmap
+        Resource<ConfigMap> configMapResource = client.configMaps()
+                .inNamespace(namespace)
+                .resource(new ConfigMapBuilder()
+                        .withNewMetadata().withName(configMapName).endMetadata()
+                        .addToData("creationTimestamp", Long.toString(Instant.now().getEpochSecond()))
+                        .addToData(configMapMap)
+                        .build());
+        log.trace("K8sClientInstaller:  App ConfigMap to create: {}", configMapResource);
+        if (!dryRun) {
+            ConfigMap configMap = configMapResource.serverSideApply();
+            log.debug("K8sClientInstaller:    App ConfigMap created: {}", configMap);
+        } else {
+            log.warn("K8sClientInstaller: DRY-RUN: Didn't create App ems client configmap");
+        }
     }
 
     private void createEmsClientDaemonSet(boolean dryRun, KubernetesClient client, String namespace) throws IOException {
@@ -177,7 +223,7 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
                 "EMS_CLIENT_DAEMONSET_IMAGE_TAG", getConfig("EMS_CLIENT_DAEMONSET_IMAGE_TAG", EMS_CLIENT_DAEMONSET_IMAGE_TAG_DEFAULT),
                 "EMS_CLIENT_DAEMONSET_IMAGE_PULL_POLICY", getConfig("EMS_CLIENT_DAEMONSET_IMAGE_PULL_POLICY", EMS_CLIENT_DAEMONSET_IMAGE_PULL_POLICY_DEFAULT),
                 "EMS_CLIENT_CONFIG_MAP_NAME", getConfig("EMS_CLIENT_CONFIG_MAP_NAME", EMS_CLIENT_CONFIG_MAP_NAME_DEFAULT),
-                "EMS_CLIENT_ADDITIONAL_BROKER_CREDENTIALS", getConfig("EMS_CLIENT_ADDITIONAL_BROKER_CREDENTIALS", ""),
+                "EMS_CLIENT_ADDITIONAL_BROKER_CREDENTIALS", additionalCredentials,
                 "EMS_CLIENT_KEYSTORE_SECRET", getConfig("EMS_CLIENT_KEYSTORE_SECRET", ""),
                 "EMS_CLIENT_TRUSTSTORE_SECRET", getConfig("EMS_CLIENT_TRUSTSTORE_SECRET", "")
         );
