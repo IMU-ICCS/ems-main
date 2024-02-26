@@ -9,13 +9,17 @@
 
 package gr.iccs.imu.ems.baguette.client.install.watch;
 
+import gr.iccs.imu.ems.baguette.server.NodeRegistry;
+import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
 import gr.iccs.imu.ems.util.PasswordUtil;
-import io.fabric8.kubernetes.api.model.NodeAddress;
+import io.fabric8.kubernetes.api.model.Node;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.dsl.Resource;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -44,6 +45,7 @@ public class K8sPodWatcher implements InitializingBean {
 
     private final TaskScheduler taskScheduler;
     private final PasswordUtil passwordUtil;
+    private final NodeRegistry nodeRegistry;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -56,6 +58,8 @@ public class K8sPodWatcher implements InitializingBean {
     }
 
     private void doWatch() {
+        Map<String, NodeEntry> addressToNodeMap;
+        Map<String, Set<PodEntry>> addressToPodMap;
         try {
             log.debug("K8sPodWatcher: BEGIN: doWatch");
 
@@ -64,7 +68,7 @@ public class K8sPodWatcher implements InitializingBean {
             String caCert = Files.readString(Paths.get(serviceAccountPath, "ca.crt"));
             String token = Files.readString(Paths.get(serviceAccountPath, "token"));
             String namespace = Files.readString(Paths.get(serviceAccountPath, "namespace"));
-            log.debug("""
+            log.trace("""
                             K8sPodWatcher:
                               Master URL: {}
                                 CA cert.:
@@ -80,75 +84,101 @@ public class K8sPodWatcher implements InitializingBean {
                     .withOauthToken(token)
                     .build();
             try (KubernetesClient client = new KubernetesClientBuilder().withConfig(config).build()) {
-                // List PODs
-                AtomicInteger counter = new AtomicInteger();
-                Set<String> hostIpSet = new HashSet<>();
+                log.debug("K8sPodWatcher: Retrieving active Kubernetes cluster nodes and pods");
+
+                // Get Kubernetes cluster nodes (Hosts)
+                addressToNodeMap = new HashMap<>();
+                Map<String, NodeEntry> uidToNodeMap = new HashMap<>();
+                client.nodes()
+                        .resources()
+                        .map(Resource::item)
+                        .forEach(node -> {
+                            NodeEntry entry = uidToNodeMap.computeIfAbsent(
+                                    node.getMetadata().getUid(), s -> new NodeEntry(node));
+                            node.getStatus().getAddresses().stream()
+                                    .filter(address -> ! "Hostname".equalsIgnoreCase(address.getType()))
+                                    .forEach(address -> addressToNodeMap.putIfAbsent(address.getAddress(), entry));
+                        });
+                log.trace("K8sPodWatcher: Address-to-Nodes: {}", addressToNodeMap);
+
+                // Get Kubernetes cluster pods
+                addressToPodMap = new HashMap<>();
+                Map<String, PodEntry> uidToPodMap = new HashMap<>();
                 client.pods()
                         .inAnyNamespace()
 //                        .withLabel("nebulous.application")
                         .resources()
                         .map(Resource::item)
+                        .filter(pod-> "Running".equalsIgnoreCase(pod.getStatus().getPhase()))
                         .forEach(pod -> {
-                            int num = counter.getAndIncrement();
-                            String hostIp;
-                            log.warn("""
-                                            >>>>>>>>>>>>>>>>>  POD-{}:...
-                                                         full-name: {}
-                                                     metadata-name: {}
-                                                            pod IP: {}
-                                                           host IP: {}
-                                                           message: {}
-                                                            labels: {}
-                                              
-                                            """,
-                                    num,
-                                    pod.getFullResourceName(),
-                                    pod.getMetadata().getName(),
-                                    pod.getStatus().getPodIP(),
-                                    hostIp = pod.getStatus().getHostIP(),
-                                    pod.getStatus().getMessage(),
-                                    pod.getMetadata().getLabels()
-                            );
-                            hostIpSet.add(hostIp);
+                            PodEntry entry = uidToPodMap.computeIfAbsent(
+                                    pod.getMetadata().getUid(), s -> new PodEntry(pod));
+                            pod.getStatus().getPodIPs()
+                                    .forEach(address ->
+                                        addressToPodMap.computeIfAbsent(address.getIp(), s -> new HashSet<>()).add(entry)
+                                    );
                         });
-                log.info("K8sPodWatcher: Found {} matching pods", counter.get());
-                log.info("K8sPodWatcher: Host IPs: {}", hostIpSet);
+                log.trace("K8sPodWatcher: Address-to-Pods: {}", addressToPodMap);
 
-                // List Nodes
-                AtomicInteger nodeCounter = new AtomicInteger();
-                Set<String> nodeIpSet = new HashSet<>();
-                client.nodes()
-                        .resources()
-                        .map(Resource::item)
-                        .forEach(node -> {
-                            int num = nodeCounter.getAndIncrement();
-                            Set<String> nodeIps = node.getStatus().getAddresses().stream()
-                                    .filter(na -> ! "Hostname".equalsIgnoreCase(na.getType()))
-                                    .map(NodeAddress::getAddress).collect(Collectors.toSet());
-                            log.warn("""
-                                            >>>>>>>>>>>>>>>>>  Node-{}:...
-                                                         full-name: {}
-                                                     metadata-name: {}
-                                                        machine ID: {}
-                                                           node OS: {}
-                                                          node IPs: {}
-                                                            labels: {}
-                                            """,
-                                    num,
-                                    node.getFullResourceName(),
-                                    node.getMetadata().getName(),
-                                    node.getStatus().getNodeInfo().getMachineID(),
-                                    node.getStatus().getNodeInfo().getOperatingSystem(),
-                                    node.getStatus().getAddresses(),
-                                    node.getMetadata().getLabels()
-                            );
-                            nodeIpSet.addAll(nodeIps);
-                        });
-                log.info("K8sPodWatcher: Found {} matching nodes", nodeCounter.get());
-                log.info("K8sPodWatcher: Host IPs: {}", nodeIpSet);
+            } // End of try-with-resources
+
+            // Update Node Registry
+            log.debug("K8sPodWatcher: Updating Node Registry");
+            Map<String, NodeRegistryEntry> addressToNodeEntryMap = nodeRegistry.getNodes().stream()
+                    .collect(Collectors.toMap(NodeRegistryEntry::getIpAddress, entry -> entry));
+
+            // New Pods
+            HashMap<String, Set<PodEntry>> newPods = new HashMap<>(addressToPodMap);
+            newPods.keySet().removeAll(addressToNodeEntryMap.keySet());
+            if (! newPods.isEmpty()) {
+                log.trace("K8sPodWatcher: New Pods found: {}", newPods);
+                /*newPods.forEach((address, podSet) -> {
+                    if (podSet.size()==1)
+                        nodeRegistry.addNode(null, podSet.iterator().next().getPodUid());
+                });*/
+            } else {
+                log.trace("K8sPodWatcher: No new Pods");
             }
+
+            // Node Entries to be removed
+            HashMap<String, NodeRegistryEntry> oldEntries = new HashMap<>(addressToNodeEntryMap);
+            oldEntries.keySet().removeAll(addressToPodMap.keySet());
+            if (! oldEntries.isEmpty()) {
+                log.trace("K8sPodWatcher: Node entries to be removed: {}", oldEntries);
+            } else {
+                log.trace("K8sPodWatcher: No node entries to remove");
+            }
+
         } catch (Exception e) {
             log.warn("K8sPodWatcher: Error while running doWatch: ", e);
+        }
+    }
+
+    @Data
+    private static class NodeEntry {
+        private final String nodeUid;
+        private final String nodeName;
+
+        public NodeEntry(Node node) {
+            nodeUid = node.getMetadata().getUid();
+            nodeName = node.getMetadata().getName();
+        }
+    }
+
+    @Data
+    private static class PodEntry {
+        private final String podUid;
+        private final String podIP;
+        private final String podName;
+        private final String hostIP;
+        private final Map<String, String> labels;
+
+        public PodEntry(Pod pod) {
+            podUid = pod.getMetadata().getUid();
+            podIP = pod.getStatus().getPodIP();
+            podName = pod.getMetadata().getName();
+            hostIP = pod.getStatus().getHostIP();
+            labels = Collections.unmodifiableMap(pod.getMetadata().getLabels());
         }
     }
 }
