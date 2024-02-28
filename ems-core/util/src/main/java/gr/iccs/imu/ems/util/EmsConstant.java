@@ -22,6 +22,6 @@ public class EmsConstant {
     public final static String COLLECTOR_DESTINATION_ALIASES_DELIMITERS = "[,;: \t\r\n]+";
     public final static String COLLECTOR_ALLOWED_TOPICS_VAR = "COLLECTOR_ALLOWED_TOPICS";
 
-    public final static String EMS_CLIENT_k8S_CONFIG_MAP_FILE = "ems-client-configmap.json";
-    public final static String EMS_CLIENT_k8S_CONFIG_MAP_FORMAT = "json";
+    public final static String EMS_CLIENT_K8S_CONFIG_MAP_FILE = "ems-client-configmap.json";
+    public final static String EMS_CLIENT_K8S_CONFIG_MAP_FORMAT = "json";
 }

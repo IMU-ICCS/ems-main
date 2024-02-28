@@ -163,7 +163,7 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
 
         // Get ems client configuration
         Map<String, String> configMapMap = configWriteService
-                .getConfigFile(EmsConstant.EMS_CLIENT_k8S_CONFIG_MAP_FILE).getContentMap();
+                .getConfigFile(EmsConstant.EMS_CLIENT_K8S_CONFIG_MAP_FILE).getContentMap();
         log.debug("K8sClientInstaller:         configMap: data:\n{}", configMapMap);
 
         // Create ems client configmap

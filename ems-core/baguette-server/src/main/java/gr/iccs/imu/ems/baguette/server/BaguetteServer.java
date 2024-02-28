@@ -178,12 +178,12 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
             try {
                 configWriteService
                         .getOrCreateConfigFile(
-                                EmsConstant.EMS_CLIENT_k8S_CONFIG_MAP_FILE,
-                                EmsConstant.EMS_CLIENT_k8S_CONFIG_MAP_FORMAT)
+                                EmsConstant.EMS_CLIENT_K8S_CONFIG_MAP_FILE,
+                                EmsConstant.EMS_CLIENT_K8S_CONFIG_MAP_FORMAT)
                         .putAll(server.getServerConnectionInfo());
             } catch (Exception e) {
                 log.error("BaguetteServer.startServer(): Failed to store connection info in ems-client-config-map: {}, Exception: ",
-                        EmsConstant.EMS_CLIENT_k8S_CONFIG_MAP_FILE, e);
+                        EmsConstant.EMS_CLIENT_K8S_CONFIG_MAP_FILE, e);
             }
         } else {
             log.info("BaguetteServer.startServer(): SSH server is already running");
