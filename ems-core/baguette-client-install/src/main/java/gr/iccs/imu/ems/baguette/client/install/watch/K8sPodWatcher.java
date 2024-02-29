@@ -49,7 +49,11 @@ public class K8sPodWatcher implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        taskScheduler.scheduleWithFixedDelay(this::doWatch, Instant.now().plusSeconds(20), Duration.ofSeconds(10));
+        if (Boolean.parseBoolean(getConfig("K8S_WATCHER_ENABLED", "true"))) {
+            taskScheduler.scheduleWithFixedDelay(this::doWatch, Instant.now().plusSeconds(20), Duration.ofSeconds(10));
+        } else {
+            log.warn("K8sPodWatcher: Disabled  (set K8S_WATCHER_ENABLED=true to enable)");
+        }
     }
 
     private String getConfig(@NonNull String key, String defaultValue) {
