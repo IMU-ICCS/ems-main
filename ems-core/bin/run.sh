@@ -53,7 +53,7 @@ export LANG=C.UTF-8
 trap 'echo "Signaling EMS to exit"; kill -TERM "${emsPid}"; wait "${emsPid}"; ' SIGTERM SIGINT
 
 # Create default models directory
-mkdir ${BASEDIR}/models
+mkdir -p ${BASEDIR}/models
 
 # Run EMS server
 # Uncomment next line to set JAVA runtime options
