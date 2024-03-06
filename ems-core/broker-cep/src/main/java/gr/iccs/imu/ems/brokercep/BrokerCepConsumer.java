@@ -129,36 +129,28 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
     }
 
     public synchronized void addQueue(String queueName) {
-        log.debug("BrokerCepConsumer.addQueue(): Adding queue: {}", queueName);
-        if (addedDestinations.containsKey(queueName)) {
-            log.debug("BrokerCepConsumer.addQueue(): Queue already added: {}", queueName);
-            return;
-        }
-        try {
-            Queue queue = session.createQueue(queueName);
-            MessageConsumer consumer = session.createConsumer(queue);
-            consumer.setMessageListener(this);
-            addedDestinations.put(queueName, consumer);
-            log.debug("BrokerCepConsumer.addQueue(): Added queue: {}", queueName);
-        } catch (Exception ex) {
-            log.error("BrokerCepConsumer.addQueue(): EXCEPTION: ", ex);
-        }
+        addDestinationAndListener(queueName, false, this);
     }
 
     public synchronized void addTopic(String topicName) {
-        log.debug("BrokerCepConsumer.addTopic(): Adding topic: {}", topicName);
-        if (addedDestinations.containsKey(topicName)) {
-            log.debug("BrokerCepConsumer.addTopic(): Topic already added: {}", topicName);
+        addDestinationAndListener(topicName, true, this);
+    }
+
+    private synchronized void addDestinationAndListener(String destinationName, boolean isTopic, MessageListener listener) {
+        log.debug("BrokerCepConsumer.addDestinationAndListener(): Adding destination: {}", destinationName);
+        if (addedDestinations.containsKey(destinationName)) {
+            log.debug("BrokerCepConsumer.addDestinationAndListener(): Destination already added: {}", destinationName);
             return;
         }
         try {
-            Topic topic = session.createTopic(topicName);
-            MessageConsumer consumer = session.createConsumer(topic);
-            consumer.setMessageListener(this);
-            addedDestinations.put(topicName, consumer);
-            log.debug("BrokerCepConsumer.addTopic(): Added topic: {}", topicName);
+            Destination destination = isTopic
+                    ? session.createTopic(destinationName) : session.createQueue(destinationName);
+            MessageConsumer consumer = session.createConsumer(destination);
+            consumer.setMessageListener(listener);
+            addedDestinations.put(destinationName, consumer);
+            log.debug("BrokerCepConsumer.addDestinationAndListener(): Added destination: {}", destinationName);
         } catch (Exception ex) {
-            log.error("BrokerCepConsumer.addTopic(): EXCEPTION: ", ex);
+            log.error("BrokerCepConsumer.addDestinationAndListener(): EXCEPTION: ", ex);
         }
     }
 

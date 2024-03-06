@@ -66,6 +66,16 @@ public class TopicBeacon implements InitializingBean {
         // initialize a Gson instance
         initializeGson();
 
+        // initialize plugins
+        beaconPlugins.stream().filter(Objects::nonNull).forEach(plugin -> {
+            try {
+                log.debug("Topic Beacon: initializing Beacon plugin: {}", plugin.getClass().getName());
+                plugin.init(beaconContext);
+            } catch (Throwable t) {
+                log.error("Topic Beacon: EXCEPTION while initializing Beacon plugin: {}\n", plugin.getClass().getName(), t);
+            }
+        });
+
         // configure and start scheduler
         Date startTime = new Date(System.currentTimeMillis() + properties.getInitialDelay());
         log.debug("Topic Beacon settings: init-delay={}, delay={}, heartbeat-topics={}, threshold-topics={}, instance-topics={}",
