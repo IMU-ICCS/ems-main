@@ -151,6 +151,8 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public String toJson(Object o) {
+        if (gson==null)
+            initializeGson();
         return gson.toJson(o);
     }
 
@@ -193,7 +195,7 @@ public class TopicBeacon implements InitializingBean {
         coordinator.getTranslationContextOfAppModel(coordinator.getCurrentAppModelId())
                 .getMetricConstraints()
                 .forEach(c -> {
-                    String message = gson.toJson(c);
+                    String message = toJson(c);
                     log.debug("Topic Beacon: Transmitting Metric Constraint threshold info: message={}, topics={}",
                             message, properties.getThresholdTopics());
                     try {
@@ -216,7 +218,7 @@ public class TopicBeacon implements InitializingBean {
                 String nodeName = node.getPreregistration().getOrDefault("name", "");
                 String nodeIp = node.getIpAddress();
                 //String nodeIp = node.getPreregistration().getOrDefault("ip","");
-//                String message = gson.toJson(node);
+//                String message = toJson(node);
                 log.debug("Topic Beacon: Transmitting Instance info for: instance={}, ip-address={}, message={}, topics={}",
                         nodeName, nodeIp, node, properties.getInstanceTopics());
                 sendEventToTopics(node, properties.getInstanceTopics());
@@ -281,7 +283,7 @@ public class TopicBeacon implements InitializingBean {
     private void sendEventToTopics(Object message, Set<String> topics) throws JMSException {
         EventMap event = new EventMap(-1);
         event.put("message", message);
-        String s = gson.toJson(event);
+        String s = toJson(event);
         log.trace("Topic Beacon: Converted event to JSON string: {}", s);
         sendMessageToTopics(s, topics);
     }
