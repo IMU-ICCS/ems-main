@@ -21,11 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Collects measurements from Netdata http server
@@ -33,6 +30,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class NetdataCollector extends gr.iccs.imu.ems.common.collector.netdata.NetdataCollector implements Collector {
+    private Map<String, Object> configuration;
+
     public NetdataCollector(@NonNull NetdataCollectorProperties properties,
                             @NonNull CollectorContext collectorContext,
                             @NonNull TaskScheduler taskScheduler,
@@ -41,6 +40,19 @@ public class NetdataCollector extends gr.iccs.imu.ems.common.collector.netdata.N
         super("NetdataCollector", properties, collectorContext, taskScheduler, eventBus);
         if (!(collectorContext instanceof ClientCollectorContext))
             throw new IllegalArgumentException("Invalid CollectorContext provided. Expected: ClientCollectorContext, but got "+collectorContext.getClass().getName());
+    }
+
+    @Override
+    public String getName() {
+        return "netdata";
+    }
+
+    @Override
+    public void setConfiguration(Object config) {
+        if (config instanceof Map configMap) {
+            configuration = configMap;
+            log.info("Collectors::Netdata: setConfiguration: {}", configuration);
+        }
     }
 
     public synchronized void activeGroupingChanged(String oldGrouping, String newGrouping) {

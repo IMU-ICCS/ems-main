@@ -140,6 +140,11 @@ public class BaguetteClient implements ApplicationRunner {
             try {
                 log.debug("BaguetteClient: Starting collector: {}...", collectorClass.getName());
                 Collector collector = applicationContext.getBean(collectorClass);
+                if (baguetteClientProperties.getCollectorConfigurations()!=null) {
+                    Object config = baguetteClientProperties.getCollectorConfigurations().get(collector.getName());
+                    if (config!=null)
+                        collector.setConfiguration(config);
+                }
                 collector.start();
                 collectorsList.add(collector);
                 log.debug("BaguetteClient: Starting collector: {}...ok", collectorClass.getName());

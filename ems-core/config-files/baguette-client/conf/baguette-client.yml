@@ -83,6 +83,8 @@ server-password: ${BAGUETTE_SERVER_PASSWORD}
 
 #collector-classes: gr.iccs.imu.ems.baguette.client.collector.netdata.NetdataCollector
 
+collector-configurations: ${COLLECTOR_CONFIGURATIONS}
+
 collector:
   netdata:
     enable: true

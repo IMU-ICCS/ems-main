@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class PrometheusCollector extends gr.iccs.imu.ems.common.collector.prometheus.PrometheusCollector implements Collector {
+    private Map<String, Object> configuration;
+
     public PrometheusCollector(@NonNull PrometheusCollectorProperties properties,
                                @NonNull CollectorContext collectorContext,
                                @NonNull TaskScheduler taskScheduler,
@@ -41,6 +43,19 @@ public class PrometheusCollector extends gr.iccs.imu.ems.common.collector.promet
         super("PrometheusCollector", properties, collectorContext, taskScheduler, eventBus);
         if (!(collectorContext instanceof ClientCollectorContext))
             throw new IllegalArgumentException("Invalid CollectorContext provided. Expected: ClientCollectorContext, but got "+collectorContext.getClass().getName());
+    }
+
+    @Override
+    public String getName() {
+        return "prometheus";
+    }
+
+    @Override
+    public void setConfiguration(Object config) {
+        if (config instanceof Map configMap) {
+            configuration = configMap;
+            log.info("Collectors::Prometheus: setConfiguration: {}", configuration);
+        }
     }
 
     public synchronized void activeGroupingChanged(String oldGrouping, String newGrouping) {
