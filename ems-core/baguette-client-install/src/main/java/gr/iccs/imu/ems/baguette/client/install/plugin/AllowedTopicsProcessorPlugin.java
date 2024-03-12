@@ -22,10 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Installation context processor plugin for generating 'allowed-topics' setting
@@ -43,7 +40,7 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
 
         StringBuilder sbAllowedTopics = new StringBuilder();
         Set<String> addedTopicsSet = new HashSet<>();
-        Map<String, Object> collectorConfigs = new LinkedHashMap<>();
+        Map<String, List<Object>> collectorConfigs = new LinkedHashMap<>();
 
         boolean first = true;
         for (Monitor monitor : task.getTranslationContext().getMON()) {
@@ -82,7 +79,9 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
 
                     if (monitor.getSensor().isPullSensor()) {
                         if (sensorConfig.get("type") instanceof String type && StringUtils.isNotBlank(type)) {
-                            collectorConfigs.put(type, monitor.getSensor());
+                            collectorConfigs
+                                    .computeIfAbsent(type, key->new LinkedList<>())
+                                    .add(monitor.getSensor());
                         }
                     }
                 }
