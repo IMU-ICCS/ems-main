@@ -45,11 +45,12 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.rauschig/jarchivelib -->
+        <!--XXX: Commented a not used feature with dependency with vulnerability
         <dependency>
             <groupId>org.rauschig</groupId>
             <artifactId>jarchivelib</artifactId>
             <version>1.2.0</version>
-        </dependency>
+        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml -->
         <dependency>

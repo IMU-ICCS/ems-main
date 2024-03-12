@@ -23,8 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.tomcat.util.net.SSLHostConfig;
 import org.apache.tomcat.util.net.SSLHostConfigCertificate;
-import org.rauschig.jarchivelib.Archiver;
-import org.rauschig.jarchivelib.ArchiverFactory;
+//import org.rauschig.jarchivelib.Archiver;
+//import org.rauschig.jarchivelib.ArchiverFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
@@ -52,7 +52,8 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
     @Autowired
     protected PasswordUtil passwordUtil;
 
-    protected String archiveBase64;
+//XXX: Commented a not used feature with dependency with vulnerability
+//    protected String archiveBase64;
     protected boolean isServerSecure;
     protected String serverCert;
 
@@ -106,7 +107,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
                     String certPem = KeystoreUtil.exportCertificateAsPEM(c);
                     log.debug("AbstractInstallationHelper.initServerCertificate(): SSL certificate[{}]: {}: \n{}", n, m, certPem);
                     // Append PEM certificate to 'sb'
-                    sb.append(certPem).append(System.getProperty("line.separator"));
+                    sb.append(certPem).append(System.lineSeparator());
                     m++;
                 }
                 // The first entry is used as the server certificate
@@ -173,6 +174,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         }
 
         // Create baguette client configuration archive
+        /*XXX: Commented a not used feature with dependency with vulnerability
         Archiver archiver = ArchiverFactory.createArchiver(archiveFile);
         String tempFileName = "archive_" + System.currentTimeMillis();
         log.debug("AbstractInstallationHelper: Temp. archive name: {}", tempFileName);
@@ -189,6 +191,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         byte[] archiveBytes = Files.readAllBytes(archiveFile.toPath());
         this.archiveBase64 = Base64.getEncoder().encodeToString(archiveBytes);
         log.debug("AbstractInstallationHelper: Archive Base64 encoded: {}", archiveBase64);
+        */
     }
 
     private String getResourceAsString(String resourcePath) throws IOException {
