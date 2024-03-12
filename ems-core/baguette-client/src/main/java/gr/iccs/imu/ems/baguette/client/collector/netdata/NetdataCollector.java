@@ -22,6 +22,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,7 +31,7 @@ import java.util.Map;
 @Slf4j
 @Component
 public class NetdataCollector extends gr.iccs.imu.ems.common.collector.netdata.NetdataCollector implements Collector {
-    private Map<String, Object> configuration;
+    private List<Map<String,Object>> configuration;
 
     public NetdataCollector(@NonNull NetdataCollectorProperties properties,
                             @NonNull CollectorContext collectorContext,
@@ -49,8 +50,11 @@ public class NetdataCollector extends gr.iccs.imu.ems.common.collector.netdata.N
 
     @Override
     public void setConfiguration(Object config) {
-        if (config instanceof Map configMap) {
-            configuration = configMap;
+        if (config instanceof List sensorConfigList) {
+            configuration = sensorConfigList.stream()
+                    .filter(o -> o instanceof Map)
+                    .filter(map -> ((Map)map).keySet().stream().allMatch(k->k instanceof String))
+                    .toList();
             log.info("Collectors::Netdata: setConfiguration: {}", configuration);
         }
     }

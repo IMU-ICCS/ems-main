@@ -16,6 +16,7 @@ set BASEDIR=%cd%
 IF NOT DEFINED EMS_CONFIG_DIR set EMS_CONFIG_DIR=%BASEDIR%\conf
 :: IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\conf
 IF NOT DEFINED EMS_CONFIG_LOCATION set EMS_CONFIG_LOCATION=optional:file:%EMS_CONFIG_DIR%\ems-client.yml,optional:file:%EMS_CONFIG_DIR%\ems-client.properties,optional:file:%EMS_CONFIG_DIR%\baguette-client.yml,optional:file:%EMS_CONFIG_DIR%\baguette-client.properties
+set LOG_FILE=%BASEDIR%/logs/output.txt
 :: IF NOT DEFINED JASYPT_PASSWORD set JASYPT_PASSWORD=password
 IF NOT DEFINED JAVA_HOME IF EXIST %BASEDIR%\jre\ set JAVA_HOME=%BASEDIR%/jre
 
