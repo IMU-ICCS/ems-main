@@ -447,6 +447,10 @@
                                     <sourceFile>../baguette-client/bin/install.sh</sourceFile>
                                     <destinationFile>../public_resources/resources/install.sh</destinationFile>
                                 </fileSet>
+                                <fileSet>
+                                    <sourceFile>../baguette-client/bin/jre-install.sh</sourceFile>
+                                    <destinationFile>../public_resources/resources/jre-install.sh</destinationFile>
+                                </fileSet>
                             </fileSets>
                             <ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
                             <overWrite>true</overWrite>
