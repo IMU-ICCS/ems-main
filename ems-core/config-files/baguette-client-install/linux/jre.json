@@ -58,7 +58,8 @@
       "command": "chmod +x /tmp/jre-install.sh && /tmp/jre-install.sh",
       "executable": false,
       "exitCode": 0,
-      "match": false
+      "match": false,
+      "executionTimeout": 300000
     },
     {
       "description": "Extract JRE package into installation folder",
