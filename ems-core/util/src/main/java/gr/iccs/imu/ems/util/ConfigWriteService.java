@@ -31,10 +31,26 @@ import java.util.Properties;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ConfigWriteService {
     private final Map<String,Configuration> configurations = new HashMap<>();
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    private static volatile ConfigWriteService instance;
+
+    public static synchronized ConfigWriteService getInstance() {
+        if (instance==null) {
+            synchronized (ConfigWriteService.class) {
+                if (instance == null) new ConfigWriteService();
+            }
+        }
+        return instance;
+    }
+
+    private ConfigWriteService() {
+        if (instance!=null)
+            throw new IllegalStateException("ConfigWriteService has already been initialized");
+        instance = this;
+    }
 
     public Configuration createConfigFile(@NonNull String fileName, String format) {
         if (configurations.containsKey(fileName))

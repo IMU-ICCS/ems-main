@@ -34,8 +34,6 @@ import java.util.*;
 @Data
 @Service
 public class AllowedTopicsProcessorPlugin implements InstallationContextProcessorPlugin {
-    private final ConfigWriteService configWriteService;
-
     @Override
     public void processBeforeInstallation(ClientInstallationTask task, long taskCounter) {
         log.debug("AllowedTopicsProcessorPlugin: Task #{}: processBeforeInstallation: BEGIN", taskCounter);
@@ -126,7 +124,7 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
 
         // Store collector configurations in config service
         try {
-            configWriteService
+            ConfigWriteService.getInstance()
                     .getOrCreateConfigFile(
                             EmsConstant.EMS_CLIENT_K8S_CONFIG_MAP_FILE,
                             EmsConstant.EMS_CLIENT_K8S_CONFIG_MAP_FORMAT)
