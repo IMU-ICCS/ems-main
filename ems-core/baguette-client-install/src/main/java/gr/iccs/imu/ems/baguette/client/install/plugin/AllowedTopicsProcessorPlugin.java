@@ -109,13 +109,13 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
                 collectorConfigsStr = mapper
                         .writerWithDefaultPrettyPrinter()
                         .writeValueAsString(collectorConfigs);
-                if (StringUtils.isBlank(collectorConfigsStr))
-                    collectorConfigsStr = null;
             }
         } catch (JsonProcessingException e) {
             log.error("AllowedTopicsProcessorPlugin: Task #{}: EXCEPTION while processing sensor configs. Skipping them.\n",
                     taskCounter, e);
         }
+        if (StringUtils.isBlank(collectorConfigsStr))
+            collectorConfigsStr = "{ }";
         log.debug("AllowedTopicsProcessorPlugin: Task #{}: Pull-Sensor collector configurations String: \n{}", taskCounter, collectorConfigsStr);
 
         task.getNodeRegistryEntry().getPreregistration().put(EmsConstant.COLLECTOR_ALLOWED_TOPICS_VAR, allowedTopics);
