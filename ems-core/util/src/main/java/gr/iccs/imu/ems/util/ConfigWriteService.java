@@ -88,14 +88,16 @@ public class ConfigWriteService {
         private final Format format;
         private final Map<String,String> contentMap = new LinkedHashMap<>();
 
-        public void put(@NonNull String key, String value) throws IOException {
+        public Configuration put(@NonNull String key, String value) throws IOException {
             contentMap.put(key, value);
             write();
+            return this;
         }
 
-        public void putAll(@NonNull Map<String,String> map) throws IOException {
+        public Configuration putAll(@NonNull Map<String,String> map) throws IOException {
             contentMap.putAll(map);
             write();
+            return this;
         }
 
         public void write() throws IOException {
