@@ -12,6 +12,8 @@ package gr.iccs.imu.ems.common.k8s;
 import gr.iccs.imu.ems.util.PasswordUtil;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
+import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.api.model.apps.DaemonSet;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
@@ -34,6 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -144,6 +147,28 @@ public class K8sClient implements Closeable {
             log.warn("K8sClient.createDaemonSet: ERROR: DaemonSet spec is empty");
         }
         return this;
+    }
+
+    public Map<String, Object> getServiceConnectionInfo(@NonNull String serviceName, String namespace) {
+        // Get service details
+        namespace = StringUtils.isBlank(namespace) ? this.namespace() : namespace;
+        Service service = client.services().inNamespace(namespace).withName(serviceName).get();
+
+        // Find the NodePort port number
+        List<String> addresses = null;
+        Integer nodePort = null;
+        if (service != null && service.getSpec() != null && service.getSpec().getPorts() != null) {
+            addresses = service.getSpec().getExternalIPs();
+            for (ServicePort port : service.getSpec().getPorts()) {
+                if (port.getNodePort() != null) {
+                    nodePort = port.getNodePort();
+                    break;
+                }
+            }
+        }
+        return (addresses==null || addresses.isEmpty() || nodePort==null)
+                ? null
+                : Map.of("external-addresses", addresses, "node-port", nodePort);
     }
 
     @Override
