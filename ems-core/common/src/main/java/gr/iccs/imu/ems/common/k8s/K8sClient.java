@@ -25,6 +25,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StreamUtils;
 
 import java.io.ByteArrayInputStream;
@@ -155,10 +156,14 @@ public class K8sClient implements Closeable {
         Service service = client.services().inNamespace(namespace).withName(serviceName).get();
 
         // Find the NodePort port number
-        List<String> addresses = null;
-        Integer nodePort = null;
+        List<String> externalAddresses = null;
+        List<String> clusterAddresses = null;
+        List<Integer> ports = null;
+        Integer nodePort = -1;
         if (service != null && service.getSpec() != null && service.getSpec().getPorts() != null) {
-            addresses = service.getSpec().getExternalIPs();
+            externalAddresses = service.getSpec().getExternalIPs();
+            clusterAddresses = service.getSpec().getClusterIPs();
+            ports = service.getSpec().getPorts().stream().map(ServicePort::getPort).toList();
             for (ServicePort port : service.getSpec().getPorts()) {
                 if (port.getNodePort() != null) {
                     nodePort = port.getNodePort();
@@ -166,9 +171,16 @@ public class K8sClient implements Closeable {
                 }
             }
         }
-        return (addresses==null || addresses.isEmpty() || nodePort==null)
-                ? null
-                : Map.of("external-addresses", addresses, "node-port", nodePort);
+        return Map.of(
+                "external-addresses", emptyIfNull(externalAddresses),
+                "clusterAddresses", emptyIfNull(clusterAddresses),
+                "ports", emptyIfNull(ports),
+                "node-port", nodePort
+        );
+    }
+
+    private <T>List<T> emptyIfNull(List<T> list) {
+        return list!=null ? list : List.of();
     }
 
     @Override
