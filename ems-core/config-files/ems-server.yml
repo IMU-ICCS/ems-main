@@ -607,6 +607,7 @@ baguette.client.install:
 
   installationContextProcessorPlugins:
     - gr.iccs.imu.ems.baguette.client.install.plugin.AllowedTopicsProcessorPlugin
+    - gr.iccs.imu.ems.baguette.client.install.plugin.CollectorConfigurationsProcessorPlugin
     - gr.iccs.imu.ems.baguette.client.install.plugin.PrometheusProcessorPlugin
 
   clientInstallationReportNodeInfoPatterns:
