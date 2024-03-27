@@ -189,6 +189,25 @@ public class K8sClient implements Closeable {
         return nodesList;
     }
 
+    public List<Pod> getRunningPodsInfo(String namespace) throws IOException {
+        log.debug("K8sClient.getRunningPodsInfo: BEGIN");
+        if (StringUtils.isBlank(namespace))
+            namespace = getNamespace();
+        List<Pod> podsList = null;
+        try {
+            podsList = client.pods()
+                    .inNamespace(namespace)
+                    .resources()
+                    .map(Resource::item)
+                    .filter(pod -> "Running".equalsIgnoreCase(pod.getStatus().getPhase()))
+                    .toList();
+        } catch (Exception e) {
+            log.warn("K8sClient.getRunningPodsInfo: EXCEPTION while retrieving pods: ", e);
+        }
+        log.debug("K8sClient.getRunningPodsInfo: END: {}", podsList);
+        return podsList;
+    }
+
     public List<Pod> getRunningPodsInfo() {
         log.debug("K8sClient.getRunningPodsInfo: BEGIN");
         List<Pod> podsList = null;
@@ -204,6 +223,11 @@ public class K8sClient implements Closeable {
         }
         log.debug("K8sClient.getRunningPodsInfo: END: {}", podsList);
         return podsList;
+    }
+
+    private String getNamespace() throws IOException {
+        String serviceAccountPath = getConfig("K8S_SERVICE_ACCOUNT_SECRETS_PATH", K8S_SERVICE_ACCOUNT_SECRETS_PATH_DEFAULT);
+        return Files.readString(Paths.get(serviceAccountPath, "namespace"));
     }
 
     private <T>List<T> emptyIfNull(List<T> list) {
