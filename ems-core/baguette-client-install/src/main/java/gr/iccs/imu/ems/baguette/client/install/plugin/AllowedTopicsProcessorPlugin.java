@@ -108,7 +108,7 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
                 /*mapper.setFilterProvider(new SimpleFilterProvider().addFilter("customerFilter",
                         SimpleBeanPropertyFilter.serializeAllExcept("@objectClass")));*/
                 collectorConfigsStr = mapper
-                        .writerWithDefaultPrettyPrinter()
+//                        .writerWithDefaultPrettyPrinter()
                         .writeValueAsString(collectorConfigs);
             }
         } catch (JsonProcessingException e) {
@@ -117,7 +117,7 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
         }
         if (StringUtils.isBlank(collectorConfigsStr))
             collectorConfigsStr = "{ }";
-        log.debug("AllowedTopicsProcessorPlugin: Task #{}: Pull-Sensor collector configurations String: \n{}", taskCounter, collectorConfigsStr);
+        log.debug("AllowedTopicsProcessorPlugin: Task #{}: Pull-Sensor collector configurations string: \n{}", taskCounter, collectorConfigsStr);
 
         task.getNodeRegistryEntry().getPreregistration().put(EmsConstant.COLLECTOR_ALLOWED_TOPICS_VAR, allowedTopics);
         task.getNodeRegistryEntry().getPreregistration().put(EmsConstant.COLLECTOR_CONFIGURATIONS_VAR, collectorConfigsStr);
