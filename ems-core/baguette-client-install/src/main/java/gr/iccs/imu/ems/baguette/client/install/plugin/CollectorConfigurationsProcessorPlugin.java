@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +42,25 @@ public class CollectorConfigurationsProcessorPlugin implements InstallationConte
 
         Map<String, List<Object>> collectorConfigs = new LinkedHashMap<>();
         String collectorConfigsStr = null;
+
+        task.getTranslationContext().getMON().forEach(monitor -> {
+            log.trace("CollectorConfigurationsProcessorPlugin: Task #{}: Processing monitor: {}", taskCounter, monitor);
+
+            // Get sensor configuration
+            Map<String,Object> sensorConfig = monitor.getSensor().getConfiguration();
+
+            // Process Destination aliases, if specified in configuration
+            if (sensorConfig!=null) {
+                if (monitor.getSensor().isPullSensor()) {
+                    if (sensorConfig.get("type") instanceof String type && StringUtils.isNotBlank(type)) {
+                        collectorConfigs
+                                .computeIfAbsent(type, key->new LinkedList<>())
+                                .add(monitor.getSensor());
+                    }
+                }
+            }
+        });
+
         try {
             log.debug("CollectorConfigurationsProcessorPlugin: Task #{}: Pull-Sensor collector configurations: \n{}", taskCounter, collectorConfigs);
             ObjectMapper mapper = new ObjectMapper();
@@ -56,6 +76,7 @@ public class CollectorConfigurationsProcessorPlugin implements InstallationConte
         log.debug("CollectorConfigurationsProcessorPlugin: Task #{}: Pull-Sensor collector configurations string: \n{}", taskCounter, collectorConfigsStr);
 
         task.getNodeRegistryEntry().getPreregistration().put(EmsConstant.COLLECTOR_CONFIGURATIONS_VAR, collectorConfigsStr);
+        log.debug("CollectorConfigurationsProcessorPlugin: Task #{}: Collector configurations: \n{}", taskCounter, collectorConfigsStr);
 
         // Store collector configurations in config service
         try {
@@ -65,8 +86,8 @@ public class CollectorConfigurationsProcessorPlugin implements InstallationConte
                             EmsConstant.EMS_CLIENT_K8S_CONFIG_MAP_FORMAT)
                     .put(EmsConstant.COLLECTOR_CONFIGURATIONS_VAR, collectorConfigsStr);
         } catch (Exception e) {
-            log.error("BaguetteServer.startServer(): Failed to store connection info in ems-client-config-map: {}, Exception: ",
-                    EmsConstant.EMS_CLIENT_K8S_CONFIG_MAP_FILE, e);
+            log.error("CollectorConfigurationsProcessorPlugin: Task #{}: Failed to store Collector Configurations in config. file: {}, Exception: ",
+                    taskCounter, EmsConstant.EMS_CLIENT_K8S_CONFIG_MAP_FILE, e);
         }
 
         log.debug("CollectorConfigurationsProcessorPlugin: Task #{}: processBeforeInstallation: END", taskCounter);
