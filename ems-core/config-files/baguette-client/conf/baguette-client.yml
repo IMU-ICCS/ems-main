@@ -112,7 +112,7 @@ collector:
     #addTagsInEventPayload: true
     #throwExceptionWhenExcessiveCharsOccur: true
 
-collector-configurations: ${COLLECTOR_CONFIGURATIONS}
+#collector-configurations: ${COLLECTOR_CONFIGURATIONS}
 
 # -----------------------------------------------------------------------------
 # Cluster settings
