@@ -44,6 +44,7 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
     public PrometheusCollector2(PrometheusCollectorProperties properties, CollectorContext collectorContext, TaskScheduler taskScheduler, EventBus<String,Object,Object> eventBus) {
         super("PrometheusCollector2", properties, collectorContext, taskScheduler, eventBus);
         this.properties = properties;
+        this.autoStartRunner = false;   // Don't start the default runner
     }
 
     @Override
@@ -57,11 +58,6 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
     }
 
     protected void processData(String data, String nodeAddress, ProcessingStats stats) {
-    }
-
-    public synchronized void start() {
-        super.start();
-        runner.cancel(true);
     }
 
     @Override
@@ -84,20 +80,20 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
     }
 
     private void applyNewConfigurations() {
-        log.info("!!!!!!!!!!!!!    Collectors::Prometheus2: applyNewConfigurations: {}", configurations);
+        log.debug("Collectors::Prometheus2: applyNewConfigurations: {}", configurations);
         if (configurations==null) return;
 
         // Cancel previous tasks
         if (! scrapingTasks.isEmpty()) {
-            log.info("!!!!!!!!!!!!!    Collectors::Prometheus2: applyNewConfigurations: Cancelling previous scraping tasks: {}", scrapingTasks);
+            log.trace("Collectors::Prometheus2: applyNewConfigurations: Cancelling previous scraping tasks: {}", scrapingTasks);
             List<ScheduledFuture<?>> list = new ArrayList<>(scrapingTasks);
             scrapingTasks.clear();
             list.forEach(task -> task.cancel(true));
-            log.info("!!!!!!!!!!!!!    Collectors::Prometheus2: applyNewConfigurations: Cancelled previous scraping tasks: {}", scrapingTasks);
+            log.trace("Collectors::Prometheus2: applyNewConfigurations: Cancelled previous scraping tasks: {}", scrapingTasks);
         }
 
         // Create new scraping tasks
-        log.info("!!!!!!!!!!!!!    Collectors::Prometheus2: applyNewConfigurations: Starting new scraping tasks: configurations: {}", configurations);
+        log.trace("Collectors::Prometheus2: applyNewConfigurations: Starting new scraping tasks: configurations: {}", configurations);
         Instant startInstant = Instant.now();
         configurations.forEach(config -> {
             if (checkConfig(config)) {
@@ -113,16 +109,13 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
                 log.info("Collectors::Prometheus2: Added monitoring task: prometheus-metric={}, destination={}, url={}, starts-at={}, period={}",
                         prometheusMetric, destination, url, startsAt, period);
             } else
-                log.info("!!!!!!!!!!!!!    Collectors::Prometheus2: applyNewConfigurations: Skipped sensor: {}", config);
+                log.warn("Collectors::Prometheus2: applyNewConfigurations: Skipped sensor: {}", config);
         });
-        log.info("!!!!!!!!!!!!!    Collectors::Prometheus2: applyNewConfigurations: Started new scraping tasks: {}", scrapingTasks);
+        log.debug("Collectors::Prometheus2: applyNewConfigurations: Started new scraping tasks: {}", scrapingTasks);
     }
 
     private boolean checkConfig(Map<String, Serializable> config) {
         List<String> errors = new ArrayList<>();
-        String type = config.getOrDefault("type", "").toString();
-        if (! getName().equalsIgnoreCase(type)) errors.add(String.format("Type mismatch. Expected '%s' but found '%s'", getName(), type));
-
         String push = config.getOrDefault("push", "").toString();
         if (! "false".equalsIgnoreCase(push)) errors.add(String.format("Not a Pull sensor. Expected '%s' but found '%s'", false, push));
 
@@ -130,6 +123,9 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
         if (StringUtils.isBlank(destination)) errors.add("No destination (name) provided");
 
         if (config.get("configuration") instanceof Map configMap) {
+            String type = configMap.getOrDefault("type", "").toString();
+            if (! getName().equalsIgnoreCase(type)) errors.add(String.format("Type mismatch. Expected '%s' but found '%s'", getName(), type));
+
             int port = Integer.parseInt( configMap.getOrDefault("port", "0").toString() );
             if (port<=0) errors.add("No or invalid port provided: "+port);
 

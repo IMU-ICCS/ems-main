@@ -60,6 +60,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
     protected final Map<Class<? extends AbstractEndpointCollector<T>>, Map<String, String>> nodeToNodeEventsMap = new HashMap<>();
 
     protected boolean started;
+    protected boolean autoStartRunner = true;
     protected ScheduledFuture<?> runner;
     protected Set<String> allowedTopics;
     protected Map<String, Set<String>> topicMap;
@@ -119,7 +120,8 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         // Schedule collection execution
         errorsMap.clear();
         ignoredNodes.clear();
-        runner = taskScheduler.scheduleWithFixedDelay(this, Duration.ofMillis(properties.getDelay()));
+        if (autoStartRunner)
+            runner = taskScheduler.scheduleWithFixedDelay(this, Duration.ofMillis(properties.getDelay()));
         started = true;
 
         log.info("Collectors::{}: Started", collectorId);
@@ -138,8 +140,10 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
 
         // Cancel collection execution
         started = false;
-        runner.cancel(true);
-        runner = null;
+        if (runner!=null && ! runner.isDone()) {
+            runner.cancel(true);
+            runner = null;
+        }
         ignoredNodes.values().stream().filter(Objects::nonNull).forEach(task -> task.cancel(true));
         log.info("Collectors::{}: Stopped", collectorId);
     }
