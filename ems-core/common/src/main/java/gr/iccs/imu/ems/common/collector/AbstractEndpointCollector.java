@@ -330,6 +330,9 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         long callEndTm = System.currentTimeMillis();
         log.trace("Collectors::{}: ...response: {}", collectorId, response);
 
+        if (response==null) {
+            log.warn("Collectors::{}: Collecting data...No response: {}", collectorId, null);
+        } else
         if (response.getStatusCode()==HttpStatus.OK) {
             T data = response.getBody();
             ProcessingStats stats = new ProcessingStats();
