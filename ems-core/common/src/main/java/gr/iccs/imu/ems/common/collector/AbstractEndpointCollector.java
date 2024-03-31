@@ -195,7 +195,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         log.trace("Collectors::{}: Nodes without clients in Zone: {}", collectorId, collectorContext.getNodesWithoutClient());
         log.trace("Collectors::{}: Is Aggregator: {}", collectorId, collectorContext.isAggregator());
         if (collectorContext.isAggregator()) {
-            if (! collectorContext.getNodesWithoutClient().isEmpty()) {
+            if (collectorContext.getNodesWithoutClient()!=null && ! collectorContext.getNodesWithoutClient().isEmpty()) {
                 log.debug("Collectors::{}: Collecting metrics from remote nodes (without EMS client): {}", collectorId,
                         collectorContext.getNodesWithoutClient());
                 for (Object nodeAddress : collectorContext.getNodesWithoutClient()) {
