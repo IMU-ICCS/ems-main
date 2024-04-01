@@ -10,24 +10,26 @@
 package gr.iccs.imu.ems.baguette.client.collector.prometheus;
 
 import gr.iccs.imu.ems.baguette.client.Collector;
+import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.common.collector.AbstractEndpointCollector;
 import gr.iccs.imu.ems.common.collector.CollectorContext;
+import gr.iccs.imu.ems.common.collector.prometheus.OpenMetricsParser;
 import gr.iccs.imu.ems.common.collector.prometheus.PrometheusCollectorProperties;
 import gr.iccs.imu.ems.util.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 
 /**
@@ -36,9 +38,12 @@ import java.util.concurrent.ScheduledFuture;
 @Slf4j
 @Component
 public class PrometheusCollector2 extends AbstractEndpointCollector<String> implements Collector {
-    protected PrometheusCollectorProperties properties;
+    private final PrometheusCollectorProperties properties;
     private List<Map<String, Serializable>> configurations = List.of();
     private final List<ScheduledFuture<?>> scrapingTasks = new LinkedList<>();
+    private RestClient restClient;
+    private OpenMetricsParser openMetricsParser;
+    private final LinkedBlockingQueue<EventMap> eventsQueue = new LinkedBlockingQueue<>();
 
     @SuppressWarnings("unchecked")
     public PrometheusCollector2(PrometheusCollectorProperties properties, CollectorContext collectorContext, TaskScheduler taskScheduler, EventBus<String,Object,Object> eventBus) {
@@ -51,6 +56,9 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
     public void afterPropertiesSet() {
         log.debug("Collectors::Prometheus2: properties: {}", properties);
         super.afterPropertiesSet();
+
+        initRestClientAndParser();
+        startEventPublishTask();
     }
 
     protected ResponseEntity<String> getData(String url) {
@@ -179,8 +187,101 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
         return Duration.ofSeconds(60);
     }
 
-    private void scrapeEndpoint(String url, String prometheusMetric, String destination) {
-        log.warn("!!!!!!!!!   TODO:  Scraping Prometheus endpoints for sensor: url-pattern={}, prometheusMetric={}, destination={}",
-                url, prometheusMetric, destination);
+    private void initRestClientAndParser() {
+        // Initialize the REST client
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        if (properties.getConnectTimeout()>=0)
+            factory.setConnectTimeout(properties.getConnectTimeout());
+        if (properties.getReadTimeout()>=0)
+            factory.setReadTimeout(properties.getReadTimeout());
+        this.restClient = RestClient.builder()
+                .requestFactory(factory)
+                .build();
+
+        // Initialize the OpenMetrics parser
+        this.openMetricsParser = new OpenMetricsParser();
+    }
+
+    private void scrapeEndpoint(String urlPattern, String prometheusMetric, String destination) {
+        log.debug("Collectors::Prometheus2: scrapeEndpoint: BEGIN: Scraping Prometheus endpoints for sensor: url-pattern={}, prometheusMetric={}, destination={}",
+                urlPattern, prometheusMetric, destination);
+
+        // Get nodes/pods to scrape
+        Set<Serializable> nodes = collectorContext.getNodesWithoutClient();
+        log.trace("Collectors::Prometheus2: scrapeEndpoint: Nodes to scrape: {}", nodes);
+        if (nodes==null || nodes.isEmpty()) {
+            log.debug("Collectors::Prometheus2: scrapeEndpoint: END: No nodes to scrape: url-pattern={}, prometheusMetric={}, destination={}",
+                    urlPattern, prometheusMetric, destination);
+            return;
+        }
+
+        // Scrape nodes and process responses
+        nodes.forEach(node -> {
+            String url = urlPattern.formatted(node);
+            log.trace("Collectors::Prometheus2: scrapeEndpoint: Scraping node: {} -- Endpoint: {}", node, url);
+
+            // Scrape endpoint
+            String payload = restClient
+                    .get().uri(url)
+                    .retrieve()
+                    .body(String.class);
+            log.debug("Collectors::Prometheus2: scrapeEndpoint: Scrapped node: {} -- Endpoint: {} -- Payload:\n{}", node, url, payload);
+
+            // Parser response
+            List<OpenMetricsParser.MetricInstance> results = null;
+            if (StringUtils.isNotBlank(payload)) {
+                results = openMetricsParser.processInput(payload.split("\n"));
+                log.trace("Collectors::Prometheus2: scrapeEndpoint: Parsed payload: {} -- Metrics:\n{}", node, results);
+            }
+
+            // Get values for the requested metric
+            if (results!=null) {
+                List<OpenMetricsParser.MetricInstance> matches = results.stream()
+                        .filter(m -> m.getMetricName().equalsIgnoreCase(prometheusMetric)).toList();
+                log.trace("Collectors::Prometheus2: scrapeEndpoint: Found metric: {} -- Metric(s):\n{}", node, matches);
+                List<Double> values = matches.stream().map(OpenMetricsParser.MetricInstance::getMetricValue).toList();
+                log.trace("Collectors::Prometheus2: scrapeEndpoint: Metric value(s): {} -- Value(s):\n{}", node, values);
+
+                // Publish extracted values
+                queueForPublish(prometheusMetric, destination, values, node, url);
+            }
+
+            log.trace("Collectors::Prometheus2: scrapeEndpoint: Done scraping node: {} -- Endpoint: {}", node, url);
+        });
+
+        log.debug("Collectors::Prometheus2: scrapeEndpoint: END");
+    }
+
+    private void queueForPublish(String prometheusMetric, String destination, List<Double> values, Serializable node, String endpoint) {
+        log.debug("Collectors::Prometheus2: queueForPublish: metric={}, destination={}, values={}, node={}, endpoint={}",
+                node, prometheusMetric, destination, values, endpoint);
+        values.forEach(v -> {
+            EventMap event = new EventMap(v);
+            event.setEventProperty("metric", prometheusMetric);
+            event.setEventProperty("source-node", node);
+            event.setEventProperty("source-endpoint", endpoint);
+            event.setEventProperty("destination-topic", destination);
+            eventsQueue.add(event);
+        });
+    }
+
+    private void startEventPublishTask() {
+        Thread thread = new Thread(() -> {
+            while (true) {
+                try {
+                    EventMap event = eventsQueue.take();
+                    String destination = event.getEventProperty("destination-topic").toString();
+                    CollectorContext.PUBLISH_RESULT result = collectorContext
+                            .sendEvent(null, destination, event, properties.isCreateTopic());
+                    log.debug("Collectors::Prometheus2: Event Publishing: Published event: {} -- Result: {}", event, result);
+                } catch (InterruptedException e) {
+                    log.warn("Collectors::Prometheus2: Event Publishing: Interrupted. Exiting event publish loop");
+                    break;
+                }
+            }
+        });
+        thread.setName("PrometheusCollector2-event-publish-thread");
+        thread.setDaemon(true);
+        thread.start();
     }
 }
