@@ -686,6 +686,10 @@ public class ClientShellCommand implements Command, Runnable, ServerSessionAware
         }
     }
 
+    public void sendClientConfiguration() {
+        sendClientConfiguration( getClientConfiguration() );
+    }
+
     public void sendClientConfiguration(ClientConfiguration cc) {
         log.debug("sendClientConfiguration: id={}, client-config={}", id, cc);
         try {
