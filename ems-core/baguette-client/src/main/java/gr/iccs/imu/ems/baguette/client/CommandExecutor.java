@@ -165,7 +165,7 @@ public class CommandExecutor {
                 String[] s = line.split(" ", 2);
                 log.info("Cluster key from Server: {} {}", s[0], s.length>1 ? passwordUtil.encodePassword(s[1]) : "");
             } else
-                log.info("Server input: {}", line);
+                log.debug("Server input: {}", line);
 
             try {
                 log.trace("communicateWithServer(): Calling execCmd: {}", line);
@@ -751,7 +751,7 @@ public class CommandExecutor {
                 }
                 clientConfiguration = config;
             }
-            log.info("New client config.: {}", config);
+            log.debug("New client config.: {}", config);
             HashMap<String,ClientConfiguration> payload = new HashMap<>();
             payload.put("new", clientConfiguration);
             payload.put("old", oldConfig);
