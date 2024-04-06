@@ -575,7 +575,7 @@ public class ClientShellCommand implements Command, Runnable, ServerSessionAware
     }
 
     public void sendToClient(String msg) {
-        sendToClient(msg, Level.INFO);
+        sendToClient(msg, Level.DEBUG);
     }
 
     public void sendToClient(String msg, Level logLevel) {
