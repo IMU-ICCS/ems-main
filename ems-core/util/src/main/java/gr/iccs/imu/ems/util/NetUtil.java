@@ -289,7 +289,7 @@ public class NetUtil {
     }
 
     public static boolean hasAddress() {
-        return getIpSettingAddress() != null;
+        return StringUtils.isNotBlank(getIpSettingAddress());
     }
 
     // ------------------------------------------------------------------------
