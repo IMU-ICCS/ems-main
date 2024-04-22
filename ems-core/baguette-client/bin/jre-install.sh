@@ -27,7 +27,7 @@ else
     curl -k $DOWNLOAD_URL/$PACKAGE -o $JRE_PACKAGE
   elif command -v wget &> /dev/null ; then
     echo "Downloading with wget from: $DOWNLOAD_URL/$PACKAGE to $JRE_PACKAGE"
-    wget --no-check-certificate $DOWNLOAD_URL/$PACKAGE -O $JRE_PACKAGE
+    wget --no-verbose --no-check-certificate $DOWNLOAD_URL/$PACKAGE -O $JRE_PACKAGE
   else
     echo "Neither curl or wget are available to download JRE"
   fi
