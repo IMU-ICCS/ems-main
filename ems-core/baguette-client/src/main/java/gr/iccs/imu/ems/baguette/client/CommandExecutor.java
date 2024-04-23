@@ -757,6 +757,11 @@ public class CommandExecutor {
             payload.put("old", oldConfig);
             eventBus.send(EventConstant.EVENT_CLIENT_CONFIG_UPDATED, payload, this);
 
+            //XXX:TODO:DEL: TEMP: Temporary change for tests..........
+            if (clientConfiguration.getNodesWithoutClient().isEmpty()) {
+                clientConfiguration.getNodesWithoutClient().add("localhost");
+            }
+
             // Update collectors' configurations
             Map<String, List<Map<String, Serializable>>> collectorConfigs = clientConfiguration.getCollectorConfigurations();
             applicationContext.getBean(BaguetteClient.class).getCollectorsList().forEach(collector -> {
