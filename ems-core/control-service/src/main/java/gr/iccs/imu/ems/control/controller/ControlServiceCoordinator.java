@@ -246,7 +246,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             _processAppModels(appModelId, appExecModelId, requestInfo);
             this.currentAppModelId = _normalizeModelId(appModelId);
             this.currentAppExecModelId = _normalizeModelId(appExecModelId);
-            return List.of(getCurrentEmsState(), getCurrentEmsStateMessage(), getCurrentEmsStateChangeTimestamp());
+            return Arrays.asList(getCurrentEmsState(), getCurrentEmsStateMessage(), getCurrentEmsStateChangeTimestamp());
         });
     }
 
@@ -321,7 +321,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         // Invoke requestInfo callback if provided
         if (requestInfo.getCallback()!=null) {
             requestInfo.getCallback().accept(Map.of(
-                    "ems-state", StringUtils.defaultIfBlank(state.name(), "UNKNOWN"),
+                    "ems-state", StringUtils.defaultIfBlank(state!=null ? state.name() : null, "UNKNOWN"),
                     "ems-state-message", StringUtils.defaultIfBlank(stateMessage, ""),
                     "ems-state-change-timestamp", stateTimestamp
             ));
