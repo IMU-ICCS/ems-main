@@ -292,7 +292,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             List<Object> result = callback.get();
             if (result!=null && result.size()==3) {
                 state = (EMS_STATE) result.get(0);
-                stateMessage = result.get(1).toString();
+                stateMessage = (String) result.get(1);
                 stateTimestamp = (long) result.get(2);
             }
         } catch (Exception ex) {
