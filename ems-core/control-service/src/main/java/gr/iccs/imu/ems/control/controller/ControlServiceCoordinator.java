@@ -285,14 +285,16 @@ public class ControlServiceCoordinator implements InitializingBean {
         }
 
         // Execute callback after acquiring lock
-        EMS_STATE state;
-        String stateMessage;
-        long stateTimestamp;
+        EMS_STATE state = null;
+        String stateMessage = null;
+        long stateTimestamp = -1L;
         try {
             List<Object> result = callback.get();
-            state = (EMS_STATE) result.get(0);
-            stateMessage = result.get(1).toString();
-            stateTimestamp = (long) result.get(2);
+            if (result!=null && result.size()==3) {
+                state = (EMS_STATE) result.get(0);
+                stateMessage = result.get(1).toString();
+                stateTimestamp = (long) result.get(2);
+            }
         } catch (Exception ex) {
             StringBuilder sb = new StringBuilder(ex.getClass().getName()).append(": ").append(ex.getMessage());
             Throwable t = ex;
