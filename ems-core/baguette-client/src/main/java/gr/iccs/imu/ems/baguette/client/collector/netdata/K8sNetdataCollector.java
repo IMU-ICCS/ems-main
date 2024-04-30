@@ -105,7 +105,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         log.trace("K8sNetdataCollector: doStart(): BEGIN: scheduledFuturesList={}", scheduledFuturesList);
 
         // Get Netdata agent address and port from env. vars
-        String netdataAddress = null;
+        /*String netdataAddress = null;
         if (StringUtils.isBlank(netdataAddress)) netdataAddress = System.getenv("NETDATA_ADDRESS");
         if (StringUtils.isBlank(netdataAddress)) netdataAddress = System.getenv("NETDATA_IP");
         if (StringUtils.isBlank(netdataAddress)) netdataAddress = System.getenv("HOST_IP");
@@ -115,7 +115,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         int netdataPort = Integer.parseInt(
                 StringUtils.defaultIfBlank(System.getenv("NETDATA_PORT"), "19999").trim());
         final String baseUrl = String.format("http://%s:%d", netdataAddress.trim(), netdataPort);
-        log.trace("K8sNetdataCollector: doStart(): baseUrl={}", baseUrl);
+        log.trace("K8sNetdataCollector: doStart(): baseUrl={}", baseUrl);*/
 
         // Process each sensor configuration
         AtomicInteger sensorNum = new AtomicInteger(0);
@@ -139,7 +139,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
 
             // Get metric URL
             int apiVer;
-            String url = null;
+            String urlSuffix = null;
             String component = null;
             String context = null;
             String dimensions = "*";
@@ -211,7 +211,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                 });
 
                 if (StringUtils.isNotBlank(context)) {
-                    url = baseUrl + sb;
+                    urlSuffix = /*baseUrl +*/ sb.toString();
                 } else {
                     log.warn("K8sNetdataCollector: doStart(): Sensor-{}: No 'context' found in sensor configuration: {}", sensorNum.get(), map);
                     return;
@@ -220,7 +220,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                 log.warn("K8sNetdataCollector: doStart(): Sensor-{}: No sensor configuration found is spec: {}", sensorNum.get(), map);
                 return;
             }
-            log.trace("K8sNetdataCollector: doStart(): Sensor-{}: Metric url={}", sensorNum.get(), url);
+            log.trace("K8sNetdataCollector: doStart(): Sensor-{}: Metric urlSuffix={}", sensorNum.get(), urlSuffix);
 
             // Get interval and configure scheduler
             long period = 60;
@@ -243,13 +243,13 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
             log.trace("K8sNetdataCollector: doStart(): Sensor-{}: duration={}", sensorNum.get(), duration);
 
             final int apiVer1 = apiVer;
-            final String url1 = url;
+            final String urlSuffix1 = urlSuffix;
             final String component1 = component;
             scheduledFuturesList.add( taskScheduler.scheduleAtFixedRate(() -> {
-                collectData(apiVer1, url1, destinationName, component1);
+                collectData(apiVer1, urlSuffix1, destinationName, component1);
             }, duration) );
-            log.debug("K8sNetdataCollector: doStart(): Sensor-{}: destination={}, component={}, interval={}, url={}",
-                    sensorNum.get(), destinationName, component, duration, url);
+            log.debug("K8sNetdataCollector: doStart(): Sensor-{}: destination={}, component={}, interval={}, urlSuffix={}",
+                    sensorNum.get(), destinationName, component, duration, urlSuffix);
             log.info("K8sNetdataCollector: Collecting Netdata metric '{}.{}' into '{}', every {} {}",
                     context, dimensions, destinationName, period, unit.name().toLowerCase());
         });
@@ -272,9 +272,33 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         map.put(key, value);
     }
 
-    private void collectData(int apiVer, String url, String destination, String component) {
+    private void collectData(int apiVer, String urlSuffix, String destination, String component) {
         long startTm = System.currentTimeMillis();
-        log.debug("K8sNetdataCollector: collectData(): BEGIN: apiVer={}, url={}, destination={}, component={}",
+        log.debug("K8sNetdataCollector: collectData(): BEGIN: apiVer={}, urlSuffix={}, destination={}, component={}",
+                apiVer, urlSuffix, destination, component);
+
+        // Get nodes to scrape
+        Set nodesToScrape = collectorContext.getNodesWithoutClient();
+        log.debug("K8sNetdataCollector: collectData(): nodes-to-scrape={}", nodesToScrape);
+        if (nodesToScrape == null || nodesToScrape.isEmpty()) {
+            long endTm = System.currentTimeMillis();
+            log.debug("K8sNetdataCollector: collectData(): END: No nodes to scrape: duration={}ms", endTm - startTm);
+            return;
+        }
+
+        // Scrape nodes
+        nodesToScrape.forEach(address -> {
+            log.debug("K8sNetdataCollector: collectData(): END: Scraping node: {}", address);
+            collectDataFromNode(apiVer, address + urlSuffix, destination, component);
+        });
+
+        long endTm = System.currentTimeMillis();
+        log.debug("K8sNetdataCollector: collectData(): END: duration={}ms", endTm-startTm);
+    }
+
+    private void collectDataFromNode(int apiVer, String url, String destination, String component) {
+        long startTm = System.currentTimeMillis();
+        log.debug("K8sNetdataCollector: collectDataFromNode(): BEGIN: apiVer={}, url={}, destination={}, component={}",
                 apiVer, url, destination, component);
 
         Map<String,Double> resultsMap = new HashMap<>();
@@ -297,39 +321,39 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                     double v = Double.parseDouble(latest_values.get(i));
                     resultsMap.put(id, v);
                 } catch (Exception e) {
-                    log.warn("K8sNetdataCollector: collectData(): ERROR at index #{}: id={}, value={}, Exception: ",
+                    log.warn("K8sNetdataCollector: collectDataFromNode(): ERROR at index #{}: id={}, value={}, Exception: ",
                             i, id, latest_values.get(i), e);
                     resultsMap.put(id, 0.0);
                 }
             }
         } else
         if (apiVer==2) {
-            log.warn("K8sNetdataCollector: collectData(): Calling Netdata: apiVer={}, url={}", apiVer, url);
+            log.warn("K8sNetdataCollector: collectDataFromNode(): Calling Netdata: apiVer={}, url={}", apiVer, url);
             Map response = restClient.get()
                     .uri(url)
                     .retrieve()
                     .body(Map.class);
-            log.trace("K8sNetdataCollector: collectData(): apiVer={}, response={}", apiVer, response);
+            log.trace("K8sNetdataCollector: collectDataFromNode(): apiVer={}, response={}", apiVer, response);
 
             double result = Double.parseDouble( response.get("result").toString() );
             Map view = (Map) response.get("view");
             long after = Long.parseLong( view.get("after").toString() );
             long before = Long.parseLong( view.get("before").toString() );
             timestamp = before;
-            log.trace("K8sNetdataCollector: collectData(): result={}, after={}, before={}", result, after, before);
+            log.trace("K8sNetdataCollector: collectDataFromNode(): result={}, after={}, before={}", result, after, before);
             Map dimensions = (Map) view.get("dimensions");
             List<String> ids = (List<String>) dimensions.get("ids");
             List<String> units = (List<String>) dimensions.get("units");
             List<Number> values = (List<Number>) ((Map)dimensions.get("sts")).get("avg");
-            log.trace("K8sNetdataCollector: collectData():    ids={}", ids);
-            log.trace("K8sNetdataCollector: collectData():  units={}", units);
-            log.trace("K8sNetdataCollector: collectData(): values={}", values);
+            log.trace("K8sNetdataCollector: collectDataFromNode():    ids={}", ids);
+            log.trace("K8sNetdataCollector: collectDataFromNode():  units={}", units);
+            log.trace("K8sNetdataCollector: collectDataFromNode(): values={}", values);
             for (int i=0, n=ids.size(); i<n; i++) {
                 try {
                     double v = values.get(i).doubleValue();
                     resultsMap.put(ids.get(i), v);
                 } catch (Exception e) {
-                    log.warn("K8sNetdataCollector: collectData(): ERROR at index #{}: id={}, value={}, Exception: ",
+                    log.warn("K8sNetdataCollector: collectDataFromNode(): ERROR at index #{}: id={}, value={}, Exception: ",
                             i, ids.get(i), values.get(i), e);
                     resultsMap.put(ids.get(i), 0.0);
                 }
@@ -337,7 +361,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
             //resultsMap.put("result", result);
         }
 
-        log.warn("K8sNetdataCollector: collectData(): Data collected: timestamp={}, results={}", timestamp, resultsMap);
+        log.warn("K8sNetdataCollector: collectDataFromNode(): Data collected: timestamp={}, results={}", timestamp, resultsMap);
 
         // Publish collected data to destination
         final long timestamp1 = timestamp;
@@ -345,10 +369,10 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         resultsMap.forEach((k,v) -> {
             publishResults.put( k+"="+v, publishMetricEvent(destination, k, v, timestamp1, null) );
         });
-        log.debug("K8sNetdataCollector: collectData(): Events published: results={}", publishResults);
+        log.debug("K8sNetdataCollector: collectDataFromNode(): Events published: results={}", publishResults);
 
         long endTm = System.currentTimeMillis();
-        log.warn("K8sNetdataCollector: collectData(): END: duration={}ms", endTm-startTm);
+        log.debug("K8sNetdataCollector: collectDataFromNode(): END: duration={}ms", endTm-startTm);
     }
 
     private synchronized void doStop() {
