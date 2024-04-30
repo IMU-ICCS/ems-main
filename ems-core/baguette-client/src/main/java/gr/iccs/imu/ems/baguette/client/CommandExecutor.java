@@ -749,6 +749,7 @@ public class CommandExecutor {
                     config.setCollectorConfigurations(oldConfig.getCollectorConfigurations());
                     log.trace("Copied collector-configs from old client config.: \n{}", oldConfig.getCollectorConfigurations());
                 }
+                config.setNodesWithoutClient(new LinkedHashSet<>( config.getNodesWithoutClient() ));
                 clientConfiguration = config;
             }
             log.debug("New client config.: {}", config);
@@ -767,9 +768,10 @@ public class CommandExecutor {
             if (this.config.isCollectFromLocal()) {
                 if (!clientConfiguration.getNodesWithoutClient().contains("localhost")
                     && !clientConfiguration.getNodesWithoutClient().contains("127.0.0.1")
-                    && !clientConfiguration.getNodesWithoutClient().contains("::1")
-                )
+                    && !clientConfiguration.getNodesWithoutClient().contains("::1"))
+                {
                     clientConfiguration.getNodesWithoutClient().add("localhost");
+                }
             }
 
             // Update collectors' configurations
