@@ -288,8 +288,9 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
 
         // Scrape nodes
         nodesToScrape.forEach(address -> {
-            log.debug("K8sNetdataCollector: collectData(): END: Scraping node: {}", address);
-            collectDataFromNode(apiVer, address + urlSuffix, destination, component);
+            String url = String.format("http://%s:19999%s", address, urlSuffix);
+            log.warn("K8sNetdataCollector: collectData(): Scraping node: {}", url);
+            collectDataFromNode(apiVer, url, destination, component);
         });
 
         long endTm = System.currentTimeMillis();
