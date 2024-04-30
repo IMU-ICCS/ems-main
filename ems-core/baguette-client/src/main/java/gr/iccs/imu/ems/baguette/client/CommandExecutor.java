@@ -757,9 +757,19 @@ public class CommandExecutor {
             payload.put("old", oldConfig);
             eventBus.send(EventConstant.EVENT_CLIENT_CONFIG_UPDATED, payload, this);
 
-            //XXX:TODO:DEL: TEMP: Temporary change for tests..........
-            if (clientConfiguration.getNodesWithoutClient().isEmpty()) {
-                clientConfiguration.getNodesWithoutClient().add("localhost");
+            // Configure additional addresses for collection
+            if (this.config.getCollectAdditional()!=null) {
+                this.config.getCollectAdditional().stream()
+                        .filter(StringUtils::isNotBlank)
+                        .forEach(address -> clientConfiguration.getNodesWithoutClient().add(address));
+            }
+            // Configure localhost for collection
+            if (this.config.isCollectFromLocal()) {
+                if (!clientConfiguration.getNodesWithoutClient().contains("localhost")
+                    && !clientConfiguration.getNodesWithoutClient().contains("127.0.0.1")
+                    && !clientConfiguration.getNodesWithoutClient().contains("::1")
+                )
+                    clientConfiguration.getNodesWithoutClient().add("localhost");
             }
 
             // Update collectors' configurations
