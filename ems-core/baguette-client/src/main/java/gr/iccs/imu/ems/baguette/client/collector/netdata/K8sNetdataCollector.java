@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 @RequiredArgsConstructor
 public class K8sNetdataCollector implements Collector, InitializingBean {
+    public enum RESULTS_AGGREGATION { NONE, SUM, AVERAGE }
     protected final static Set<String> SENSOR_CONFIG_KEYS_EXCLUDED = Set.of("endpoint", "type", "_containerName");
     protected final static String NETDATA_DATA_API_V1_PATH = "/api/v1/data";
     protected final static String NETDATA_DATA_API_V2_PATH = "/api/v2/data";
@@ -139,19 +140,32 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
 
             // Get metric URL
             int port = 19999;
-            int apiVer;
+            int apiVer = 2;
             String urlSuffix = null;
             String component = null;
             String context = null;
             String dimensions = "*";
+            RESULTS_AGGREGATION aggregation = RESULTS_AGGREGATION.NONE;
             if (map.get("configuration") instanceof Map cfgMap) {
                 log.trace("K8sNetdataCollector: doStart(): Sensor-{}: cfgMap={}", sensorNum.get(), cfgMap);
 
                 // Get port
                 try {
                     port = Integer.parseInt(get(cfgMap, "port", "" + port));
+                    log.debug("K8sNetdataCollector: doStart(): Sensor-{}: Netdata agent port: {}", sensorNum.get(), port);
                 } catch (Exception e) {
-                    log.warn("K8sNetdataCollector: doStart(): Invalid port specified in configuration: {}", cfgMap);
+                    log.warn("K8sNetdataCollector: doStart(): Sensor-{}: Invalid port specified in configuration: {}", sensorNum.get(), cfgMap);
+                }
+
+                // Get value aggregation
+                try {
+                    String s = get(cfgMap, "results-aggregation", aggregation.name());
+                    if (StringUtils.isNotBlank(s)) {
+                        aggregation = RESULTS_AGGREGATION.valueOf(s);
+                    }
+                    log.debug("K8sNetdataCollector: doStart(): Sensor-{}: Netdata results aggregation: {}", sensorNum.get(), aggregation);
+                } catch (Exception e) {
+                    log.warn("K8sNetdataCollector: doStart(): Sensor-{}: Invalid results-aggregation specified in configuration: {}", sensorNum.get(), cfgMap);
                 }
 
                 // Get component name
@@ -254,8 +268,9 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
             final int port1 = port;
             final String urlSuffix1 = urlSuffix;
             final String component1 = component;
+            final RESULTS_AGGREGATION aggregation1 = aggregation;
             scheduledFuturesList.add( taskScheduler.scheduleAtFixedRate(() -> {
-                collectData(apiVer1, urlSuffix1, port1, destinationName, component1);
+                collectData(apiVer1, urlSuffix1, port1, aggregation1, destinationName, component1);
             }, duration) );
             log.debug("K8sNetdataCollector: doStart(): Sensor-{}: destination={}, component={}, interval={}, urlSuffix={}",
                     sensorNum.get(), destinationName, component, duration, urlSuffix);
@@ -281,10 +296,10 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         map.put(key, value);
     }
 
-    private void collectData(int apiVer, String urlSuffix, int port, String destination, String component) {
+    private void collectData(int apiVer, String urlSuffix, int port, RESULTS_AGGREGATION aggregation, String destination, String component) {
         long startTm = System.currentTimeMillis();
-        log.debug("K8sNetdataCollector: collectData(): BEGIN: apiVer={}, urlSuffix={}, destination={}, component={}",
-                apiVer, urlSuffix, destination, component);
+        log.debug("K8sNetdataCollector: collectData(): BEGIN: apiVer={}, urlSuffix={}, port={}, results-aggregation={}, destination={}, component={}",
+                apiVer, urlSuffix, port, aggregation, destination, component);
 
         // Get nodes to scrape
         Set nodesToScrape = collectorContext.getNodesWithoutClient();
@@ -299,17 +314,17 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         nodesToScrape.forEach(address -> {
             String url = String.format("http://%s:%d%s", address, port, urlSuffix);
             log.warn("K8sNetdataCollector: collectData(): Scraping node: {}", url);
-            collectDataFromNode(apiVer, url, destination, component);
+            collectDataFromNode(apiVer, url, aggregation, destination, component, address!=null ? address.toString() : null);
         });
 
         long endTm = System.currentTimeMillis();
         log.debug("K8sNetdataCollector: collectData(): END: duration={}ms", endTm-startTm);
     }
 
-    private void collectDataFromNode(int apiVer, String url, String destination, String component) {
+    private void collectDataFromNode(int apiVer, String url, RESULTS_AGGREGATION aggregation, String destination, String component, String address) {
         long startTm = System.currentTimeMillis();
-        log.debug("K8sNetdataCollector: collectDataFromNode(): BEGIN: apiVer={}, url={}, destination={}, component={}",
-                apiVer, url, destination, component);
+        log.debug("K8sNetdataCollector: collectDataFromNode(): BEGIN: apiVer={}, url={}, results-aggregation={}, destination={}, component={}, node-address={}",
+                apiVer, url, aggregation, destination, component, address);
 
         Map<String,Double> resultsMap = new HashMap<>();
         long timestamp = -1L;
@@ -376,9 +391,18 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         // Publish collected data to destination
         final long timestamp1 = timestamp;
         Map<String, CollectorContext.PUBLISH_RESULT> publishResults = new LinkedHashMap<>();
-        resultsMap.forEach((k,v) -> {
-            publishResults.put( k+"="+v, publishMetricEvent(destination, k, v, timestamp1, null) );
-        });
+        if (aggregation==RESULTS_AGGREGATION.NONE) {
+            resultsMap.forEach((k, v) -> {
+                publishResults.put(k + "=" + v, publishMetricEvent(destination, k, v, timestamp1, address));
+            });
+        } else {
+            double result;
+            if (aggregation==RESULTS_AGGREGATION.SUM)
+                result = resultsMap.values().stream().mapToDouble(Double::doubleValue).sum();
+            else //if (aggregation==RESULTS_AGGREGATION.AVERAGE)
+                result = resultsMap.values().stream().mapToDouble(Double::doubleValue).average().orElse(0);
+            publishResults.put(null, publishMetricEvent(destination, null, result, timestamp1, address));
+        }
         log.debug("K8sNetdataCollector: collectDataFromNode(): Events published: results={}", publishResults);
 
         long endTm = System.currentTimeMillis();
@@ -407,7 +431,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         event.setEventProperty(EmsConstant.EVENT_PROPERTY_SOURCE_ADDRESS, nodeAddress);
         event.getEventProperties().put(EmsConstant.EVENT_PROPERTY_EFFECTIVE_DESTINATION, metricName);
         event.getEventProperties().put(EmsConstant.EVENT_PROPERTY_ORIGINAL_DESTINATION, originalTopic);
-        event.getEventProperties().put(EmsConstant.EVENT_PROPERTY_KEY, key);
+        if (key!=null) event.getEventProperties().put(EmsConstant.EVENT_PROPERTY_KEY, key);
         log.debug("K8sNetdataCollector:    Publishing metric: {}: {}", metricName, event.getMetricValue());
         CollectorContext.PUBLISH_RESULT result = collectorContext.sendEvent(null, metricName, event, createDestination);
         log.trace("K8sNetdataCollector:    Publishing metric: {}: {} -> result: {}", metricName, event.getMetricValue(), result);
