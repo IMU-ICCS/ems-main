@@ -138,6 +138,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
             }
 
             // Get metric URL
+            int port = 19999;
             int apiVer;
             String urlSuffix = null;
             String component = null;
@@ -145,6 +146,13 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
             String dimensions = "*";
             if (map.get("configuration") instanceof Map cfgMap) {
                 log.trace("K8sNetdataCollector: doStart(): Sensor-{}: cfgMap={}", sensorNum.get(), cfgMap);
+
+                // Get port
+                try {
+                    port = Integer.parseInt(get(cfgMap, "port", "" + port));
+                } catch (Exception e) {
+                    log.warn("K8sNetdataCollector: doStart(): Invalid port specified in configuration: {}", cfgMap);
+                }
 
                 // Get component name
                 component = get(cfgMap, "_containerName", null);
@@ -243,10 +251,11 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
             log.trace("K8sNetdataCollector: doStart(): Sensor-{}: duration={}", sensorNum.get(), duration);
 
             final int apiVer1 = apiVer;
+            final int port1 = port;
             final String urlSuffix1 = urlSuffix;
             final String component1 = component;
             scheduledFuturesList.add( taskScheduler.scheduleAtFixedRate(() -> {
-                collectData(apiVer1, urlSuffix1, destinationName, component1);
+                collectData(apiVer1, urlSuffix1, port1, destinationName, component1);
             }, duration) );
             log.debug("K8sNetdataCollector: doStart(): Sensor-{}: destination={}, component={}, interval={}, urlSuffix={}",
                     sensorNum.get(), destinationName, component, duration, urlSuffix);
@@ -262,7 +271,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         if (!map.containsKey(key) || (valObj = map.get(key))==null) return defaultValue;
         String value = valObj.toString();
         if (StringUtils.isBlank(value)) return defaultValue;
-        return value;
+        return value.trim();
     }
 
     private void addEntryIfMissingOrBlank(Map<String, Object> map, String key, Object value) {
@@ -272,7 +281,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         map.put(key, value);
     }
 
-    private void collectData(int apiVer, String urlSuffix, String destination, String component) {
+    private void collectData(int apiVer, String urlSuffix, int port, String destination, String component) {
         long startTm = System.currentTimeMillis();
         log.debug("K8sNetdataCollector: collectData(): BEGIN: apiVer={}, urlSuffix={}, destination={}, component={}",
                 apiVer, urlSuffix, destination, component);
@@ -288,7 +297,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
 
         // Scrape nodes
         nodesToScrape.forEach(address -> {
-            String url = String.format("http://%s:19999%s", address, urlSuffix);
+            String url = String.format("http://%s:%d%s", address, port, urlSuffix);
             log.warn("K8sNetdataCollector: collectData(): Scraping node: {}", url);
             collectDataFromNode(apiVer, url, destination, component);
         });
