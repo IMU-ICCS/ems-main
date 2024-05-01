@@ -161,7 +161,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                 try {
                     String s = get(cfgMap, "results-aggregation", aggregation.name());
                     if (StringUtils.isNotBlank(s)) {
-                        aggregation = RESULTS_AGGREGATION.valueOf(s);
+                        aggregation = RESULTS_AGGREGATION.valueOf(s.trim().toUpperCase());
                     }
                     log.debug("K8sNetdataCollector: doStart(): Sensor-{}: Netdata results aggregation: {}", sensorNum.get(), aggregation);
                 } catch (Exception e) {
