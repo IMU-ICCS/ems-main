@@ -8,9 +8,9 @@
 #
 
 ARG BUILDER_IMAGE=eclipse-temurin
-ARG BUILDER_IMAGE_TAG=21.0.1_12-jre
+ARG BUILDER_IMAGE_TAG=21.0.3_9-jre
 ARG RUN_IMAGE=eclipse-temurin
-ARG RUN_IMAGE_TAG=21.0.1_12-jre
+ARG RUN_IMAGE_TAG=21.0.3_9-jre
 
 # ----------------- Builder image -----------------
 FROM $BUILDER_IMAGE:$BUILDER_IMAGE_TAG as ems-server-builder
