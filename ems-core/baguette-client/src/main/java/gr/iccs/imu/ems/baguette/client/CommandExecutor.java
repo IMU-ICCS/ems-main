@@ -774,7 +774,7 @@ public class CommandExecutor {
                 // Use configuration setting
                 collectFromLocal = this.config.isCollectFromLocal();
             }
-            log.warn("!!!!!!!!!!!!!!  collectFromLocal={}", collectFromLocal);
+            log.debug("collectFromLocal={}", collectFromLocal);
             if (collectFromLocal) {
                 if (!clientConfiguration.getNodesWithoutClient().contains("localhost")
                     && !clientConfiguration.getNodesWithoutClient().contains("127.0.0.1")
