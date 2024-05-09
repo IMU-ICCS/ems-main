@@ -331,7 +331,7 @@ brokercep:
 
   # Broker URLs for (EMS) consumer and clients
   broker-url-for-consumer: tcp://127.0.0.1:61616?${CLIENT_URL_PROPERTIES}
-  broker-url-for-clients: ${brokercep.broker-protocol}://${EMS_SERVER_ADDRESS}:${brokercep.broker-port}?${CLIENT_URL_PROPERTIES}
+  broker-url-for-clients: ${brokercep.broker-protocol}://${EMS_SERVER_ADDRESS}:${EMS_SERVER_BROKER_PORT:${brokercep.broker-port}}?${CLIENT_URL_PROPERTIES}
   # Must be a public IP address
 
   ssl:
