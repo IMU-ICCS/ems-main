@@ -11,23 +11,40 @@
 # ----- Setup -----
 DELAY=5
 PROCNAMES=( "${@:2}" )
-if [ ${#procnames[@]} -eq 0 ]; then PROCNAMES=('netdata' 'kube' 'etcd'); fi
-WHATTOKILL=('Baguette' 'netdata')
+if [ ${#PROCNAMES[@]} -eq 0 ]; then PROCNAMES=('kube' 'etcd'); fi
+WHATTOKILL=('baguette')
+EXIT_GRACE=5
+
+# ----- Check if 'k8smon' is already running -----
+current_pid=$$
+if [ `ps aux |grep k8smon |grep -v grep |sed 's/   */:/g'  |cut -d':' -f2 |grep -v $current_pid |wc -l` -gt 1 ]; then
+    echo Another instance of K8S monitor is already running. Exiting.
+    exit 1
+fi
 
 # ----- Logging -----
 declare -A LOG_LEVEL
-LOG_LEVEL[INFO]="1 94"
-LOG_LEVEL[ERROR]="2 31"
+LOG_LEVEL[TRACE]="3 35"
+LOG_LEVEL[DEBUG]="3 36"
+LOG_LEVEL[INFO]="3 32"
+LOG_LEVEL[WARN]="3 33"
+LOG_LEVEL[ERROR]="4 31"
+LOG_LEVEL[FATAL]="4 7"
 log() {
     IFS=', ' read -r -a LEVEL_CFG <<< " ${LOG_LEVEL[$1]}"
     FD=${LEVEL_CFG[0]}
     COL=${LEVEL_CFG[1]}
     while IFS= read -r line; do
-        echo -e "\e[93m$(date '+%Y-%m-%d %H:%M:%S %Z')\e[0m \e[${COL}m[$(printf '%-5s' $1)]\e[0m $line" >/dev/fd/$FD
+        stdbuf -o0  echo -e "\e[37m$(date '+%Y-%m-%d %H:%M:%S %Z')\e[0m \e[${COL}m[$(printf '%-5s' $1)]\e[0m $line" >&$FD
     done
 }
-exec 1> >( log INFO )  2> >( log ERROR )
-# Alternative: ./k8smon.sh | xargs -L 1 echo `date +'[%Y-%m-%d %H:%M:%S]'` $1
+# Save original file descriptors
+exec 3>&1 4>&2
+# Redirect stdout and stderr to the log function
+exec 1> >( log INFO )  2> >( log WARN )
+# ----- Alternative Logging -----
+# ./k8smon.sh | xargs -L 1 echo `date +'[%Y-%m-%d %H:%M:%S]'` $1
+
 
 # ----- Start monitoring -----
 echo "Starting K8S process monitor..."
@@ -35,30 +52,34 @@ echo "Starting K8S process monitor..."
 
 # ----- Main loop -----
 while true; do
-  sleep $DELAY
-  #echo Running check...
-  found=0
-  # Loop over process names
-  for procname in "${PROCNAMES[@]}"
-  do
-    #echo Checking for $procname
-    if [ `ps -ef |grep $procname |grep -v grep |grep -v $0 |wc -l` -gt 0 ]; then
-      #echo Found $procname
-      found=1
-    fi
-  done
-  #echo FOUND_ANY=$found
-  if [ $found -eq 1 ]; then
-    # Kill processes mentioned in 'WHATTOKILL' array
-    for proctokill in "${WHATTOKILL[@]}"
+    sleep $DELAY
+    #echo Running check...
+    found=0
+    # Loop over process names
+    for procname in "${PROCNAMES[@]}"
     do
-      # Check if 'proctokill' is running
-      if [ `ps -ef |grep -i $proctokill |grep -v grep |grep -v $0 |wc -l` -gt 0 ]; then
-        echo "Killing $proctokill" >&2
-        #pkill $proctokill
-        #sleep 5
-        #pkill -9 $proctokill
-      fi
+        #echo Checking for $procname
+        if [ `ps -ef |grep $procname |grep -v grep |grep -v k8smon |grep -v $0 |wc -l` -gt 0 ]; then
+            #echo Found $procname
+            found=1
+        fi
     done
-  fi
+    #echo FOUND_ANY=$found
+    if [ $found -eq 1 ]; then
+        # Kill processes mentioned in 'WHATTOKILL' array
+        for proctokill in "${WHATTOKILL[@]}"
+        do
+            # Check if 'proctokill' is running
+            if [ `ps -ef |grep -i $proctokill |grep -v grep |grep -v k8smon |grep -v $0 |wc -l` -gt 0 ]; then
+                echo "Killing $proctokill" >&2
+                PID2KILL=`echo $(ps -ef |grep -i $proctokill |grep -v grep |grep -v k8smon |grep -v $0) | cut -d' ' -f2`
+                kill $PID2KILL
+                sleep $EXIT_GRACE
+                kill -9 $PID2KILL
+            fi
+        done
+    fi
 done
+
+# Restore original file descriptors (if needed)
+#exec 1>&3 2>&4

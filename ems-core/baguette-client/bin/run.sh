@@ -12,7 +12,8 @@
 K8S_MONITOR_ENABLED=1
 if [[ -n "$K8S_MONITOR_ENABLED" ]]; then
   COMMAND="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/k8smon.sh $$"
-  nohup bash -c "$COMMAND" &>/dev/null &
+  LOG_FILE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd ../logs && pwd )/k8smon.log"
+  nohup bash -c "$COMMAND" &>> $LOG_FILE &
   #nohup bash -c "$COMMAND" > >(tee -a /proc/$$/fd/1) 2> >(tee -a /proc/$$/fd/2 >&2) &
   PID=$!
   echo "Started K8S monitor process with PID $PID"
