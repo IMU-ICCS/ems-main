@@ -49,8 +49,8 @@ fi
 PID=`ps -ef |grep java |grep BaguetteClient | cut -c 10-14`
 if [ "$PID" != "" ]
 then
-    echo "Baguette client is already running (pid: $PID)"
-    exit 0
+  echo "Baguette client is already running (pid: $PID)"
+  exit 0
 fi
 
 # Copy dependencies if missing

@@ -15,6 +15,12 @@ if [ ${#PROCNAMES[@]} -eq 0 ]; then PROCNAMES=('kube' 'etcd'); fi
 WHATTOKILL=('baguette')
 EXIT_GRACE=5
 
+PROPERTIES_FILE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd ../conf && pwd )/k8smon.properties"
+if [ -f $PROPERTIES_FILE ] && [ -r $PROPERTIES_FILE ]; then
+  source $PROPERTIES_FILE
+  echo "Loaded properties from file: $PROPERTIES_FILE"
+fi
+
 # ----- Check if 'k8smon' is already running -----
 current_pid=$$
 if [ `ps aux |grep k8smon |grep -v grep |sed 's/   */:/g'  |cut -d':' -f2 |grep -v $current_pid |wc -l` -gt 1 ]; then
