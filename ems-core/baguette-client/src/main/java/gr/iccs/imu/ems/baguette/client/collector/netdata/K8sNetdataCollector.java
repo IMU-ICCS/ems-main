@@ -16,6 +16,7 @@ import gr.iccs.imu.ems.common.collector.CollectorContext;
 import gr.iccs.imu.ems.common.collector.netdata.NetdataCollectorProperties;
 import gr.iccs.imu.ems.util.EmsConstant;
 import gr.iccs.imu.ems.util.EventBus;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +39,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 @RequiredArgsConstructor
 public class K8sNetdataCollector implements Collector, InitializingBean {
-    public enum RESULTS_AGGREGATION { NONE, SUM, AVERAGE }
+    public enum RESULTS_AGGREGATION { NONE, SUM, AVERAGE, COUNT, MIN, MAX }
+
+    @Data
+    private static class ConfigContext {
+        // Sensor settings and their defaults
+        int port = 19999;
+        int apiVer = 2;
+        String urlSuffix = null;
+        String context = null;
+        String dimensions = "*";
+
+        // Post-processing settings
+        String destination;
+        String componentName;
+        RESULTS_AGGREGATION aggregation = RESULTS_AGGREGATION.NONE;
+    }
+
     protected final static Set<String> SENSOR_CONFIG_KEYS_EXCLUDED = Set.of("endpoint", "type", "_containerName");
     protected final static String NETDATA_DATA_API_V1_PATH = "/api/v1/data";
     protected final static String NETDATA_DATA_API_V2_PATH = "/api/v2/data";
@@ -138,39 +155,36 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                 return;
             }
 
-            // Get metric URL
-            int port = 19999;
-            int apiVer = 2;
-            String urlSuffix = null;
-            String component = null;
-            String context = null;
-            String dimensions = "*";
-            RESULTS_AGGREGATION aggregation = RESULTS_AGGREGATION.NONE;
+            // Initialize configuration context
+            ConfigContext cfgCtx = new ConfigContext();
+            cfgCtx.destination = destinationName;
+
+            // Build Netdata URL
             if (map.get("configuration") instanceof Map cfgMap) {
                 log.trace("K8sNetdataCollector: doStart(): Sensor-{}: cfgMap={}", sensorNum.get(), cfgMap);
 
                 // Get port
                 try {
-                    port = Integer.parseInt(get(cfgMap, "port", "" + port));
-                    log.debug("K8sNetdataCollector: doStart(): Sensor-{}: Netdata agent port: {}", sensorNum.get(), port);
+                    cfgCtx.port = Integer.parseInt(get(cfgMap, "port", "" + cfgCtx.port));
+                    log.debug("K8sNetdataCollector: doStart(): Sensor-{}: Netdata agent port: {}", sensorNum.get(), cfgCtx.port);
                 } catch (Exception e) {
                     log.warn("K8sNetdataCollector: doStart(): Sensor-{}: Invalid port specified in configuration: {}", sensorNum.get(), cfgMap);
                 }
 
                 // Get value aggregation
                 try {
-                    String s = get(cfgMap, "results-aggregation", aggregation.name());
+                    String s = get(cfgMap, "results-aggregation", cfgCtx.aggregation.name());
                     if (StringUtils.isNotBlank(s)) {
-                        aggregation = RESULTS_AGGREGATION.valueOf(s.trim().toUpperCase());
+                        cfgCtx.aggregation = RESULTS_AGGREGATION.valueOf(s.trim().toUpperCase());
                     }
-                    log.debug("K8sNetdataCollector: doStart(): Sensor-{}: Netdata results aggregation: {}", sensorNum.get(), aggregation);
+                    log.debug("K8sNetdataCollector: doStart(): Sensor-{}: Netdata results aggregation: {}", sensorNum.get(), cfgCtx.aggregation);
                 } catch (Exception e) {
                     log.warn("K8sNetdataCollector: doStart(): Sensor-{}: Invalid results-aggregation specified in configuration: {}", sensorNum.get(), cfgMap);
                 }
 
                 // Get component name
-                component = get(cfgMap, "_containerName", null);
-                log.trace("K8sNetdataCollector: doStart(): Sensor-{}: component={}", sensorNum.get(), component);
+                cfgCtx.componentName = get(cfgMap, "_containerName", null);
+                log.trace("K8sNetdataCollector: doStart(): Sensor-{}: component={}", sensorNum.get(), cfgCtx.componentName);
 
                 // Process 'configuration' map entries, to build metric URL
                 Map<String, Object> sensorConfig = (Map<String, Object>) cfgMap;
@@ -178,15 +192,15 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                 log.trace("K8sNetdataCollector: doStart(): Sensor-{}: endpoint={}", sensorNum.get(), endpoint);
 
                 if (NETDATA_DATA_API_V1_PATH.equalsIgnoreCase(endpoint)) {
-                    apiVer = 1;
+                    cfgCtx.apiVer = 1;
 
                     // If expanded by a shorthand expression
-                    context = get(sensorConfig, EmsConstant.NETDATA_METRIC_KEY, null);
-                    if (StringUtils.isNotBlank(context))
-                        addEntryIfMissingOrBlank(sensorConfig, "context", context);
+                    cfgCtx.context = get(sensorConfig, EmsConstant.NETDATA_METRIC_KEY, null);
+                    if (StringUtils.isNotBlank(cfgCtx.context))
+                        addEntryIfMissingOrBlank(sensorConfig, "context", cfgCtx.context);
 
                     // Else check sensor config for 'context' key
-                    context = get(sensorConfig, "context", null);
+                    cfgCtx.context = get(sensorConfig, "context", null);
 
                     addEntryIfMissingOrBlank(sensorConfig, "dimension", "*");
                     addEntryIfMissingOrBlank(sensorConfig, "after", "-1");
@@ -194,19 +208,19 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                     addEntryIfMissingOrBlank(sensorConfig, "format", "json2");
                 } else
                 if (NETDATA_DATA_API_V2_PATH.equalsIgnoreCase(endpoint)) {
-                    apiVer = 2;
+                    cfgCtx.apiVer = 2;
 
                     // If expanded by a shorthand expression
-                    context = get(sensorConfig, EmsConstant.NETDATA_METRIC_KEY, null);
-                    if (StringUtils.isNotBlank(context))
-                        addEntryIfMissingOrBlank(sensorConfig, "scope_contexts", context);
+                    cfgCtx.context = get(sensorConfig, EmsConstant.NETDATA_METRIC_KEY, null);
+                    if (StringUtils.isNotBlank(cfgCtx.context))
+                        addEntryIfMissingOrBlank(sensorConfig, "scope_contexts", cfgCtx.context);
 
                     // Else check sensor config for 'scope_contexts' or 'context' key
-                    context = get(sensorConfig, "scope_contexts", null);
-                    if (StringUtils.isBlank(context))
-                        context = get(sensorConfig, "context", null);
+                    cfgCtx.context = get(sensorConfig, "scope_contexts", null);
+                    if (StringUtils.isBlank(cfgCtx.context))
+                        cfgCtx.context = get(sensorConfig, "context", null);
 
-                    boolean isK8s = StringUtils.startsWithIgnoreCase(context, "k8s");
+                    boolean isK8s = StringUtils.startsWithIgnoreCase(cfgCtx.context, "k8s");
                     if (isK8s) {
                         addEntryIfMissingOrBlank(sensorConfig, "group_by", "label");
                         addEntryIfMissingOrBlank(sensorConfig, "group_by_label", "k8s_pod_name");
@@ -219,7 +233,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                     log.warn("K8sNetdataCollector: doStart(): Sensor-{}: Invalid Netdata endpoint found in sensor config: {}", sensorNum.get(), map);
                     return;
                 }
-                dimensions = get(sensorConfig, "dimension", dimensions);
+                cfgCtx.dimensions = get(sensorConfig, "dimension", cfgCtx.dimensions);
 
                 StringBuilder sb = new StringBuilder(endpoint);
                 final AtomicBoolean first = new AtomicBoolean(true);
@@ -232,8 +246,8 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                     }
                 });
 
-                if (StringUtils.isNotBlank(context)) {
-                    urlSuffix = /*baseUrl +*/ sb.toString();
+                if (StringUtils.isNotBlank(cfgCtx.context)) {
+                    cfgCtx.urlSuffix = /*baseUrl +*/ sb.toString();
                 } else {
                     log.warn("K8sNetdataCollector: doStart(): Sensor-{}: No 'context' found in sensor configuration: {}", sensorNum.get(), map);
                     return;
@@ -242,7 +256,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                 log.warn("K8sNetdataCollector: doStart(): Sensor-{}: No sensor configuration found is spec: {}", sensorNum.get(), map);
                 return;
             }
-            log.trace("K8sNetdataCollector: doStart(): Sensor-{}: Metric urlSuffix={}", sensorNum.get(), urlSuffix);
+            log.trace("K8sNetdataCollector: doStart(): Sensor-{}: Metric urlSuffix={}", sensorNum.get(), cfgCtx.urlSuffix);
 
             // Get interval and configure scheduler
             long period = 60;
@@ -264,18 +278,13 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
             }
             log.trace("K8sNetdataCollector: doStart(): Sensor-{}: duration={}", sensorNum.get(), duration);
 
-            final int apiVer1 = apiVer;
-            final int port1 = port;
-            final String urlSuffix1 = urlSuffix;
-            final String component1 = component;
-            final RESULTS_AGGREGATION aggregation1 = aggregation;
             scheduledFuturesList.add( taskScheduler.scheduleAtFixedRate(() -> {
-                collectData(apiVer1, urlSuffix1, port1, aggregation1, destinationName, component1);
+                collectData(cfgCtx);
             }, duration) );
             log.debug("K8sNetdataCollector: doStart(): Sensor-{}: destination={}, component={}, interval={}, urlSuffix={}",
-                    sensorNum.get(), destinationName, component, duration, urlSuffix);
+                    sensorNum.get(), cfgCtx.destination, cfgCtx.componentName, duration, cfgCtx.urlSuffix);
             log.info("K8sNetdataCollector: Collecting Netdata metric '{}.{}' into '{}', every {} {}",
-                    context, dimensions, destinationName, period, unit.name().toLowerCase());
+                    cfgCtx.context, cfgCtx.dimensions, cfgCtx.destination, period, unit.name().toLowerCase());
         });
         log.trace("K8sNetdataCollector: doStart(): scheduledFuturesList={}", scheduledFuturesList);
         log.debug("K8sNetdataCollector: doStart(): END");
@@ -296,10 +305,10 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         map.put(key, value);
     }
 
-    private void collectData(int apiVer, String urlSuffix, int port, RESULTS_AGGREGATION aggregation, String destination, String component) {
+    private void collectData(ConfigContext cfgCtx) {
         long startTm = System.currentTimeMillis();
         log.debug("K8sNetdataCollector: collectData(): BEGIN: apiVer={}, urlSuffix={}, port={}, results-aggregation={}, destination={}, component={}",
-                apiVer, urlSuffix, port, aggregation, destination, component);
+                cfgCtx.apiVer, cfgCtx.urlSuffix, cfgCtx.port, cfgCtx.aggregation, cfgCtx.destination, cfgCtx.componentName);
 
         // Get nodes to scrape
         //Set nodesToScrape = collectorContext.getNodesWithoutClient();
@@ -312,22 +321,23 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         }
 
         // Scrape Netdata node
-        String url = String.format("http://%s:%d%s", address, port, urlSuffix);
+        String url = String.format("http://%s:%d%s", address, cfgCtx.port, cfgCtx.urlSuffix);
         log.debug("K8sNetdataCollector: collectData(): Scraping Netdata node: {}", url);
-        collectDataFromNode(apiVer, url, aggregation, destination, component, address!=null ? address.toString() : null);
+        address = address!=null ? address.toString() : null;
+        collectDataFromNode(cfgCtx, url, address);
 
         long endTm = System.currentTimeMillis();
         log.debug("K8sNetdataCollector: collectData(): END: duration={}ms", endTm-startTm);
     }
 
-    private void collectDataFromNode(int apiVer, String url, RESULTS_AGGREGATION aggregation, String destination, String component, String address) {
+    private void collectDataFromNode(ConfigContext cfgCtx, String url, String address) {
         long startTm = System.currentTimeMillis();
         log.debug("K8sNetdataCollector: collectDataFromNode(): BEGIN: apiVer={}, url={}, results-aggregation={}, destination={}, component={}, node-address={}",
-                apiVer, url, aggregation, destination, component, address);
+                cfgCtx.apiVer, url, cfgCtx.aggregation, cfgCtx.destination, cfgCtx.componentName, address);
 
         Map<String,Double> resultsMap = new HashMap<>();
         long timestamp = -1L;
-        if (apiVer==1) {
+        if (cfgCtx.apiVer==1) {
             Map response = restClient.get()
                     .uri(url)
                     .retrieve()
@@ -341,7 +351,6 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
             for (int i=0, n=chart_ids.size(); i<n; i++) {
                 String id = chart_ids.get(i) + "|" + dimension_ids.get(i);
                 try {
-//                    double v = values.get(i).doubleValue();
                     double v = Double.parseDouble(latest_values.get(i));
                     resultsMap.put(id, v);
                 } catch (Exception e) {
@@ -351,13 +360,13 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                 }
             }
         } else
-        if (apiVer==2) {
-            log.warn("K8sNetdataCollector: collectDataFromNode(): Calling Netdata: apiVer={}, url={}", apiVer, url);
+        if (cfgCtx.apiVer==2) {
+            log.warn("K8sNetdataCollector: collectDataFromNode(): Calling Netdata: apiVer={}, url={}", cfgCtx.apiVer, url);
             Map response = restClient.get()
                     .uri(url)
                     .retrieve()
                     .body(Map.class);
-            log.trace("K8sNetdataCollector: collectDataFromNode(): apiVer={}, response={}", apiVer, response);
+            log.trace("K8sNetdataCollector: collectDataFromNode(): apiVer={}, response={}", cfgCtx.apiVer, response);
 
             double result = Double.parseDouble( response.get("result").toString() );
             Map view = (Map) response.get("view");
@@ -390,17 +399,26 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         // Publish collected data to destination
         final long timestamp1 = timestamp;
         Map<String, CollectorContext.PUBLISH_RESULT> publishResults = new LinkedHashMap<>();
-        if (aggregation==RESULTS_AGGREGATION.NONE) {
+        if (cfgCtx.aggregation==RESULTS_AGGREGATION.NONE) {
             resultsMap.forEach((k, v) -> {
-                publishResults.put(k + "=" + v, publishMetricEvent(destination, k, v, timestamp1, address));
+                publishResults.put(k + "=" + v, publishMetricEvent(cfgCtx.destination, k, v, timestamp1, address));
             });
         } else {
-            double result;
-            if (aggregation==RESULTS_AGGREGATION.SUM)
-                result = resultsMap.values().stream().mapToDouble(Double::doubleValue).sum();
-            else //if (aggregation==RESULTS_AGGREGATION.AVERAGE)
-                result = resultsMap.values().stream().mapToDouble(Double::doubleValue).average().orElse(0);
-            publishResults.put(null, publishMetricEvent(destination, null, result, timestamp1, address));
+            double result = switch (cfgCtx.aggregation) {
+                case SUM ->
+                        resultsMap.values().stream().mapToDouble(Double::doubleValue).sum();
+                case AVERAGE ->
+                        resultsMap.values().stream().mapToDouble(Double::doubleValue).average().orElse(0);
+                case COUNT ->
+                        resultsMap.values().size();
+                case MIN ->
+                        resultsMap.values().stream().mapToDouble(Double::doubleValue).min().orElse(0);
+                case MAX ->
+                        resultsMap.values().stream().mapToDouble(Double::doubleValue).max().orElse(0);
+                case NONE ->
+                        throw new IllegalArgumentException("FATAL: Execution should never have reached this point");
+            };
+            publishResults.put(null, publishMetricEvent(cfgCtx.destination, null, result, timestamp1, address));
         }
         log.debug("K8sNetdataCollector: collectDataFromNode(): Events published: results={}", publishResults);
 
