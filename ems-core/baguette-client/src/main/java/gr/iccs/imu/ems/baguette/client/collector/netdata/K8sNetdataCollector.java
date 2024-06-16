@@ -50,9 +50,18 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         String context = null;
         String dimensions = "*";
 
+        // Pod selection
+        boolean isK8s;
+        String namespace = "default";
+//        String[] podPatternsInclude;
+//        String[] podPatternsExclude;
+//        boolean podPatternsIgnoreCase = true;
+
         // Post-processing settings
         String destination;
-        String componentName;
+        boolean skipValueOnError = true;
+        double valueOnError = Double.NEGATIVE_INFINITY;
+        Collection<String> components;      // Pods
         RESULTS_AGGREGATION aggregation = RESULTS_AGGREGATION.NONE;
     }
 
@@ -147,7 +156,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
             }
             // else it is a Pull sensor
 
-            // Get destination (topic) and component name
+            // Get destination (topic) name
             String destinationName = get(map, "name", null);
             log.trace("K8sNetdataCollector: doStart(): Sensor-{}: destination={}", sensorNum.get(), destinationName);
             if (StringUtils.isBlank(destinationName)) {
@@ -183,8 +192,32 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                 }
 
                 // Get component name
-                cfgCtx.componentName = get(cfgMap, "_containerName", null);
-                log.trace("K8sNetdataCollector: doStart(): Sensor-{}: component={}", sensorNum.get(), cfgCtx.componentName);
+                if (cfgMap.get("components") instanceof Collection)
+                    cfgCtx.components = (Collection<String>) cfgMap.get("components");
+                if (cfgMap.get("components") instanceof String s)
+                    cfgCtx.components = Arrays.asList(s.trim().split("[, \\t]+"));
+                log.trace("K8sNetdataCollector: doStart(): Sensor-{}: cfgCtx.components: {}", sensorNum.get(), cfgCtx.components);
+
+                // Get K8S namespace (defaults to 'default')
+                cfgCtx.namespace = cfgMap.getOrDefault("namespace", "default").toString();
+                log.trace("K8sNetdataCollector: doStart(): Sensor-{}: namespace: {}", sensorNum.get(), cfgCtx.namespace);
+
+                // Get pod include/exclude patterns
+/*                cfgCtx.podPatternsIgnoreCase =
+                        Boolean.parseBoolean(get(cfgMap, "pod-patterns-ignore-case", "true"));
+                cfgCtx.podPatternsInclude =
+                        Arrays.stream(get(cfgMap, "pod-patterns-include", "").split(","))
+                                .filter(StringUtils::isNotBlank).map(String::trim)
+                                .toList().toArray(new String[0]);
+                cfgCtx.podPatternsExclude =
+                        Arrays.stream(get(cfgMap, "pod-patterns-exclude", "").split(","))
+                                .filter(StringUtils::isNotBlank).map(String::trim)
+                                .toList().toArray(new String[0]);
+                log.trace("K8sNetdataCollector: doStart(): Sensor-{}: pod-patterns: include={}, exclude={}, ignore-case={}",
+                        sensorNum.get(), Arrays.asList(cfgCtx.podPatternsInclude),
+                        Arrays.asList(cfgCtx.podPatternsExclude), cfgCtx.podPatternsIgnoreCase);
+                if (cfgCtx.podPatternsInclude.length==0) cfgCtx.podPatternsInclude = null;
+                if (cfgCtx.podPatternsExclude.length==0) cfgCtx.podPatternsExclude = null;*/
 
                 // Process 'configuration' map entries, to build metric URL
                 Map<String, Object> sensorConfig = (Map<String, Object>) cfgMap;
@@ -220,10 +253,10 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                     if (StringUtils.isBlank(cfgCtx.context))
                         cfgCtx.context = get(sensorConfig, "context", null);
 
-                    boolean isK8s = StringUtils.startsWithIgnoreCase(cfgCtx.context, "k8s");
-                    if (isK8s) {
+                    cfgCtx.isK8s = StringUtils.startsWithIgnoreCase(cfgCtx.context, "k8s");
+                    if (cfgCtx.isK8s) {
                         addEntryIfMissingOrBlank(sensorConfig, "group_by", "label");
-                        addEntryIfMissingOrBlank(sensorConfig, "group_by_label", "k8s_pod_name");
+                        addEntryIfMissingOrBlank(sensorConfig, "group_by_label", "k8s_namespace,k8s_pod_name");
                     }
                     addEntryIfMissingOrBlank(sensorConfig, "dimension", "*");
                     addEntryIfMissingOrBlank(sensorConfig, "after", "-1");
@@ -281,8 +314,8 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
             scheduledFuturesList.add( taskScheduler.scheduleAtFixedRate(() -> {
                 collectData(cfgCtx);
             }, duration) );
-            log.debug("K8sNetdataCollector: doStart(): Sensor-{}: destination={}, component={}, interval={}, urlSuffix={}",
-                    sensorNum.get(), cfgCtx.destination, cfgCtx.componentName, duration, cfgCtx.urlSuffix);
+            log.debug("K8sNetdataCollector: doStart(): Sensor-{}: destination={}, components={}, interval={}, urlSuffix={}",
+                    sensorNum.get(), cfgCtx.destination, cfgCtx.components, duration, cfgCtx.urlSuffix);
             log.info("K8sNetdataCollector: Collecting Netdata metric '{}.{}' into '{}', every {} {}",
                     cfgCtx.context, cfgCtx.dimensions, cfgCtx.destination, period, unit.name().toLowerCase());
         });
@@ -307,8 +340,8 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
 
     private void collectData(ConfigContext cfgCtx) {
         long startTm = System.currentTimeMillis();
-        log.debug("K8sNetdataCollector: collectData(): BEGIN: apiVer={}, urlSuffix={}, port={}, results-aggregation={}, destination={}, component={}",
-                cfgCtx.apiVer, cfgCtx.urlSuffix, cfgCtx.port, cfgCtx.aggregation, cfgCtx.destination, cfgCtx.componentName);
+        log.debug("K8sNetdataCollector: collectData(): BEGIN: apiVer={}, urlSuffix={}, port={}, results-aggregation={}, destination={}, components={}",
+                cfgCtx.apiVer, cfgCtx.urlSuffix, cfgCtx.port, cfgCtx.aggregation, cfgCtx.destination, cfgCtx.components);
 
         // Get nodes to scrape
         //Set nodesToScrape = collectorContext.getNodesWithoutClient();
@@ -332,8 +365,8 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
 
     private void collectDataFromNode(ConfigContext cfgCtx, String url, String address) {
         long startTm = System.currentTimeMillis();
-        log.debug("K8sNetdataCollector: collectDataFromNode(): BEGIN: apiVer={}, url={}, results-aggregation={}, destination={}, component={}, node-address={}",
-                cfgCtx.apiVer, url, cfgCtx.aggregation, cfgCtx.destination, cfgCtx.componentName, address);
+        log.debug("K8sNetdataCollector: collectDataFromNode(): BEGIN: apiVer={}, url={}, results-aggregation={}, destination={}, components={}, node-address={}",
+                cfgCtx.apiVer, url, cfgCtx.aggregation, cfgCtx.destination, cfgCtx.components, address);
 
         Map<String,Double> resultsMap = new HashMap<>();
         long timestamp = -1L;
@@ -351,12 +384,15 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
             for (int i=0, n=chart_ids.size(); i<n; i++) {
                 String id = chart_ids.get(i) + "|" + dimension_ids.get(i);
                 try {
-                    double v = Double.parseDouble(latest_values.get(i));
-                    resultsMap.put(id, v);
+                    if (includeResult(cfgCtx, id)) {
+                        double v = Double.parseDouble(latest_values.get(i));
+                        resultsMap.put(id, v);
+                    }
                 } catch (Exception e) {
                     log.warn("K8sNetdataCollector: collectDataFromNode(): ERROR at index #{}: id={}, value={}, Exception: ",
                             i, id, latest_values.get(i), e);
-                    resultsMap.put(id, 0.0);
+                    if (! cfgCtx.skipValueOnError)
+                        resultsMap.put(id, cfgCtx.valueOnError);
                 }
             }
         } else
@@ -383,12 +419,15 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
             log.trace("K8sNetdataCollector: collectDataFromNode(): values={}", values);
             for (int i=0, n=ids.size(); i<n; i++) {
                 try {
-                    double v = values.get(i).doubleValue();
-                    resultsMap.put(ids.get(i), v);
+                    if (includeResult(cfgCtx, ids.get(i))) {
+                        double v = values.get(i).doubleValue();
+                        resultsMap.put(ids.get(i), v);
+                    }
                 } catch (Exception e) {
                     log.warn("K8sNetdataCollector: collectDataFromNode(): ERROR at index #{}: id={}, value={}, Exception: ",
                             i, ids.get(i), values.get(i), e);
-                    resultsMap.put(ids.get(i), 0.0);
+                    if (! cfgCtx.skipValueOnError)
+                        resultsMap.put(ids.get(i), cfgCtx.valueOnError);
                 }
             }
             //resultsMap.put("result", result);
@@ -416,9 +455,11 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                 case MAX ->
                         resultsMap.values().stream().mapToDouble(Double::doubleValue).max().orElse(0);
                 case NONE ->
-                        throw new IllegalArgumentException("FATAL: Execution should never have reached this point");
+                        throw new IllegalArgumentException("FATAL: Execution should never reached this point");
             };
-            publishResults.put(null, publishMetricEvent(cfgCtx.destination, null, result, timestamp1, address));
+            if (! resultsMap.isEmpty())
+                publishResults.put(null, publishMetricEvent(cfgCtx.destination, null, result, timestamp1, address));
+            //else log.trace("K8sNetdataCollector: collectDataFromNode(): No results. Will not publish anything");
         }
         log.debug("K8sNetdataCollector: collectDataFromNode(): Events published: results={}", publishResults);
 
@@ -426,9 +467,98 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
         log.debug("K8sNetdataCollector: collectDataFromNode(): END: duration={}ms", endTm-startTm);
     }
 
+    private boolean includeResult(ConfigContext cfgCtx, String id) {
+        log.debug("K8sNetdataCollector: includeResult(): BEGIN: components={}, id={}",
+                cfgCtx.components, id);
+
+        if (! cfgCtx.isK8s) {
+            log.debug("K8sNetdataCollector: includeResult(): END: Not K8S metric: result={}", true);
+            return true;
+        }
+
+        // Get applicable namespace and set prefix
+        String nsPrefix = "";
+        if (StringUtils.isNotBlank(cfgCtx.namespace)) {
+            nsPrefix = cfgCtx.namespace+",";
+        }
+
+        // Check if applicable components are provided
+        if (cfgCtx.components==null || cfgCtx.components.isEmpty()) {
+            // No applicable components specified. Assuming all pods are accepted
+            if (nsPrefix.isEmpty()) {
+                // No namespace specified. Assuming all pods of all namespaces are accepted
+                log.debug("K8sNetdataCollector: includeResult(): END: pods=ALL, ns=ALL: result={}", true);
+                return true;
+            } else {
+                String prefix = cfgCtx.namespace + ",";
+                boolean result = StringUtils.startsWith(id, prefix);
+                log.debug("K8sNetdataCollector: includeResult(): END: pods=ALL, ns={}: result={}", cfgCtx.namespace, result);
+                return result;
+            }
+        }
+
+        // Applicable components specified. For each one...
+        for (String componentName : cfgCtx.components) {
+            log.trace("K8sNetdataCollector: includeResult():   component={}", componentName);
+
+            boolean matchDeployment = false;
+            boolean matchDaemonSet = false;
+            String prefix = nsPrefix + componentName;
+            log.trace("K8sNetdataCollector: includeResult():     prefix={}", prefix);
+            if (StringUtils.startsWith(id, prefix)) {
+                String remainder = id.substring(prefix.length());
+                log.trace("K8sNetdataCollector: includeResult():       remainder={}", remainder);
+                if (remainder.charAt(0)=='-') {
+                    log.trace("K8sNetdataCollector: includeResult():       remainder: size={}, char-11={}", remainder.length(), remainder.charAt(remainder.length()-5-1));
+                    int lastDashPos = remainder.length()-5-1;   // '5' is the size of POD UUID suffix
+                    if (remainder.length()>=16 && remainder.charAt(lastDashPos)=='-') {
+                        log.trace("K8sNetdataCollector: includeResult():       matching Deployment={}", remainder);
+                        matchDeployment = true;
+                    } else
+                    if (remainder.length()==6) {
+                        log.trace("K8sNetdataCollector: includeResult():       matching DaemonSet={}", remainder);
+                        matchDaemonSet = true;
+                    }
+                }
+            }
+            log.trace("K8sNetdataCollector: includeResult():     matchDeployment={}, matchDaemonSet={}", matchDeployment, matchDaemonSet);
+
+            /*if (cfgCtx.podPatternsInclude!=null)
+                return cfgCtx.podPatternsIgnoreCase
+                        ? StringUtils.containsAnyIgnoreCase(id, cfgCtx.podPatternsInclude)
+                        : StringUtils.containsAny(id, cfgCtx.podPatternsInclude);
+            else if (cfgCtx.podPatternsExclude!=null)
+                return ! (cfgCtx.podPatternsIgnoreCase
+                        ? StringUtils.containsAnyIgnoreCase(id, cfgCtx.podPatternsExclude)
+                        : StringUtils.containsAny(id, cfgCtx.podPatternsExclude) );*/
+
+            boolean result = matchDeployment || matchDaemonSet;
+            if (result) {
+                // Applicable component matched the 'id'
+                log.debug("K8sNetdataCollector: includeResult(): END: pod={}, ns={}: result={}", componentName, cfgCtx.namespace, result);
+                return result;
+            }
+        }
+
+        // No applicable component name matched the 'id'
+        boolean result = false;
+        log.debug("K8sNetdataCollector: includeResult(): END: pods={}, ns={}: result={}", cfgCtx.components, cfgCtx.namespace, result);
+        return result;
+    }
+
+    /*private boolean isUuid(String s, int start, int end) {
+        for (int i=start; i<=end; i++) {
+            char c = s.charAt(i);
+            if (!('0' <= c && c <= '9' || 'a' <= c && c <= 'z')) return false;
+        }
+        return true;
+    }*/
+
     private synchronized void doStop() {
-        log.debug("K8sNetdataCollector: doStop():  BEGIN");
-        log.trace("K8sNetdataCollector: doStop():  BEGIN: scheduledFuturesList={}", scheduledFuturesList);
+        if (! log.isTraceEnabled())
+            log.debug("K8sNetdataCollector: doStop():  BEGIN");
+        else
+            log.trace("K8sNetdataCollector: doStop():  BEGIN: scheduledFuturesList={}", scheduledFuturesList);
         // Cancel all task scheduler futures
         scheduledFuturesList.forEach(future -> future.cancel(true));
         scheduledFuturesList.clear();
