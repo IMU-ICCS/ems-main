@@ -97,10 +97,13 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
     @Override
     public void setConfiguration(Object config) {
         if (config instanceof List sensorConfigList) {
-            configurations = sensorConfigList.stream()
-                    .filter(o -> o instanceof Map)
-                    .toList();
-            applyNewConfigurations();
+            if (!started || configurations==null || configurations.isEmpty() && ! sensorConfigList.isEmpty()) {
+                configurations = sensorConfigList.stream()
+                        .filter(o -> o instanceof Map)
+                        .toList();
+                if (started)
+                    applyNewConfigurations();
+            }
         }
     }
 
