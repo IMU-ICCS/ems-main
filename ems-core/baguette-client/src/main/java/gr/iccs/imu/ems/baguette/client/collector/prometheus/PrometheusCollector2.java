@@ -56,6 +56,7 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
     public PrometheusCollector2(PrometheusCollectorProperties properties, CollectorContext collectorContext, TaskScheduler taskScheduler, EventBus<String,Object,Object> eventBus) {
         super("PrometheusCollector2", properties, collectorContext, taskScheduler, eventBus);
         this.properties = properties;
+        this.properties.setEnable(true);
         this.autoStartRunner = false;   // Don't start the default runner
     }
 
