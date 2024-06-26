@@ -68,8 +68,12 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
 
     @Override
     public void start() {
+        // check if already running
+        if (started) {
+            log.warn("Collectors::{}: Already started", collectorId);
+            return;
+        }
         super.start();
-        if (!started) return;
         initRestClientAndParser();
         startEventPublishTask();
         applyNewConfigurations();
@@ -77,8 +81,11 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
 
     @Override
     public void stop() {
+        if (!started) {
+            log.warn("Collectors::{}: Not started", collectorId);
+            return;
+        }
         super.stop();
-        if (started) return;
         keepRunning = false;
         if (eventPublishThread!=null && eventPublishThread.isAlive()) {
             eventPublishThread.interrupt();
