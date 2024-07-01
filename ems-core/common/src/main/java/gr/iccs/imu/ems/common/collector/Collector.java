@@ -7,11 +7,10 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package gr.iccs.imu.ems.baguette.client;
+package gr.iccs.imu.ems.common.collector;
 
-import gr.iccs.imu.ems.common.collector.Collector;
+import gr.iccs.imu.ems.util.Plugin;
 
-public interface ClientCollector extends Collector {
-    void setConfiguration(Object config);
-    void activeGroupingChanged(String oldGrouping, String newGrouping);
+public interface Collector extends Plugin {
+    String getName();
 }

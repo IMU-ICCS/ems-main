@@ -9,11 +9,10 @@
 
 package gr.iccs.imu.ems.control.collector;
 
-import gr.iccs.imu.ems.util.Plugin;
+import gr.iccs.imu.ems.common.collector.Collector;
 
 import java.util.Map;
 
-public interface ServerCollector extends Plugin {
-    String getName();
+public interface ServerCollector extends Collector {
     Map<String,Object> stringToConfigMap(String s);
 }
