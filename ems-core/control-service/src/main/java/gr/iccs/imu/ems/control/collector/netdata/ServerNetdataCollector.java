@@ -13,7 +13,7 @@ import gr.iccs.imu.ems.common.collector.CollectorConstant;
 import gr.iccs.imu.ems.common.collector.CollectorContext;
 import gr.iccs.imu.ems.common.collector.netdata.NetdataCollectorProperties;
 import gr.iccs.imu.ems.common.collector.netdata.NetdataCollector;
-import gr.iccs.imu.ems.control.collector.Collector;
+import gr.iccs.imu.ems.control.collector.ServerCollector;
 import gr.iccs.imu.ems.control.collector.ServerCollectorContext;
 import gr.iccs.imu.ems.util.EventBus;
 import lombok.NonNull;
@@ -28,7 +28,7 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-public class ServerNetdataCollector extends NetdataCollector implements Collector {
+public class ServerNetdataCollector extends NetdataCollector implements ServerCollector {
     public ServerNetdataCollector(@NonNull NetdataCollectorProperties properties,
                                   @NonNull CollectorContext collectorContext,
                                   @NonNull TaskScheduler taskScheduler,

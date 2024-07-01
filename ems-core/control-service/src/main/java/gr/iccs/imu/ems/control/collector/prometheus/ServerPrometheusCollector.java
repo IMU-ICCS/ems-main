@@ -13,7 +13,7 @@ import gr.iccs.imu.ems.common.collector.CollectorConstant;
 import gr.iccs.imu.ems.common.collector.CollectorContext;
 import gr.iccs.imu.ems.common.collector.prometheus.PrometheusCollector;
 import gr.iccs.imu.ems.common.collector.prometheus.PrometheusCollectorProperties;
-import gr.iccs.imu.ems.control.collector.Collector;
+import gr.iccs.imu.ems.control.collector.ServerCollector;
 import gr.iccs.imu.ems.control.collector.ServerCollectorContext;
 import gr.iccs.imu.ems.util.EventBus;
 import lombok.NonNull;
@@ -28,7 +28,7 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-public class ServerPrometheusCollector extends PrometheusCollector implements Collector {
+public class ServerPrometheusCollector extends PrometheusCollector implements ServerCollector {
     public ServerPrometheusCollector(@NonNull PrometheusCollectorProperties properties,
                                      @NonNull CollectorContext collectorContext,
                                      @NonNull TaskScheduler taskScheduler,

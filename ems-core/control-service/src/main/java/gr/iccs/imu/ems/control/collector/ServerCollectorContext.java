@@ -66,14 +66,14 @@ public class ServerCollectorContext implements CollectorContext {
         return PUBLISH_RESULT.SKIPPED;
     }
 
-    public Collection<Collector> getCollectors() {
-        return applicationContext.getBeansOfType(Collector.class, true, true).values();
+    public Collection<ServerCollector> getCollectors() {
+        return applicationContext.getBeansOfType(ServerCollector.class, true, true).values();
     }
 
-    public Collector getCollectorByName(String name) {
+    public ServerCollector getCollectorByName(String name) {
         if (StringUtils.isBlank(name))
             throw new IllegalArgumentException("getCollectorByName: Argument cannot be blank");
-        List<Collector> list = getCollectors().stream()
+        List<ServerCollector> list = getCollectors().stream()
                 .filter(col -> col.getName().equals(name)).toList();
         if (list.size()>1)
             throw new IllegalArgumentException("getCollectorByName: Multiple collectors match name: "+name);

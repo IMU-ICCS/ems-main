@@ -13,7 +13,7 @@ import gr.iccs.imu.ems.util.Plugin;
 
 import java.util.Map;
 
-public interface Collector extends Plugin {
+public interface ServerCollector extends Plugin {
     String getName();
     Map<String,Object> stringToConfigMap(String s);
 }
