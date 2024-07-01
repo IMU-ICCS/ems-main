@@ -9,7 +9,7 @@
 
 package gr.iccs.imu.ems.baguette.client.collector.prometheus;
 
-import gr.iccs.imu.ems.baguette.client.Collector;
+import gr.iccs.imu.ems.baguette.client.ClientCollector;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.common.collector.AbstractEndpointCollector;
 import gr.iccs.imu.ems.common.collector.CollectorContext;
@@ -37,7 +37,7 @@ import java.util.concurrent.ScheduledFuture;
  */
 @Slf4j
 @Component
-public class PrometheusCollector2 extends AbstractEndpointCollector<String> implements Collector {
+public class PrometheusCollector2 extends AbstractEndpointCollector<String> implements ClientCollector {
     public final static String DEFAULT_PROMETHEUS_PORT = "9090";
     public final static String DEFAULT_DELAY = "0";
     public final static String DEFAULT_INTERVAL = "60";

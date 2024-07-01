@@ -9,7 +9,7 @@
 
 package gr.iccs.imu.ems.baguette.client.collector.netdata;
 
-import gr.iccs.imu.ems.baguette.client.Collector;
+import gr.iccs.imu.ems.baguette.client.ClientCollector;
 import gr.iccs.imu.ems.baguette.client.collector.ClientCollectorContext;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.common.collector.CollectorConstant;
@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class K8sNetdataCollector implements Collector, InitializingBean {
+public class K8sNetdataCollector implements ClientCollector, InitializingBean {
     public enum RESULTS_AGGREGATION { NONE, SUM, AVERAGE, COUNT, MIN, MAX }
 
     @Data

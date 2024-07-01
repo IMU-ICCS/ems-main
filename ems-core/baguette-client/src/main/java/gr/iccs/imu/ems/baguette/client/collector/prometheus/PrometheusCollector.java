@@ -9,7 +9,7 @@
 
 package gr.iccs.imu.ems.baguette.client.collector.prometheus;
 
-import gr.iccs.imu.ems.baguette.client.Collector;
+import gr.iccs.imu.ems.baguette.client.ClientCollector;
 import gr.iccs.imu.ems.baguette.client.collector.ClientCollectorContext;
 import gr.iccs.imu.ems.common.collector.CollectorContext;
 import gr.iccs.imu.ems.common.collector.prometheus.PrometheusCollectorProperties;
@@ -30,7 +30,7 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-public class PrometheusCollector extends gr.iccs.imu.ems.common.collector.prometheus.PrometheusCollector implements Collector {
+public class PrometheusCollector extends gr.iccs.imu.ems.common.collector.prometheus.PrometheusCollector implements ClientCollector {
     private List<Map<String,Object>> configurations;
 
     public PrometheusCollector(@NonNull PrometheusCollectorProperties properties,
