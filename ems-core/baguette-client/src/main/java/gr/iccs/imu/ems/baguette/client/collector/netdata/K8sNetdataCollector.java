@@ -12,6 +12,7 @@ package gr.iccs.imu.ems.baguette.client.collector.netdata;
 import gr.iccs.imu.ems.baguette.client.Collector;
 import gr.iccs.imu.ems.baguette.client.collector.ClientCollectorContext;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
+import gr.iccs.imu.ems.common.collector.CollectorConstant;
 import gr.iccs.imu.ems.common.collector.CollectorContext;
 import gr.iccs.imu.ems.common.collector.netdata.NetdataCollectorProperties;
 import gr.iccs.imu.ems.util.EmsConstant;
@@ -237,7 +238,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                     cfgCtx.apiVer = 1;
 
                     // If expanded by a shorthand expression
-                    cfgCtx.context = get(sensorConfig, EmsConstant.NETDATA_METRIC_KEY, null);
+                    cfgCtx.context = get(sensorConfig, CollectorConstant.NETDATA_METRIC_KEY, null);
                     if (StringUtils.isNotBlank(cfgCtx.context))
                         addEntryIfMissingOrBlank(sensorConfig, "context", cfgCtx.context);
 
@@ -253,7 +254,7 @@ public class K8sNetdataCollector implements Collector, InitializingBean {
                     cfgCtx.apiVer = 2;
 
                     // If expanded by a shorthand expression
-                    cfgCtx.context = get(sensorConfig, EmsConstant.NETDATA_METRIC_KEY, null);
+                    cfgCtx.context = get(sensorConfig, CollectorConstant.NETDATA_METRIC_KEY, null);
                     if (StringUtils.isNotBlank(cfgCtx.context))
                         addEntryIfMissingOrBlank(sensorConfig, "scope_contexts", cfgCtx.context);
 

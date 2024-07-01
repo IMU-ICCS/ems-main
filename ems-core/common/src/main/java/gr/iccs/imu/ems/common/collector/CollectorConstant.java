@@ -7,13 +7,9 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package gr.iccs.imu.ems.control.collector;
+package gr.iccs.imu.ems.common.collector;
 
-import gr.iccs.imu.ems.util.Plugin;
-
-import java.util.Map;
-
-public interface Collector extends Plugin {
-    String getName();
-    Map<String,Object> stringToConfigMap(String s);
+public class CollectorConstant {
+    public static final String NETDATA_METRIC_KEY = "_netdata_metric";
+    public static final String PROMETHEUS_METRIC_KEY = "metric";
 }
