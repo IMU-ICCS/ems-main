@@ -7,12 +7,12 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package gr.iccs.imu.ems.control.collector;
+package gr.iccs.imu.ems.common.collector.prometheus;
 
-import gr.iccs.imu.ems.common.collector.Collector;
+import gr.iccs.imu.ems.common.collector.ICollector;
 
-import java.util.Map;
-
-public interface ServerCollector extends Collector {
-    Map<String,Object> stringToConfigMap(String s);
+public interface IPrometheusCollector extends ICollector {
+    default String getName() {
+        return "prometheus";
+    }
 }

@@ -9,11 +9,12 @@
 
 package gr.iccs.imu.ems.baguette.client.collector.netdata;
 
-import gr.iccs.imu.ems.baguette.client.ClientCollector;
+import gr.iccs.imu.ems.baguette.client.IClientCollector;
 import gr.iccs.imu.ems.baguette.client.collector.ClientCollectorContext;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.common.collector.CollectorConstant;
 import gr.iccs.imu.ems.common.collector.CollectorContext;
+import gr.iccs.imu.ems.common.collector.netdata.INetdataCollector;
 import gr.iccs.imu.ems.common.collector.netdata.NetdataCollectorProperties;
 import gr.iccs.imu.ems.util.EmsConstant;
 import gr.iccs.imu.ems.util.EventBus;
@@ -39,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class K8sNetdataCollector implements ClientCollector, InitializingBean {
+public class K8sNetdataCollector implements IClientCollector, INetdataCollector, InitializingBean {
     public enum RESULTS_AGGREGATION { NONE, SUM, AVERAGE, COUNT, MIN, MAX }
 
     @Data
@@ -84,11 +85,6 @@ public class K8sNetdataCollector implements ClientCollector, InitializingBean {
     public void afterPropertiesSet() throws Exception {
         if (!(collectorContext instanceof ClientCollectorContext))
             throw new IllegalArgumentException("Invalid CollectorContext provided. Expected: ClientCollectorContext, but got "+collectorContext.getClass().getName());
-    }
-
-    @Override
-    public String getName() {
-        return "netdata";
     }
 
     @Override

@@ -13,7 +13,7 @@ import gr.iccs.imu.ems.common.collector.CollectorConstant;
 import gr.iccs.imu.ems.common.collector.CollectorContext;
 import gr.iccs.imu.ems.common.collector.prometheus.PrometheusCollector;
 import gr.iccs.imu.ems.common.collector.prometheus.PrometheusCollectorProperties;
-import gr.iccs.imu.ems.control.collector.ServerCollector;
+import gr.iccs.imu.ems.control.collector.IServerCollector;
 import gr.iccs.imu.ems.control.collector.ServerCollectorContext;
 import gr.iccs.imu.ems.util.EventBus;
 import lombok.NonNull;
@@ -28,7 +28,7 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-public class ServerPrometheusCollector extends PrometheusCollector implements ServerCollector {
+public class ServerPrometheusCollector extends PrometheusCollector implements IServerCollector {
     public ServerPrometheusCollector(@NonNull PrometheusCollectorProperties properties,
                                      @NonNull CollectorContext collectorContext,
                                      @NonNull TaskScheduler taskScheduler,
@@ -37,10 +37,6 @@ public class ServerPrometheusCollector extends PrometheusCollector implements Se
         super("ServerPrometheusCollector", properties, collectorContext, taskScheduler, eventBus);
         if (!(collectorContext instanceof ServerCollectorContext))
             throw new IllegalArgumentException("Invalid CollectorContext provided. Expected: ServerCollectorContext, but got "+collectorContext.getClass().getName());
-    }
-
-    public String getName() {
-        return "prometheus";
     }
 
     public Map<String,Object> stringToConfigMap(String s) {
