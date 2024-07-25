@@ -72,6 +72,8 @@
         <lombok.version>1.18.34</lombok.version>
         <!-- ActiveMQ (classic) version -->
         <activemq.version>6.1.2</activemq.version>
+        <!-- QPid AMQP client version -->
+        <qpid-jms-client.version>2.5.0</qpid-jms-client.version>
         <!-- Jasypt version -->
         <jasypt.starter.version>3.0.5</jasypt.starter.version>
         <!-- Apache SSHD version -->
