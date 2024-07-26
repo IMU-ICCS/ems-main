@@ -10,7 +10,6 @@
 package gr.iccs.imu.ems.brokercep.cep;
 
 import com.espertech.esper.client.*;
-import com.google.gson.Gson;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.util.FunctionDefinition;
 import gr.iccs.imu.ems.util.StrUtil;
@@ -28,8 +27,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CepService implements InitializingBean {
-
-    private final Gson gson;
 
     /**
      * Esper service
