@@ -11,12 +11,9 @@ package gr.iccs.imu.ems.brokercep;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import gr.iccs.imu.ems.brokercep.cep.CepService;
 import gr.iccs.imu.ems.brokercep.properties.BrokerCepProperties;
-import gr.iccs.imu.ems.util.GroupingConfiguration;
-import lombok.Getter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.TaskScheduler;
@@ -26,8 +23,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -59,6 +55,13 @@ public class StatsPrinter implements InitializingBean, Runnable {
         stats.put("OUT.forward.failure", BrokerCepStatementSubscriber.getForwardFailureCounter());
         stats.put("IN.receive.success", BrokerCepConsumer.getEventCounter());
         stats.put("IN.receive.failure", BrokerCepConsumer.getEventFailuresCounter());
-        log.info("BCEP statistics:\n{}", gson.toJson(stats));
+        stats.put("CEP.incoming.events", CepService.getEventCounter());
+
+        if (properties.isStatsPrinterAsJson())
+            log.info("BCEP statistics:\n{}", gson.toJson(stats));
+        if (properties.isStatsPrinterAsCsv())
+            log.info("BCEP statistics:\n{}\n{}",
+                    String.join(",", stats.keySet()),
+                    stats.values().stream().map(l->Long.toString(l)).collect(Collectors.joining(",")));
     }
 }
