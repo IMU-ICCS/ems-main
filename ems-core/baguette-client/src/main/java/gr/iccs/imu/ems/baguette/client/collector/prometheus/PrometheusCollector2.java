@@ -257,7 +257,7 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
         // Scrape nodes and process responses
         nodes.forEach(node -> {
             String url = urlPattern.formatted(node);
-            log.trace("Collectors::{}: scrapeEndpoint: Scraping node: {} -- Endpoint: {}", collectorId, node, url);
+            log.info("Collectors::{}: scrapeEndpoint: Scraping node: {} -- Endpoint: {}", collectorId, node, url);
 
             // Scrape endpoint
             try {
