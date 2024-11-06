@@ -257,6 +257,13 @@
                             <!--<arg>-Xlint:unchecked,-Xlint:deprecation</arg>-->
                             <arg>-parameters</arg>  <!-- Used to suppress warning "Using deprecated '-debug' fallback for parameter name resolution. Compile the affected code with '-parameters' instead or avoid its introspection"-->
                         </compilerArgs>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
                 <plugin>
