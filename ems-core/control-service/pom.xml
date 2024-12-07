@@ -389,7 +389,7 @@
                 <version>${maven-antrun-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>set-docker-properties</id>
+                        <id>copy-files</id>
                         <phase>package</phase>
                         <goals>
                             <goal>run</goal>
@@ -421,16 +421,16 @@
                                       tofile="../public_resources/resources/client.bat" />
 
                                 <!-- Copy baguette-client files to /public_resources -->
-                                <copy overwrite="true" failonerror="false"
+                                <copy overwrite="true" failonerror="true"
                                       file="${project.build.directory}/baguette-client-installation-package.tgz"
                                       tofile="../public_resources/resources/baguette-client.tgz" />
-                                <copy overwrite="true" failonerror="false"
+                                <copy overwrite="true" failonerror="true"
                                       file="${project.build.directory}/baguette-client-installation-package.tgz.sha256"
                                       tofile="../public_resources/resources/baguette-client.tgz.sha256" />
                                 <copy overwrite="true" failonerror="false"
                                       file="../baguette-client/bin/install.sh"
                                       tofile="../public_resources/resources/install.sh" />
-                                <copy overwrite="true" failonerror="false"
+                                <copy overwrite="true" failonerror="true"
                                       file="../baguette-client/bin/jre-install.sh"
                                       tofile="../public_resources/resources/jre-install.sh" />
                             </target>
