@@ -9,7 +9,6 @@
 
 package gr.iccs.imu.ems.common.command.channel;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.common.command.Command;
 import gr.iccs.imu.ems.common.command.CommandProcessor;
@@ -41,7 +40,6 @@ public class BrokerCommandsReceiver implements InitializingBean {
     private final static String COMMAND_TOPIC = "ems.command";
     private final static String COMMAND_RESULTS_TOPIC = "ems.command.results";
 
-    private final ObjectMapper objectMapper;
     private final BrokerCepService brokerCepService;
     private final CommandProcessor commandProcessor;
     private final CommandProcessorProperties properties;
