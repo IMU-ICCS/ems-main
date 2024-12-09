@@ -17,6 +17,7 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.google.gson.Gson;
 import gr.iccs.imu.ems.brokerclient.event.EventGenerator;
 import gr.iccs.imu.ems.brokerclient.event.EventMap;
+import gr.iccs.imu.ems.util.LogsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.command.*;
 import org.apache.commons.csv.CSVFormat;
@@ -64,6 +65,12 @@ public class BrokerClientApp {
 
         int aa=0;
         String command = args[aa++];
+
+        String logLevel = (args.length>aa && args[aa].startsWith("-LL"))
+                ? args[aa++].substring(3).trim()
+                : "INFO";
+        if (StringUtils.isNotBlank(logLevel))
+            LogsUtil.setLogLevel(BrokerClientApp.class.getPackage().getName(), logLevel);
 
         filterAMQMessages = args.length>aa && args[aa].startsWith("-Q") ? false : true;
         if (!filterAMQMessages) aa++;
@@ -132,9 +139,14 @@ public class BrokerClientApp {
             if (isRecording)
                 initRecording(args, aa);
 
+            BrokerClient.ON_EXCEPTION onException = (args.length>aa && args[aa].startsWith("-OE"))
+                    ? BrokerClient.ON_EXCEPTION.valueOf(args[aa++].substring(3))
+                    : BrokerClient.ON_EXCEPTION.LOG_AND_IGNORE;
+
             log.info("BrokerClientApp: Subscribing to topic: {}", topic);
+            log.info("BrokerClientApp: on-exception setting: {}", onException);
             BrokerClient client = BrokerClient.newClient(username, password);
-            client.receiveEvents(url, topic, getMessageListener());
+            client.receiveEvents(url, topic, getMessageListener(), onException);
         } else
         // playback events
         if ("playback".equalsIgnoreCase(command)) {
