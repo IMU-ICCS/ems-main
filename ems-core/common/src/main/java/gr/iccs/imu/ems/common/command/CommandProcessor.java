@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -42,7 +41,6 @@ public class CommandProcessor implements InitializingBean {
 
     private final PriorityQueue<ICommandExecutor> commandExecutors = new PriorityQueue<>(Comparator.comparingInt(ICommandExecutor::getPriority));
     private final BlockingQueue<Command> commandsQueue = new LinkedBlockingQueue<>(MAX_COMMAND_QUEUE_SIZE);
-    private final TaskExecutor taskExecutor;
 
     private final AtomicLong commandsCompletedCounter = new AtomicLong();
     private final AtomicLong commandsFailedCounter = new AtomicLong();
@@ -77,7 +75,7 @@ public class CommandProcessor implements InitializingBean {
     }
 
     private void startCommandExecutionThread() {
-        taskExecutor.execute(() -> {
+        Thread thread = new Thread(() -> {
             while (true) {
                 Command command = null;
                 try {
@@ -105,6 +103,8 @@ public class CommandProcessor implements InitializingBean {
                 }
             }
         });
+        thread.setDaemon(true);
+        thread.start();
     }
 
     protected Object processCommand(Command command) {
