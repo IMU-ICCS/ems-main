@@ -81,9 +81,12 @@ public class BrokerCommandsReceiver implements InitializingBean {
             try {
                 Object bodyObj = message.getBody(Object.class);
                 if (bodyObj instanceof Map map) {
-                    enqueueCommand(map.getOrDefault("command", "").toString().trim());
+                    enqueueCommand(
+                            map.getOrDefault("command", "").toString().trim(),
+                            map.getOrDefault("ref", "").toString().trim()
+                    );
                 } else if (bodyObj != null) {
-                    enqueueCommand(bodyObj.toString().trim());
+                    enqueueCommand(bodyObj.toString().trim(), null);
                 } else
                     log.warn("BrokerCommandsReceiver: Message body is null. Ignoring message");
             } catch (JMSException e) {
@@ -92,10 +95,11 @@ public class BrokerCommandsReceiver implements InitializingBean {
         };
     }
 
-    private void enqueueCommand(String commandStr) {
+    private void enqueueCommand(String commandStr, String ref) {
         if (StringUtils.isNotBlank(commandStr)) {
             Command command = Command.builder()
                     .command(commandStr)
+                    .ref(ref)
                     .build();
             command.setCallback(results -> commandCallback(results, command));
             command.splitArgs();
@@ -129,6 +133,8 @@ public class BrokerCommandsReceiver implements InitializingBean {
             HashMap<String, Object> event = new HashMap<>();
             event.put("command", command);
             event.put("results-topic", resultsSer);
+            if (StringUtils.isNotBlank(command.getRef()))
+                event.put("ref", command.getRef());
             brokerCepService.publishSerializable(config.getOrDefault("results-topic", COMMAND_RESULTS_TOPIC), event, true);
             log.trace("BrokerCommandsReceiver: Sent command result: Command: {} -- Result: {}", command, resultsSer);
         } catch (Exception e) {

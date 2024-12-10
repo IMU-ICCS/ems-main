@@ -12,23 +12,23 @@ package gr.iccs.imu.ems.common.command;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 @Data
 @Builder
-public class Command {
+public class Command implements Serializable {
     private long receivedTimestamp;
     private long startExecutionTimestamp;
     private long endExecutionTimestamp;
+    private String ref;
     private String command;
-    private List<String> args;
+    private ArrayList<String> args;
     @JsonIgnore
     @ToString.Exclude
     private transient Consumer<Object> callback;
@@ -37,7 +37,8 @@ public class Command {
         if (args==null && StringUtils.isNotBlank(command)) {
             String[] part = command.trim().split("[ \t\r\n]+");
             command = part[0];
-            args = Arrays.asList(Arrays.copyOfRange(part, 1, part.length));
+            //args = new ArrayList<>( Arrays.asList(Arrays.copyOfRange(part, 1, part.length)) );
+            args = new ArrayList<>(List.of(part).subList(1, part.length));
         }
     }
 }
