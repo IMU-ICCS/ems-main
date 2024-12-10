@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package gr.iccs.imu.ems.common.command.channel;
+package gr.iccs.imu.ems.common.command.receiver;
 
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.common.command.Command;

@@ -25,7 +25,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 
 /**
- * Log-Level Command Processor:
+ * Log-Level Command Executor:
  * Sets/Prints the current log level
  */
 @Slf4j
