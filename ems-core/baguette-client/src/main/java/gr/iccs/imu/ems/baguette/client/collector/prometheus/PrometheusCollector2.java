@@ -320,11 +320,9 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
                             .filter(m -> matchAnyAllowedTag(m.getTags(), allowedTags))
                             .toList();
                     log.trace("Collectors::{}: scrapeEndpoint: Found metric: {} -- Metric(s):\n{}", collectorId, node, matches);
-                    List<Double> values = matches.stream().map(OpenMetricsParser.MetricInstance::getMetricValue).toList();
-                    log.trace("Collectors::{}: scrapeEndpoint: Metric value(s): {} -- Value(s):\n{}", collectorId, node, values);
 
                     // Publish extracted values
-                    queueForPublish(prometheusMetric, destination, values, node, url);
+                    queueForPublish(prometheusMetric, destination, matches, node, url);
                 }
 
                 log.trace("Collectors::{}: scrapeEndpoint: Done scraping node: {} -- Endpoint: {}", collectorId, node, url);
@@ -341,6 +339,7 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
     }
 
     private boolean matchAnyAllowedTag(Map<String, String> tags, Map<String, Set<String>> allowedTags) {
+        log.trace("Collectors::{}: matchAnyAllowedTag: BEGIN: tags={}, allowed-tags={}", collectorId, tags, allowedTags);
         if (allowedTags==null || allowedTags.isEmpty()) return true;
         for (Map.Entry<String,String> e : tags.entrySet()) {
             String k = e.getKey()!=null ? e.getKey().trim() : null;
@@ -355,15 +354,17 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
         return false;
     }
 
-    private void queueForPublish(String prometheusMetric, String destination, List<Double> values, Serializable node, String endpoint) {
-        log.debug("Collectors::{}: queueForPublish: metric={}, destination={}, values={}, node={}, endpoint={}",
-                collectorId, node, prometheusMetric, destination, values, endpoint);
-        values.forEach(v -> {
-            EventMap event = new EventMap(v, 1);
+    private void queueForPublish(String prometheusMetric, String destination, List<OpenMetricsParser.MetricInstance> metricInstances, Serializable node, String endpoint) {
+        log.debug("Collectors::{}: queueForPublish: metric={}, destination={}, metricInstances={}, node={}, endpoint={}",
+                collectorId, node, prometheusMetric, destination, metricInstances, endpoint);
+        metricInstances.forEach(v -> {
+            EventMap event = new EventMap(v.getMetricValue(), 1);
             event.setEventProperty("metric", prometheusMetric);
             event.setEventProperty("source-node", node);
             event.setEventProperty("source-endpoint", endpoint);
             event.setEventProperty("destination-topic", destination);
+            if (v.getTags()!=null)
+                v.getTags().forEach((tag,tagValue) -> event.setEventProperty("tag-"+tag, tagValue));
             eventsQueue.add(event);
         });
     }
