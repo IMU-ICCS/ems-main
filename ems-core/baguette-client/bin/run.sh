@@ -10,13 +10,15 @@
 
 # Spawning K8S monitor process
 K8S_MONITOR_ENABLED=1
-if [[ -n "$K8S_MONITOR_ENABLED" ]]; then
+if [[ -n "$K8S_MONITOR_ENABLED" && -z "${KUBERNETES_SERVICE_HOST}" ]]; then
   COMMAND="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/k8smon.sh $$"
   LOG_FILE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd ../logs && pwd )/k8smon.log"
   nohup bash -c "$COMMAND" &>> $LOG_FILE &
   #nohup bash -c "$COMMAND" > >(tee -a /proc/$$/fd/1) 2> >(tee -a /proc/$$/fd/2 >&2) &
   PID=$!
   echo "Started K8S monitor process with PID $PID"
+else
+  echo "Running as a Kubernetes pod. K8S monitor will not start"
 fi
 
 # Change directory to Baguette client home
@@ -69,12 +71,12 @@ JAVA_OPTS="${JAVA_OPTS} -Djasypt.encryptor.password=$JASYPT_PASSWORD"
 JAVA_OPTS="${JAVA_OPTS} --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED"
 
 # Print settings
-echo "" | tee -a ${LOG_FILE}
-echo "EMS_CONFIG_DIR=${EMS_CONFIG_DIR}" | tee -a ${LOG_FILE}
-echo "EMS_CONFIG_LOCATION=${EMS_CONFIG_LOCATION}" | tee -a ${LOG_FILE}
-echo "LOG_FILE=${LOG_FILE}" | tee -a ${LOG_FILE}
-echo "UNAME=$(uname -a)" | tee -a ${LOG_FILE}
-echo "" | tee -a ${LOG_FILE}
+echo "" #| tee -a ${LOG_FILE}
+echo "EMS_CONFIG_DIR=${EMS_CONFIG_DIR}" #| tee -a ${LOG_FILE}
+echo "EMS_CONFIG_LOCATION=${EMS_CONFIG_LOCATION}" #| tee -a ${LOG_FILE}
+#echo "LOG_FILE=${LOG_FILE}" | tee -a ${LOG_FILE}
+echo "UNAME=$(uname -a)" #| tee -a ${LOG_FILE}
+echo "" #| tee -a ${LOG_FILE}
 
 # Run Baguette Client
 if [ "$1" == "--i" ]; then
@@ -82,13 +84,14 @@ if [ "$1" == "--i" ]; then
   java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" gr.iccs.imu.ems.baguette.client.BaguetteClient "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:${EMS_CONFIG_DIR}/logback-spring.xml" $* 2>&1 | tee -a ${TEE_FILE}
 else
   # Setup TERM & INT signal handler
-  trap "echo \"Signaled EMS client to exit\" | tee -a ${LOG_FILE}" SIGTERM SIGINT
+  #trap "echo \"Signaled EMS client to exit\" | tee -a ${LOG_FILE}" SIGTERM SIGINT
 
   # Run Baguette Client
-  echo "Starting Baguette client..." | tee -a ${LOG_FILE}
-  java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" gr.iccs.imu.ems.baguette.client.BaguetteClient "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:${EMS_CONFIG_DIR}/logback-spring.xml" $* 2>&1 | tee -a ${LOG_FILE} &
-  PID=$!
-  echo "Baguette client PID: $PID" | tee -a ${LOG_FILE}
+  echo "Starting Baguette client..." #| tee -a ${LOG_FILE}
+  exec java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" gr.iccs.imu.ems.baguette.client.BaguetteClient "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:${EMS_CONFIG_DIR}/logback-spring.xml" $*
+  #.... 2>&1 | tee -a ${LOG_FILE} &
+#  PID=$!
+#  echo "Baguette client PID: $PID" | tee -a ${LOG_FILE}
 
   #if command -v jps
   #then
