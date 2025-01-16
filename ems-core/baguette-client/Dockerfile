@@ -26,7 +26,7 @@ RUN mkdir -p ${EMS_HOME} && \
     adduser --home ${EMS_HOME} --no-create-home --ingroup ${EMS_USER} --disabled-password ${EMS_USER} && \
     chown ${EMS_USER}:${EMS_USER} ${EMS_HOME}
 
-USER ${EMS_USER}
+#USER ${EMS_USER}
 WORKDIR ${EMS_HOME}
 
 # Setup environment
@@ -44,4 +44,5 @@ EXPOSE 61610
 EXPOSE 61616
 EXPOSE 61617
 
-ENTRYPOINT ["/bin/sh", "-c", "/opt/baguette-client/bin/run.sh  &&  tail -f /opt/baguette-client/logs/output.txt"]
+#ENTRYPOINT ["/bin/sh", "-c", "/opt/baguette-client/bin/run.sh  &&  tail -f /opt/baguette-client/logs/output.txt"]
+ENTRYPOINT ["/opt/baguette-client/bin/run.sh"]
