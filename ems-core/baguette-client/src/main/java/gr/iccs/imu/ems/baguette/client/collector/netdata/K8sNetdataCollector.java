@@ -242,7 +242,7 @@ public class K8sNetdataCollector implements IClientCollector, INetdataCollector,
                     // Else check sensor config for 'context' key
                     cfgCtx.context = get(sensorConfig, "context", null);
 
-                    addEntryIfMissingOrBlank(sensorConfig, "dimension", "*");
+                    addEntryIfMissingOrBlank(sensorConfig, "dimensions", "*");
                     addEntryIfMissingOrBlank(sensorConfig, "after", "-1");
                     addEntryIfMissingOrBlank(sensorConfig, "group", "average");
                     addEntryIfMissingOrBlank(sensorConfig, "format", "json2");
@@ -265,7 +265,7 @@ public class K8sNetdataCollector implements IClientCollector, INetdataCollector,
                         addEntryIfMissingOrBlank(sensorConfig, "group_by", "label");
                         addEntryIfMissingOrBlank(sensorConfig, "group_by_label", "k8s_namespace,k8s_pod_name");
                     }
-                    addEntryIfMissingOrBlank(sensorConfig, "dimension", "*");
+                    addEntryIfMissingOrBlank(sensorConfig, "dimensions", "*");
                     addEntryIfMissingOrBlank(sensorConfig, "after", "-1");
                     addEntryIfMissingOrBlank(sensorConfig, "time_group", "average");
                     addEntryIfMissingOrBlank(sensorConfig, "format", "ssv");
@@ -273,7 +273,7 @@ public class K8sNetdataCollector implements IClientCollector, INetdataCollector,
                     log.warn("K8sNetdataCollector: doStart(): Sensor-{}: Invalid Netdata endpoint found in sensor config: {}", sensorNum.get(), map);
                     return;
                 }
-                cfgCtx.dimensions = get(sensorConfig, "dimension", cfgCtx.dimensions);
+                cfgCtx.dimensions = get(sensorConfig, "dimensions", cfgCtx.dimensions);
 
                 StringBuilder sb = new StringBuilder(endpoint);
                 final AtomicBoolean first = new AtomicBoolean(true);
