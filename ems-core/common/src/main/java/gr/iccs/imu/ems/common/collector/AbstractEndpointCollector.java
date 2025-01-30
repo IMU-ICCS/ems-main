@@ -80,14 +80,14 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
 
     public void processAllowedTopics(Collection<String> allowedTopicsSpec) {
         Set<String> topicsSet = allowedTopicsSpec == null
-                ? null : properties.getAllowedTopics().stream()
+                ? null : allowedTopicsSpec.stream()
                         .map(s -> s.split(":")[0])
                         .collect(Collectors.toSet());
-        Map<String, Set<String>> topicsMap = properties.getAllowedTopics() == null
-                ? null : properties.getAllowedTopics().stream()
-                .map(s -> s.split(":", 2))
-                .collect(Collectors.groupingBy(a -> a[0],
-                        Collectors.mapping(a -> a.length > 1 ? a[1] : "", Collectors.toSet())));
+        Map<String, Set<String>> topicsMap = allowedTopicsSpec == null
+                ? null : allowedTopicsSpec.stream()
+                        .map(s -> s.split(":", 2))
+                        .collect(Collectors.groupingBy(a -> a[0],
+                                Collectors.mapping(a -> a.length > 1 ? a[1] : "", Collectors.toSet())));
 
         log.info("Collectors::{}: New Allowed Topics: {} -- Topics Map: {}", collectorId, topicsSet, topicsMap);
         synchronized (this) {
