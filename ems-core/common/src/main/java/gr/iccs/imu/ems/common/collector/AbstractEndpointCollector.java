@@ -73,13 +73,13 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
     @Override
     public void afterPropertiesSet() {
         log.debug("Collectors::{}: properties: {}", collectorId, properties);
-        processAllowedTopics(properties.getAllowedTopics());
+        processAllowedTopics();
 
         registerInternalEvents(collectorId);
     }
 
-    public void processAllowedTopics(Collection<String> allowedTopicsSpec) {
-        Set<String> topicsSet = allowedTopicsSpec == null
+    public void processAllowedTopics() {
+        Set<String> topicsSet = properties.getAllowedTopics() == null
                 ? null : properties.getAllowedTopics().stream()
                         .map(s -> s.split(":")[0])
                         .collect(Collectors.toSet());
