@@ -577,8 +577,7 @@ public class K8sNetdataCollector implements IClientCollector, INetdataCollector,
                 log.debug("K8sNetdataCollector: includeResult(): END: pods=ALL, ns=ALL: result={}", true);
                 return true;
             } else {
-                String prefix = cfgCtx.namespace + ",";
-                boolean result = StringUtils.startsWith(id, prefix);
+                boolean result = StringUtils.startsWith(id, nsPrefix);
                 log.debug("K8sNetdataCollector: includeResult(): END: pods=ALL, ns={}: result={}", cfgCtx.namespace, result);
                 return result;
             }
