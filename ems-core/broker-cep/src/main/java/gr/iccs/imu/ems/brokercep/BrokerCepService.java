@@ -53,6 +53,7 @@ public class BrokerCepService {
     private BrokerCepConsumer brokerCepBridge;
     @Getter
     private CepService cepService;
+    @Getter
     private EventCache eventCache;
 
     private Gson gson;

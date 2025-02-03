@@ -123,7 +123,7 @@ public class CepService implements InitializingBean {
      * Handle the incoming event as Map
      */
     public void handleEvent(Map<String, Object> event, String eventType) {
-        log.debug("CepService.handleEvent(): type={}, event={}", eventType, event.toString());
+        log.debug("CepService.handleEvent(): type={}, event={}", eventType, event);
         EventMap.checkEvent(event);
         epService.getEPRuntime().sendEvent(event, eventType);
         eventCounter.incrementAndGet();

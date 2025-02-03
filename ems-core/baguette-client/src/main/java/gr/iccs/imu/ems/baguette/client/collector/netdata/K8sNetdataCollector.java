@@ -480,7 +480,7 @@ public class K8sNetdataCollector implements IClientCollector, INetdataCollector,
 
                 // Check and (debug) print few values
                 try {
-                    double result = Double.parseDouble(response.get("result").toString());
+                    String result = Objects.requireNonNullElse(response.get("result"), "").toString();
                     //resultsMap.put("result", result);
                     if (view!=null) {
                         long after = Long.parseLong(view.get("after").toString());
@@ -490,8 +490,12 @@ public class K8sNetdataCollector implements IClientCollector, INetdataCollector,
                     }
                 } catch (Exception e) {
                     Map v = (Map) response.get("view");
-                    log.warn("K8sNetdataCollector: collectDataFromNode(): result={}, view={}, after={}, before={} :: Exception: ",
-                            response.get("result"), v, v!=null ? v.get("after") : null, v!=null ? v.get("before") : null, e);
+                    if (log.isDebugEnabled())
+                        log.debug("K8sNetdataCollector: collectDataFromNode(): Problem with acquired values: result={}, view={}, after={}, before={} :: Exception: ",
+                                response.get("result"), v, v!=null ? v.get("after") : null, v!=null ? v.get("before") : null, e);
+                    else
+                        log.warn("K8sNetdataCollector: collectDataFromNode(): Problem with acquired values: result={}, view={}, after={}, before={}",
+                                response.get("result"), v, v!=null ? v.get("after") : null, v!=null ? v.get("before") : null);
                 }
 
                 // Extract measurements
