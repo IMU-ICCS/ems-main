@@ -32,6 +32,7 @@ EMS_CONFIG_LOCATION=optional:file:$EMS_CONFIG_DIR/ems-client.yml,optional:file:$
 LOG_FILE=${BASEDIR}/logs/output.txt
 TEE_FILE=${BASEDIR}/logs/tee.txt
 #JASYPT_PASSWORD=password
+JASYPT_PASSWORD=${EMS_CLIENT_JASYPT_PASSWORD}
 
 [ -z "${JAVA_HOME}" ] && [ -d "${BASEDIR}/jre" ] && JAVA_HOME=${BASEDIR}/jre
 #export EMS_CONFIG_DIR PAASAGE_CONFIG_DIR LOG_FILE JASYPT_PASSWORD JAVA_HOME
