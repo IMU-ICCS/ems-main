@@ -71,12 +71,6 @@ JAVA_OPTS="${JAVA_OPTS} -Djasypt.encryptor.password=$JASYPT_PASSWORD"
 JAVA_OPTS="${JAVA_OPTS} --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED"
 
 # Print settings
-echo "" #| tee -a ${LOG_FILE}
-echo "EMS_CONFIG_DIR=${EMS_CONFIG_DIR}" #| tee -a ${LOG_FILE}
-echo "EMS_CONFIG_LOCATION=${EMS_CONFIG_LOCATION}" #| tee -a ${LOG_FILE}
-#echo "LOG_FILE=${LOG_FILE}" | tee -a ${LOG_FILE}
-echo "UNAME=$(uname -a)" #| tee -a ${LOG_FILE}
-echo "" #| tee -a ${LOG_FILE}
 echo "" | tee -a ${LOG_FILE}
 echo "---------------- $(date -Iseconds |sed -e 's/T/ /') ----------------" | tee -a ${LOG_FILE}
 echo "EMS_CONFIG_DIR=${EMS_CONFIG_DIR}" | tee -a ${LOG_FILE}
@@ -94,12 +88,16 @@ else
   #trap "echo \"Signaled EMS client to exit\" | tee -a ${LOG_FILE}" SIGTERM SIGINT
 
   # Run Baguette Client
-  echo "Starting Baguette client..." #| tee -a ${LOG_FILE}
-  exec java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" gr.iccs.imu.ems.baguette.client.BaguetteClient "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:${EMS_CONFIG_DIR}/logback-spring.xml" $*
   echo "Starting Baguette client..." | tee -a ${LOG_FILE}
-  #.... 2>&1 | tee -a ${LOG_FILE} &
-#  PID=$!
-#  echo "Baguette client PID: $PID" | tee -a ${LOG_FILE}
+  exec java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" gr.iccs.imu.ems.baguette.client.BaguetteClient "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:${EMS_CONFIG_DIR}/logback-spring.xml" $* 2>&1 |tee -a ${LOG_FILE}
+  #PID=$!
+  #echo "Baguette client PID: $PID" | tee -a ${LOG_FILE}
+
+  #while kill -0 $PID 2>/dev/null; do
+  #  echo "Process with PID $PID is still running..."
+  #  sleep 1
+  #done
+  #echo "Process with PID $PID has ended."
 
   #if command -v jps
   #then
