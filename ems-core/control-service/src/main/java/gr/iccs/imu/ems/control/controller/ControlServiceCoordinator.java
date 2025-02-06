@@ -259,6 +259,19 @@ public class ControlServiceCoordinator implements InitializingBean {
     }
 
     @Async
+    public Map<String,Double> getConstants(ControlServiceRequestInfo requestInfo) {
+        if (brokerCep == null) {
+            log.debug("ControlServiceCoordinator.getConstants(): Broker-CEP: Initializing...");
+            brokerCep = applicationContext.getBean(BrokerCepService.class);
+            log.debug("ControlServiceCoordinator.getConstants(): Broker-CEP: Initializing...ok");
+        }
+
+        Map<String,Double> constants = brokerCep.getConstants();
+        log.debug("ControlServiceCoordinator.getConstants(): Constants from Broker-CEP: {}", constants);
+        return constants;
+    }
+
+    @Async
     public void setConstants(@NonNull Map<String,Double> constants, ControlServiceRequestInfo requestInfo) {
         _lockAndProcessModel(null, null, requestInfo, "setConstants()", true, () -> {
             // Call '_setConstants()' to do actual processing

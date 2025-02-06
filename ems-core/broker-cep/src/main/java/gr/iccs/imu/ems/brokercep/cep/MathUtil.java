@@ -50,10 +50,20 @@ public class MathUtil {
 
     // ------------------------------------------------------------------------
 
+    public static Double getConstant(String constantName) {
+        return constants.get(constantName).getConstantValue();
+    }
+
     public static void setConstant(String constantName, double constantValue) {
         log.debug("MathUtil: Set constant: name={}, value={}", constantName, constantValue);
         Constant con = new Constant(constantName, constantValue);
         constants.put(constantName, con);
+    }
+
+    public static Map<String, Double> getConstants() {
+        Map<String, Double> map = new HashMap<>();
+        constants.forEach((name,constant) -> map.put(name, constant.getConstantValue()));
+        return map;
     }
 
     public static void setConstants(Map<String, Double> constantsMap) {
