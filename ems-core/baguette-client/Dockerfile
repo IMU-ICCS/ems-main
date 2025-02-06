@@ -26,7 +26,7 @@ RUN mkdir -p ${EMS_HOME} && \
     adduser --home ${EMS_HOME} --no-create-home --ingroup ${EMS_USER} --disabled-password ${EMS_USER} && \
     chown ${EMS_USER}:${EMS_USER} ${EMS_HOME}
 
-#USER ${EMS_USER}
+USER ${EMS_USER}
 WORKDIR ${EMS_HOME}
 
 # Setup environment
