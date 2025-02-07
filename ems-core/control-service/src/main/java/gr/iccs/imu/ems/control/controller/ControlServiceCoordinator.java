@@ -258,7 +258,6 @@ public class ControlServiceCoordinator implements InitializingBean {
         });
     }
 
-    @Async
     public Map<String,Double> getConstants(ControlServiceRequestInfo requestInfo) {
         if (brokerCep == null) {
             log.debug("ControlServiceCoordinator.getConstants(): Broker-CEP: Initializing...");
@@ -276,7 +275,8 @@ public class ControlServiceCoordinator implements InitializingBean {
         _lockAndProcessModel(null, null, requestInfo, "setConstants()", true, () -> {
             // Call '_setConstants()' to do actual processing
             _setConstants(constants, requestInfo);
-            return List.of(getCurrentEmsState(), getCurrentEmsStateMessage(), getCurrentEmsStateChangeTimestamp());
+            //return List.of(getCurrentEmsState(), getCurrentEmsStateMessage(), getCurrentEmsStateChangeTimestamp());
+            return null;
         });
     }
 

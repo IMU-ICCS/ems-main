@@ -18,6 +18,7 @@ import gr.iccs.imu.ems.common.collector.netdata.INetdataCollector;
 import gr.iccs.imu.ems.common.collector.netdata.NetdataCollectorProperties;
 import gr.iccs.imu.ems.util.EmsConstant;
 import gr.iccs.imu.ems.util.EventBus;
+import gr.iccs.imu.ems.util.StrUtil;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -426,8 +427,13 @@ public class K8sNetdataCollector implements IClientCollector, INetdataCollector,
         // Scrape Netdata node(s)
         nodesToScrape.forEach(nodeAddress -> {
             String url = String.format("http://%s:%d%s", nodeAddress, cfgCtx.port, cfgCtx.urlSuffix);
-            log.info("K8sNetdataCollector: collectData(): Scraping Netdata node: {}", url);
-            collectDataFromNode(cfgCtx, url, nodeAddress.toString());
+            try {
+                log.info("K8sNetdataCollector: collectData(): Scraping Netdata node: {}", url);
+                collectDataFromNode(cfgCtx, url, nodeAddress.toString());
+            } catch (Exception e) {
+                log.warn("K8sNetdataCollector: collectData(): EXCEPTION while Scraping Netdata node: {} -- Exception: {}", url, StrUtil.exceptionToDetailsString(e, true));
+                log.debug("K8sNetdataCollector: collectData(): EXCEPTION while Scraping Netdata node: {}\n", url, e);
+            }
         });
 
         long endTm = System.currentTimeMillis();
