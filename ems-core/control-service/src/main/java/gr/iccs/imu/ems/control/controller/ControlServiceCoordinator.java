@@ -283,6 +283,9 @@ public class ControlServiceCoordinator implements InitializingBean {
     protected void _lockAndProcessModel(String appModelId, String appExecModelId, ControlServiceRequestInfo requestInfo,
                                         String caller, boolean updateEmsState, Supplier<List<Object>> callback)
     {
+        if (requestInfo==null)
+            requestInfo = ControlServiceRequestInfo.EMPTY;
+
         // Acquire lock of this coordinator
         if (!inUse.compareAndSet(false, true)) {
             String mesg = "ControlServiceCoordinator."+caller+": ERROR: Coordinator is in use. Exits immediately";
