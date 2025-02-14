@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.*;
 
 @Slf4j
@@ -47,7 +48,7 @@ public class BrokerClient {
     private PasswordUtil passwordUtil;
     private Connection connection;
     private Session session;
-    private HashMap<MessageListener,MessageConsumer> listeners = new HashMap<>();
+    private HashMap<MessageListener,Set<MessageConsumer>> listeners = new HashMap<>();
     private Gson gson = new GsonBuilder().create();
 
     public BrokerClient() {
@@ -317,28 +318,26 @@ public class BrokerClient {
 
     // ------------------------------------------------------------------------
 
-    public void subscribe(String connectionString, String destinationName, MessageListener listener) throws JMSException {
+    public void subscribe(String connectionString, String destinationNames, MessageListener listener) throws JMSException {
+        subscribe(connectionString, destinationNames, listener, ON_EXCEPTION.LOG_AND_IGNORE);
+    }
+
+    public void subscribe(String connectionString, String destinationNames, MessageListener listener, ON_EXCEPTION onException) throws JMSException {
         // Create or open connection
         checkProperties();
         if (session==null) {
             openConnection(connectionString);
         }
 
-        // Create the destination (Topic or Queue)
-        log.info("BrokerClient: Subscribing to destination: {}...", destinationName);
-        //Destination destination = session.createQueue( destinationName );
-        Destination destination = session.createTopic(destinationName);
-
-        // Create a MessageConsumer from the Session to the Topic or Queue
-        MessageConsumer consumer = session.createConsumer(destination);
-        consumer.setMessageListener(listener);
-        listeners.put(listener, consumer);
+        // Create the destinations (Topics or Queues)
+        subscribeToTopics(destinationNames, listener, onException);
     }
 
     public void unsubscribe(MessageListener listener) throws JMSException {
-        MessageConsumer consumer = listeners.get(listener);
-        if (consumer!=null) {
-            consumer.close();
+        for (MessageConsumer consumer : listeners.get(listener)) {
+            if (consumer != null) {
+                consumer.close();
+            }
         }
     }
 
@@ -346,13 +345,12 @@ public class BrokerClient {
 
     public enum ON_EXCEPTION { IGNORE, LOG_AND_IGNORE, THROW, LOG_AND_THROW }
 
-    public void receiveEvents(String connectionString, String destinationName, MessageListener listener) throws JMSException {
-        receiveEvents(connectionString, destinationName, listener, ON_EXCEPTION.LOG_AND_IGNORE);
+    public void receiveEvents(String connectionString, String destinationNames, MessageListener listener) throws JMSException {
+        receiveEvents(connectionString, destinationNames, listener, ON_EXCEPTION.LOG_AND_IGNORE);
     }
 
-    public void receiveEvents(String connectionString, String destinationName, MessageListener listener, ON_EXCEPTION onException) throws JMSException {
+    public void receiveEvents(String connectionString, String destinationNames, MessageListener listener, ON_EXCEPTION onException) throws JMSException {
         checkProperties();
-        MessageConsumer consumer = null;
         boolean _closeConn = false;
         try {
             // Create or open connection
@@ -361,44 +359,65 @@ public class BrokerClient {
                 _closeConn = ! properties.isPreserveConnection();
             }
 
-            // Create the destination (Topic or Queue)
-            log.info("BrokerClient: Subscribing to destination: {}...", destinationName);
-            //Destination destination = session.createQueue( destinationName );
-            Destination destination = session.createTopic(destinationName);
-
-            // Create a MessageConsumer from the Session to the Topic or Queue
-            consumer = session.createConsumer(destination);
+            // Create the destinations (Topics or Queues)
+            subscribeToTopics(destinationNames, listener, onException);
 
             // Wait for messages
-            boolean logException = onException==ON_EXCEPTION.LOG_AND_IGNORE || onException==ON_EXCEPTION.LOG_AND_THROW;
-            boolean throwException = onException==ON_EXCEPTION.THROW || onException==ON_EXCEPTION.LOG_AND_THROW;
             log.info("BrokerClient: Waiting for messages...");
             while (true) {
-                Message message = consumer.receive();
-                try {
-                    listener.onMessage(message);
-                } catch (Exception e) {
-                    if (logException) {
-                        if (log.isDebugEnabled())
-                            log.debug("BrokerClient: Exception in callback listener: {}: {}\nevent: {}\nException: ",
-                                    e.getClass().getName(), e.getMessage(), message, e);
-                        else
-                            log.warn("BrokerClient: Exception in callback listener: {}: {}\nevent: {}",
-                                    e.getClass().getName(), e.getMessage(), message);
-                    }
-                    if (throwException)
-                        throw e;
-                }
+                try { Thread.sleep(Duration.ofDays(1)); } catch (InterruptedException e) { break; }
             }
 
         } finally {
             // Clean up
             log.info("BrokerClient: Closing connection...");
-            if (consumer != null) consumer.close();
             if (_closeConn) {
                 closeConnection();
             }
         }
+    }
+
+    private void subscribeToTopics(String destinationNames, MessageListener listener, ON_EXCEPTION onException) throws JMSException {
+        // Prepare message listener
+        MessageListener wrapperListener = getWrapperMessageListener(listener, onException);
+
+        // Create the destinations (Topics or Queues)
+        List<String> destinationNamesList = Arrays.stream(destinationNames.split("[,;]"))
+                .filter(StringUtils::isNotBlank).map(String::trim)
+                .toList();
+        for (String destinationName : destinationNamesList) {
+            destinationName = destinationName.trim();
+
+            log.info("BrokerClient: Subscribing to destination: {}...", destinationName);
+            //Destination destination = session.createQueue( destinationName );
+            Destination destination = this.session.createTopic(destinationName);
+
+            // Create a MessageConsumers from the Session to the Topics or Queues
+            MessageConsumer consumer = this.session.createConsumer(destination);
+            consumer.setMessageListener(wrapperListener);
+            listeners.computeIfAbsent(listener, ml -> new HashSet<>()).add(consumer);
+        }
+    }
+
+    private static MessageListener getWrapperMessageListener(MessageListener listener, ON_EXCEPTION onException) {
+        boolean logException = onException ==ON_EXCEPTION.LOG_AND_IGNORE || onException ==ON_EXCEPTION.LOG_AND_THROW;
+        boolean throwException = onException ==ON_EXCEPTION.THROW || onException ==ON_EXCEPTION.LOG_AND_THROW;
+        return (message) -> {
+            try {
+                listener.onMessage(message);
+            } catch (Exception e) {
+                if (logException) {
+                    if (log.isDebugEnabled())
+                        log.debug("BrokerClient: Exception in callback listener: {}: {}\nevent: {}\nException: ",
+                                e.getClass().getName(), e.getMessage(), message, e);
+                    else
+                        log.warn("BrokerClient: Exception in callback listener: {}: {}\nevent: {}",
+                                e.getClass().getName(), e.getMessage(), message);
+                }
+                if (throwException)
+                    throw e;
+            }
+        };
     }
 
     // ------------------------------------------------------------------------
