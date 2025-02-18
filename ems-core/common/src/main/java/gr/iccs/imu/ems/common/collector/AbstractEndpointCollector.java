@@ -20,9 +20,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
+import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.web.client.RestClient;
 
 import java.time.Duration;
 import java.util.*;
@@ -316,6 +319,17 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
                 message.put(s[0].trim(), s[1]);
         }
         eventBus.send(topic, message, getClass().getName());
+    }
+
+    // Can be used by sub-classes to initialize a REST client for retrieving their data
+    protected RestClient createRestClient() {
+        ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings
+                .defaults()
+                .withConnectTimeout(Duration.ofSeconds(5))
+                .withReadTimeout(Duration.ofSeconds(5));
+        return RestClient.builder()
+                .requestFactory(ClientHttpRequestFactoryBuilder.jdk().build(settings))
+                .build();
     }
 
     protected abstract ResponseEntity<T> getData(String url);
