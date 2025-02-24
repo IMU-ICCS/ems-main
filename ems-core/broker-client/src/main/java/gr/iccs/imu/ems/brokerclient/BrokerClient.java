@@ -402,12 +402,11 @@ public class BrokerClient {
                 openConnection(connectionString);
                 _closeConn = ! properties.isPreserveConnection();
             }
-        } finally {
+        } catch (Exception e) {
             // Clean up
-            log.info("BrokerClient: Connection failed...");
-            if (_closeConn) {
-                closeConnection();
-            }
+            log.error("BrokerClient: Connection failed...\n", e);
+            closeConnection();
+            return;
         }
 
         try {
