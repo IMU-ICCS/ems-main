@@ -44,6 +44,7 @@ public class BrokerClientApp {
 
     private static boolean filterAMQMessages = true;
     private static boolean isRecording = false;
+    private static boolean autoReconnect = false;
     private static File recordFile;
     private static Writer recordWriter;
     private static RECORD_FORMAT recordFormat;
@@ -83,12 +84,16 @@ public class BrokerClientApp {
         printAsJson = args.length>aa && args[aa].equals("-NPJ") ? false : true;
         if (!printAsJson) aa++;
 
+        autoReconnect = args.length>aa && args[aa].equals("-AR");
+        if (autoReconnect) aa++;
+
         String username = args.length>aa && args[aa].startsWith("-U") ? args[aa++].substring(2) : null;
         String password = username!=null && args.length>aa && args[aa].startsWith("-P") ? args[aa++].substring(2) : null;
         if (StringUtils.isNotBlank(username) && password == null) {
             password = new String(System.console().readPassword("Enter broker password: "));
         }
 
+        // Pre-process Record commands
         if ("record".equalsIgnoreCase(command)) {
             isRecording = true;
             command = "receive";
@@ -155,7 +160,10 @@ public class BrokerClientApp {
             log.debug("BrokerClientApp: Subscribing to topic: {}", topic);
             log.debug("BrokerClientApp: on-exception setting: {}", onException);
             BrokerClient client = BrokerClient.newClient(username, password);
-            client.receiveEvents(url, topic, getMessageListener(destinationFilters, propertyFilters), onException);
+            if (! autoReconnect)
+                client.receiveEvents(url, topic, getMessageListener(destinationFilters, propertyFilters), onException);
+            else
+                client.receiveEventsWithAutoReconnect(url, topic, getMessageListener(destinationFilters, propertyFilters), onException);
         } else
         // playback events
         if ("playback".equalsIgnoreCase(command)) {
@@ -179,7 +187,14 @@ public class BrokerClientApp {
             log.debug("BrokerClientApp: On-exception setting: {}", onException);
             BrokerClient client = BrokerClient.newClient(username, password);
             MessageListener listener;
-            client.subscribe(url, topic, listener = getMessageListener(destinationFilters, propertyFilters), onException);
+            if (!autoReconnect) {
+                client.subscribe(url, topic, listener = getMessageListener(destinationFilters, propertyFilters), onException);
+            } else {
+                client.subscribeWithAutoReconnect(url, topic, listener = getMessageListener(destinationFilters, propertyFilters), onException, (exitCode) -> {
+                    log.debug("BrokerClientApp: Exit with code {}", exitCode);
+                    System.exit(exitCode);
+                });
+            }
 
             log.info("BrokerClientApp: Hit ENTER to exit");
             try {
@@ -187,9 +202,11 @@ public class BrokerClientApp {
             } catch (Exception ignored) {}
             log.debug("BrokerClientApp: Closing connection...");
 
+            client.stopRunning(true, 5000L);
             client.unsubscribe(listener);
             client.closeConnection();
             log.debug("BrokerClientApp: Exiting...");
+            System.exit(0);
 
         } else
         // start event generator
@@ -262,6 +279,7 @@ public class BrokerClientApp {
             log.error("BrokerClientApp: Unknown command: {}", command);
             usage(args);
         }
+        log.debug("BrokerClientApp: Exit");
     }
 
     private static String getPayload(String payload, boolean processPlaceholders) throws IOException {
