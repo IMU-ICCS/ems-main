@@ -103,6 +103,25 @@ while :; do
       "${@}" &
   emsPid=$!
   echo "EMS Pid: $emsPid"
+
+  # Check if POST_BOOT_COMMAND is not empty
+  if [ -n "${POST_BOOT_COMMAND}" ] ; then
+    # Spawn a new background process to run EMS server post-boot command
+    {
+      # Wait until EMS server is ready
+      while [ $(curl -s -k  'https://localhost:8111/ems/status'  -H 'accept: application/json' -H "EMS-API-KEY: 1234567890" 2>/dev/null |grep -c "READY" ) -eq 0 ]; do
+        echo "Waiting EMS server to get READY"
+        sleep ${POST_BOOT_COMMAND_EXEC_POLL:-10}
+      done
+      echo "EMS server is READY"
+      sleep ${POST_BOOT_COMMAND_DELAY:-5}
+
+      echo "Running EMS server post-boot command: ${POST_BOOT_COMMAND}"
+      ${POST_BOOT_COMMAND}
+    } &
+  fi
+
+  # Wait here until EMS server exits
   wait $emsPid
 
   retCode=$?
