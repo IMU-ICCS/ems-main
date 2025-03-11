@@ -10,6 +10,7 @@
 package gr.iccs.imu.ems.baguette.client.install;
 
 import gr.iccs.imu.ems.util.EmsConstant;
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ public class ClientInstallationProperties implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        normalizeParameterKeys();
         log.debug("ClientInstallationProperties: {}", this);
     }
 
@@ -91,6 +93,18 @@ public class ClientInstallationProperties implements InitializingBean {
 
     private boolean continueOnFail = false;
     private String sessionRecordingDir = "logs";
+
+    @PostConstruct
+    public void normalizeParameterKeys() {
+        Map<String, String> normalizedParameters = new LinkedHashMap<>();
+        parameters.forEach((key, value) -> {
+            String normalizedKey = key.toUpperCase();  // Convert to upper case keys
+            normalizedKey = normalizedKey.replace(".", "_");  // Replace dots (.) with underscores (_)
+            normalizedParameters.put(normalizedKey, value);
+        });
+        parameters.clear();
+        parameters.putAll(normalizedParameters);
+    }
 
     // ----------------------------------------------------
 
