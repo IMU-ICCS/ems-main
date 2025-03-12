@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
@@ -138,17 +139,17 @@ public class EventForwarder implements InitializingBean, Runnable {
                     String username2 = bcc!=null ? bcc.getUsername() : null;
                     String password2 = bcc!=null ? bcc.getPassword() : null;
 
-                    if (!brokerUrl.equals(brokerUrl2)) {
+                    if (!StringUtils.equals(brokerUrl, brokerUrl2)) {
                         log.warn("-   Forward broker config changed: sender: {}, broker-url: {} -> {}, event: {}", senderName, brokerUrl, brokerUrl2, task.getEventMap());
                         brokerUrl = brokerUrl2;
                         configChanged = true;
                     }
-                    if (!username.equals(username2)) {
+                    if (!StringUtils.equals(username, username2)) {
                         log.warn("-   Forward broker config changed: sender: {}, username: {} -> {}, event: {}", senderName, username, username2, task.getEventMap());
                         username = username2;
                         configChanged = true;
                     }
-                    if (!password.equals(password2)) {
+                    if (!StringUtils.equals(password, password2)) {
                         log.warn("-   Forward broker config changed: sender: {}, password: ******** -> ********, event: {}", senderName, task.getEventMap());
                         password = password2;
                         configChanged = true;
