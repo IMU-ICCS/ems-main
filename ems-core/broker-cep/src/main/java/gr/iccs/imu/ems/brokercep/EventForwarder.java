@@ -70,7 +70,7 @@ public class EventForwarder implements InitializingBean, Runnable {
     @Override
     public void run() {
         long delay = properties.getEventForwarderLoopDelay();
-        if (delay<10L) delay = 100L;
+        if (delay<0L) delay = 0L;
 
         while (true) {
             try {
@@ -83,6 +83,7 @@ public class EventForwarder implements InitializingBean, Runnable {
     }
 
     private void waitFor(long delayInMillis) {
+        if (delayInMillis<=0) return;
         try {
             Thread.sleep(delayInMillis);
         } catch (InterruptedException e) {
