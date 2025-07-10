@@ -139,7 +139,7 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     // Convert Object to EventMap
     public static EventMap toEventMap(@NonNull Object o) {
         if (o instanceof EventMap map) return map;
-        if (o instanceof Map) return new EventMap(StrUtil.castToMapStringObject(o) );
+        if (o instanceof Map) return new EventMap( StrUtil.castToMapStringObject(o) );
         return parseEventMap(o.toString());
     }
 
@@ -164,6 +164,11 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
         */
         EventMap eventMap = gson.fromJson(s, EventMap.class);
         eventMap.checkEvent();
+        return eventMap;
+    }
+
+    public static Map parseMap(@NonNull String s) {
+        Map eventMap = gson.fromJson(s, Map.class);
         return eventMap;
     }
 
