@@ -168,8 +168,10 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     }
 
     public static Map parseMap(@NonNull String s) {
-        Map eventMap = gson.fromJson(s, Map.class);
-        return eventMap;
+        Map map = gson.fromJson(s, Map.class);
+        Object ts = map.get(TIMESTAMP_NAME);
+        if (ts instanceof Double d) map.put(TIMESTAMP_NAME, d.longValue());
+        return map;
     }
 
     public void checkEvent() {
