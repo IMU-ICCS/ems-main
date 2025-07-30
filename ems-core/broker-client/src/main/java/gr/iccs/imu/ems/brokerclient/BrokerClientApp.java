@@ -230,8 +230,7 @@ public class BrokerClientApp {
             generator.setEventType(type);
             generator.setInterval(interval);
             generator.setHowMany(howmany);
-            generator.setLowerValue(lowerValue);
-            generator.setUpperValue(upperValue);
+            generator.setValues(lowerValue, upperValue);
             generator.setLevel(level);
             generator.setEventProperties(props);
             generator.run();

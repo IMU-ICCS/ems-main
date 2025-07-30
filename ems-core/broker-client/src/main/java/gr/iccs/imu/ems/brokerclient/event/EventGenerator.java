@@ -145,6 +145,13 @@ public class EventGenerator implements Runnable {
         return Math.random() * (upperValue - lowerValue) + lowerValue;
     }
 
+    public void setValues(double l, double u) {
+        if (l > u)
+            throw new IllegalArgumentException("Lower value is greater than Upper value: "+l+" > "+u);
+        lowerValue = l;
+        upperValue = u;
+    }
+
     public void setLowerValue(double v) {
         if (v > upperValue)
             throw new IllegalArgumentException("New lower value is greater than upper value: "+v+" > "+upperValue);
