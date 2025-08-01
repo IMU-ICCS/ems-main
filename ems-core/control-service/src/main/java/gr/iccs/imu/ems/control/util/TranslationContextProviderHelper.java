@@ -25,24 +25,24 @@ public class TranslationContextProviderHelper implements InitializingBean, Trans
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        log.error("TranslationContextProviderHelper: Initialized");
+        log.debug("TranslationContextProviderHelper: Initialized");
     }
 
     @Override
     public TranslationContext getDefaultTranslationContext() {
-        log.error("TranslationContextProviderHelper.getDefaultTranslationContext: BEGIN");
+        log.debug("TranslationContextProviderHelper.getDefaultTranslationContext: BEGIN");
         String id = coordinator.getCurrentAppModelId();
-        log.error("TranslationContextProviderHelper.getDefaultTranslationContext: TC Id: {}", id);
+        log.debug("TranslationContextProviderHelper.getDefaultTranslationContext: Default TC Id: {}", id);
         TranslationContext translationContext = coordinator.getTranslationContextOfAppModel(id);
-        log.error("TranslationContextProviderHelper.getDefaultTranslationContext: END: {}", translationContext);
+        log.trace("TranslationContextProviderHelper.getDefaultTranslationContext: END: {}", translationContext);
         return translationContext;
     }
 
     @Override
     public TranslationContext getTranslationContext(String id) {
-        log.error("TranslationContextProviderHelper.getTranslationContext: BEGIN: id: {}", id);
+        log.debug("TranslationContextProviderHelper.getTranslationContext: BEGIN: id: {}", id);
         TranslationContext translationContext = coordinator.getTranslationContextOfAppModel(id);
-        log.error("TranslationContextProviderHelper.getTranslationContext: END: {}", translationContext);
+        log.trace("TranslationContextProviderHelper.getTranslationContext: END: {}", translationContext);
         return translationContext;
     }
 }
