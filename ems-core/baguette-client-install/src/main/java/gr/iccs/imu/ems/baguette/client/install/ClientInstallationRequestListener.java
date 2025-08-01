@@ -19,6 +19,7 @@ import gr.iccs.imu.ems.baguette.server.BaguetteServer;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.translate.TranslationContext;
+import gr.iccs.imu.ems.translate.TranslationContextProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
@@ -27,6 +28,7 @@ import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.activemq.command.ActiveMQTopic;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import jakarta.jms.*;
@@ -43,6 +45,7 @@ import static gr.iccs.imu.ems.baguette.client.install.ClientInstallationTask.TAS
 @Service
 @RequiredArgsConstructor
 public class ClientInstallationRequestListener implements InitializingBean {
+    private final ApplicationContext applicationContext;
     private final ClientInstallationProperties properties;
     private final InstructionsService instructionsService;
     private final INodeRegistration nodeRegistration;
@@ -233,7 +236,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
                         .build())
                 .instructionSets(instructionsSetsList)
                 .nodeMustBeInRegistry(false)
-                .translationContext(new TranslationContext(requestId))
+                .translationContext(getTranslationContext(requestId))
                 .build();
 
         log.debug("InstallationEventListener: New client installation task: {}", newTask);
@@ -250,6 +253,21 @@ public class ClientInstallationRequestListener implements InitializingBean {
         return null;
     }
 
+    private TranslationContext getTranslationContext(String requestId) {
+        Map<String, TranslationContextProvider> providers = applicationContext.getBeansOfType(TranslationContextProvider.class);
+        log.warn(">>>>>>>   {}", providers);
+        TranslationContext translationContext;
+        if (! providers.isEmpty()) {
+            TranslationContextProvider translationContextProvider = applicationContext.getBean(TranslationContextProvider.class);
+            translationContext = translationContextProvider.getDefaultTranslationContext();
+            log.warn(">>>>>>>   Got Default TC: {}", translationContextProvider);
+        } else {
+            translationContext = new TranslationContext(requestId);
+            log.warn(">>>>>>>   Created a new EMPTY TC: {}", translationContext);
+        }
+        return translationContext;
+    }
+
     private void processOnboardingRequest(Map<String,String> request) throws Exception {
         String requestId = request.getOrDefault("requestId", "").trim();
         log.info("InstallationEventListener: New node ONBOARDING request with Id: {}", requestId);
@@ -261,7 +279,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
 
         try {
             log.debug("InstallationEventListener: Registering node due to ONBOARDING request with Id: {}", requestId);
-            nodeRegistration.registerNode(null, convertToNodeInfoMap(request), new TranslationContext(requestId));
+            nodeRegistration.registerNode(null, convertToNodeInfoMap(request), getTranslationContext(requestId));
         } catch (Exception e) {
             log.warn("InstallationEventListener: EXCEPTION while executing ONBOARDING request with Id: {}\n", requestId, e);
             clientInstaller.sendErrorClientInstallationReport(
@@ -287,7 +305,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
 
         try {
             log.debug("InstallationEventListener: Reinstalling node due to REINSTALL request with Id: {}", deviceId);
-            nodeRegistration.reinstallNode(ipAddress, new TranslationContext(requestId));
+            nodeRegistration.reinstallNode(ipAddress, getTranslationContext(requestId));
         } catch (Exception e) {
             log.warn("InstallationEventListener: EXCEPTION while executing REINSTALL request with Id: {}\n", deviceId, e);
             clientInstaller.sendErrorClientInstallationReport(
@@ -313,7 +331,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
 
         try {
             log.debug("InstallationEventListener: Off-boarding node due to REMOVE request with Id: {}, requestId={}", deviceId, requestId);
-            nodeRegistration.unregisterNode(nodeAddress, new TranslationContext(requestId));
+            nodeRegistration.unregisterNode(nodeAddress, getTranslationContext(requestId));
         } catch (Exception e) {
             log.warn("InstallationEventListener: EXCEPTION while executing REMOVE request with Id: {}\n", deviceId, e);
             clientInstaller.sendErrorClientInstallationReport(
