@@ -127,8 +127,7 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
     }
 
     private void initializeLoggingEnvVars() {
-        final StringBuilder sb = new StringBuilder(extraEnvVars);
-        final AtomicBoolean comma = new AtomicBoolean(! extraEnvVars.isBlank());
+        final StringBuilder sb = new StringBuilder();
         System.getenv()
                 .forEach((name, value) -> {
                     name = name.trim();
@@ -142,9 +141,9 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
                         );
                     }
                 });
-        if (sb.length()>extraEnvVars.length())
-            extraEnvVars = sb.toString();
-        log.info("K8sClientInstaller: Extra Env.Vars with Log settings:\n{}", extraEnvVars);
+        if (! sb.isEmpty())
+            extraEnvVars += sb.toString();
+        log.info("K8sClientInstaller: Extra Env.Vars with Log settings:\n{}", sb);
     }
 
     private void initializeTolerations() {
