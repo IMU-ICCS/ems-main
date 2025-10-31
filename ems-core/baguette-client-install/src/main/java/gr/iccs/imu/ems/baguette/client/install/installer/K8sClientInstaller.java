@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -46,6 +47,7 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
     private static final String EMS_CLIENT_DAEMONSET_IMAGE_TAG_DEFAULT = EmsRelease.EMS_VERSION;
     private static final String EMS_CLIENT_DAEMONSET_IMAGE_PULL_POLICY_DEFAULT = "Always";
     private static final String EMS_CLIENT_DEPLOY_AT_CONTROL_PLANE_DEFAULT = "true";
+    private static final String EMS_CLIENT_ENV_VAR_PREFIX = "EMS_CLIENT_ENV_";
 
     private final ClientInstallationTask task;
     private final long taskCounter;
@@ -71,6 +73,7 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
 
         initializeAdditionalCredentials();
         initializeExtraEnvVars();
+        initializeExtraEnvVarsWithPrefix(EMS_CLIENT_ENV_VAR_PREFIX);
         initializeLoggingEnvVars();
         initializeTolerations();
     }
@@ -103,17 +106,38 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
         extraEnvVars = str;
     }
 
+    private void initializeExtraEnvVarsWithPrefix(String prefix) {
+        final StringBuilder sb = new StringBuilder();
+        System.getenv()
+                .forEach((name, value) -> {
+                    name = name.trim();
+                    if (Strings.CI.startsWith(name, prefix)) {
+                        sb.append( String.format("""
+                                                            - name: "%s"
+                                                              value: "%s"
+                                                """,
+                                Strings.CI.removeStart(name, prefix).toUpperCase(),
+                                value)
+                        );
+                    }
+                });
+        if (! sb.isEmpty())
+            extraEnvVars += sb.toString();
+        log.info("K8sClientInstaller: Extra Env.Vars with prefix: {}\n{}", prefix, sb);
+    }
+
     private void initializeLoggingEnvVars() {
         final StringBuilder sb = new StringBuilder(extraEnvVars);
         final AtomicBoolean comma = new AtomicBoolean(! extraEnvVars.isBlank());
         System.getenv()
                 .forEach((name, value) -> {
-                    if (StringUtils.startsWith(name.trim(), "EMS_CLIENT_LOGGING_LEVEL_")) {
+                    name = name.trim();
+                    if (Strings.CI.startsWith(name, "EMS_CLIENT_LOGGING_LEVEL_")) {
                         sb.append( String.format("""
                                                             - name: "%s"
                                                               value: "%s"
                                                 """,
-                                StringUtils.removeStart(name.trim(), "EMS_CLIENT_"),
+                                Strings.CI.removeStart(name, "EMS_CLIENT_"),
                                 value)
                         );
                     }
