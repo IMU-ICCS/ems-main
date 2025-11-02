@@ -244,6 +244,8 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
             // Delete extra manifest resources
             if ("true".equalsIgnoreCase( getConfig("EMS_CLIENT_EXTRA_MANIFESTS_DELETE", "true") ))
                 deleteExtraManifestsResources(client);
+            else
+                log.info("K8sClientInstaller: Will not delete extra manifests resources because EMS_CLIENT_EXTRA_MANIFESTS_DELETE=false");
 
             task.getNodeRegistryEntry().nodeRemoved(null);
         }
@@ -304,31 +306,40 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
     private void applyExtraManifests(K8sClient client) throws IOException {
         log.debug("K8sClientInstaller.applyExtraManifests: BEGIN");
 
-        String extraManifestsStr = getConfig("EMS_CLIENT_EXTRA_MANIFESTS", "");
-        List<String> extraManifestsList =
-                Arrays.stream(extraManifestsStr.split("[, \t\r\n]+"))
-                        .filter(StringUtils::isNotBlank)
-                        .toList();
-
-        Map<String, String> values = Map.of();
-        for (String manifestName : extraManifestsList) {
+        Map<String, String> values = getExtraManifestsValues();
+        for (String manifestName : getExtraManifests()) {
+            log.debug("K8sClientInstaller.applyExtraManifests: Applying manifest: {}", manifestName);
             client.applyManifest(manifestName, values);
         }
+
+        log.debug("K8sClientInstaller.applyExtraManifests: END");
     }
 
     private void deleteExtraManifestsResources(K8sClient client) throws IOException {
         log.debug("K8sClientInstaller.deleteExtraResources: BEGIN");
 
+        Map<String, String> values = getExtraManifestsValues();
+        for (String manifestName : getExtraManifests()) {
+            log.debug("K8sClientInstaller.applyExtraManifests: Deleting resources of manifest: {}", manifestName);
+            client.deleteManifestResources(manifestName, values);
+        }
+
+        log.debug("K8sClientInstaller.deleteExtraResources: END");
+    }
+
+    private List<String> getExtraManifests() {
         String extraManifestsStr = getConfig("EMS_CLIENT_EXTRA_MANIFESTS", "");
+        log.trace("K8sClientInstaller: extraManifestsStr: {}", extraManifestsStr);
         List<String> extraManifestsList =
                 Arrays.stream(extraManifestsStr.split("[, \t\r\n]+"))
                         .filter(StringUtils::isNotBlank)
                         .toList();
+        log.trace("K8sClientInstaller: extraManifestsList: {}", extraManifestsList);
+        return extraManifestsList;
+    }
 
-        Map<String, String> values = Map.of();
-        for (String manifestName : extraManifestsList) {
-            client.deleteManifestResources(manifestName, values);
-        }
+    private Map<String, String> getExtraManifestsValues() {
+        return Map.of();
     }
 
     private void deleteConfigMaps(K8sClient client) {

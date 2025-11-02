@@ -182,10 +182,7 @@ public class K8sClient implements Closeable {
     }
 
     private InputStream getResourceAsStream(String location) throws IOException {
-        org.springframework.core.io.Resource resource = resourceLoader.getResource(location);
-        if (! resource.exists()) {
-            throw new IOException("Resource not found: " + location);
-        }
+        org.springframework.core.io.Resource resource;
 
         if (location.startsWith("classpath:") || location.startsWith("file:")) {
             resource = resourceLoader.getResource(location);
