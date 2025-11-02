@@ -22,6 +22,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.util.StreamUtils;
 
 import java.io.*;
@@ -45,6 +46,8 @@ import java.util.concurrent.TimeUnit;
 public class K8sClient implements Closeable {
     private static final String K8S_SERVICE_ACCOUNT_SECRETS_PATH_DEFAULT = "/var/run/secrets/kubernetes.io/serviceaccount";
     private static final int K8S_CLIENT_TIMEOUT_DEFAULT = 10;
+
+    private static final DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
 
     private KubernetesClient client;
     private String namespace;
@@ -178,11 +181,33 @@ public class K8sClient implements Closeable {
         return this;
     }
 
+    private InputStream getResourceAsStream(String location) throws IOException {
+        org.springframework.core.io.Resource resource = resourceLoader.getResource(location);
+        if (! resource.exists()) {
+            throw new IOException("Resource not found: " + location);
+        }
+
+        if (location.startsWith("classpath:") || location.startsWith("file:")) {
+            resource = resourceLoader.getResource(location);
+        } else {
+            resource = resourceLoader.getResource("classpath:" + location);
+            if (!resource.exists()) {
+                resource = resourceLoader.getResource("file:" + location);
+            }
+        }
+
+        if (!resource.exists()) {
+            throw new IOException("Resource not found: " + location);
+        }
+
+        return resource.getInputStream();
+    }
+
     public K8sClient applyManifest(String resourceName, Map<String,String> replacementValuesMap) throws IOException {
         log.debug("K8sClient.applyManifest: BEGIN: dry-run={}, manifest={}", dryRun, resourceName);
 
         String spec;
-        try (InputStream inputStream = K8sClient.class.getResourceAsStream(resourceName)) {
+        try (InputStream inputStream = getResourceAsStream(resourceName)) {
             spec = StreamUtils.copyToString(inputStream, Charset.defaultCharset());
             log.trace("K8sClient.applyManifest: Manifest spec BEFORE:\n{}", spec);
             spec = StringSubstitutor.replace(spec, replacementValuesMap);
@@ -221,7 +246,7 @@ public class K8sClient implements Closeable {
         log.debug("K8sClient.deleteManifestResources: BEGIN: dry-run={}, manifest={}", dryRun, resourceName);
 
         String spec;
-        try (InputStream inputStream = K8sClient.class.getResourceAsStream(resourceName)) {
+        try (InputStream inputStream = getResourceAsStream(resourceName)) {
             spec = StreamUtils.copyToString(inputStream, Charset.defaultCharset());
             log.trace("K8sClient.deleteManifestResources: Manifest spec BEFORE:\n{}", spec);
             spec = StringSubstitutor.replace(spec, replacementValuesMap);
