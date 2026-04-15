@@ -26,7 +26,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>7.0.0-SNAPSHOT</revision>
+        <revision>8.0.0-SNAPSHOT</revision>
 
         <!-- Source encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
