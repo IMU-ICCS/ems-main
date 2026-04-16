@@ -95,10 +95,10 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
         if (properties.getK8s().getExtraEnvVars()==null) return;
         String str = properties.getK8s().getExtraEnvVars().entrySet()
                 .stream().filter(e -> StringUtils.isNotBlank(e.getKey()))
-                .map(e -> String.format("""
-                                                    - name: "%s"
-                                                      value: "%s"
-                                        """, e.getKey().trim(), e.getValue()))
+                .map(e -> """
+                                    - name: "%s"
+                                      value: "%s"
+                        """.formatted(e.getKey().trim(), e.getValue()))
                 .collect(Collectors.joining("\n"));
         log.info("K8sClientInstaller: Extra Env.Vars:\n{}", str);
         extraEnvVars = str;
@@ -110,10 +110,10 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
                 .forEach((name, value) -> {
                     name = name.trim();
                     if (Strings.CI.startsWith(name, prefix)) {
-                        sb.append( String.format("""
-                                                            - name: "%s"
-                                                              value: "%s"
-                                                """,
+                        sb.append( """
+                                            - name: "%s"
+                                              value: "%s"
+                                """.formatted(
                                 Strings.CI.removeStart(name, prefix).toUpperCase(),
                                 value)
                         );
@@ -130,10 +130,10 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
                 .forEach((name, value) -> {
                     name = name.trim();
                     if (Strings.CI.startsWith(name, "EMS_CLIENT_LOGGING_LEVEL_")) {
-                        sb.append( String.format("""
-                                                            - name: "%s"
-                                                              value: "%s"
-                                                """,
+                        sb.append( """
+                                            - name: "%s"
+                                              value: "%s"
+                                """.formatted(
                                 Strings.CI.removeStart(name, "EMS_CLIENT_"),
                                 value)
                         );

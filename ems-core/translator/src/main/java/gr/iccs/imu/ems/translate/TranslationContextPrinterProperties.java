@@ -17,6 +17,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
+import jakarta.validation.Valid;
+
 @Slf4j
 @Data
 @Validated
@@ -24,7 +26,7 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "translator")
 public class TranslationContextPrinterProperties implements InitializingBean {
     private boolean printResults = true;
-    private Dag dag = new Dag();
+    @Valid private Dag dag = new Dag();
 
     @Override
     public void afterPropertiesSet() throws Exception {

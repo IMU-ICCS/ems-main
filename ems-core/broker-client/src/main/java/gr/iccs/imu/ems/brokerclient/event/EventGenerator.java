@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 
@@ -142,7 +143,7 @@ public class EventGenerator implements Runnable {
     }
 
     public double getRandomValue() {
-        return Math.random() * (upperValue - lowerValue) + lowerValue;
+        return ThreadLocalRandom.current().nextDouble() * (upperValue - lowerValue) + lowerValue;
     }
 
     public void setValues(double l, double u) {

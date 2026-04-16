@@ -19,6 +19,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.util.HashMap;
@@ -86,7 +87,7 @@ public class BaguetteServerProperties implements InitializingBean {
     private String clientIdFormat;
     private String clientIdFormatEscape = "~";
 
-    private final CredentialsMap credentials = new CredentialsMap();
+    @Valid private final CredentialsMap credentials = new CredentialsMap();
     private String healthCheckUser = "test";
     private String healthCheckMessage = " >>>>>>>>>>>>>> <<<<<<<<<<<<<<\r\n >>>>  SSH server is ok!  <<<<\r\n >>>>>>>>>>>>>> <<<<<<<<<<<<<<\r\n";
 

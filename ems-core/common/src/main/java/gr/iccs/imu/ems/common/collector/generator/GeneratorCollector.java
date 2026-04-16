@@ -20,6 +20,7 @@ import org.springframework.scheduling.TaskScheduler;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Generates measurements. Can be used for testing and debugging
@@ -96,7 +97,7 @@ public class GeneratorCollector extends AbstractEndpointCollector<Map<String,Dou
 
         // else GENERATOR_TYPE.random
         double range = properties.getLimitsUpper() - properties.getLimitsLower();
-        return asValueType(Math.random() * range + properties.getLimitsLower(), properties.getValueType());
+        return asValueType(ThreadLocalRandom.current().nextDouble() * range + properties.getLimitsLower(), properties.getValueType());
     }
 
     private Double asValueType(double value, GeneratorCollectorProperties.GENERATOR_VALUE_TYPE valueType) {

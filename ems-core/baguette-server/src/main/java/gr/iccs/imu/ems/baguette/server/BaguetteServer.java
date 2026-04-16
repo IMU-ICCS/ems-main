@@ -487,7 +487,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
                     log.debug("createClientMap: Node preregistration info: {}", entry.getPreregistration());
                     ClientShellCommand c = getClientShellCommandFromNodeRegistryEntry(entry);
                     return prepareClientMap(c, entry);
-                }, (u,v) -> { throw new IllegalStateException(String.format("Duplicate key %s", u)); }, LinkedHashMap::new));
+                }, (u,v) -> { throw new IllegalStateException("Duplicate key %s".formatted(u)); }, LinkedHashMap::new));
     }
 
     private ClientShellCommand getClientShellCommandFromNodeRegistryEntry(NodeRegistryEntry entry) {

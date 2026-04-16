@@ -83,15 +83,15 @@ public class SshJsClientInstaller extends SshClientInstaller {
 
             // Execute JS installation script
             getStreamLogger().logMessage(
-                    String.format("\n  ----------------------------------------------------------------------\n  Task #%d :  JS installation script: %s\n",
-                    getTaskCounter(), jsScript));
+                    "\n  ----------------------------------------------------------------------\n  Task #%d :  JS installation script: %s\n".formatted(
+                            getTaskCounter(), jsScript));
 
             INSTRUCTION_RESULT result = executeJsScript(jsScript);
 
             if (result==INSTRUCTION_RESULT.FAIL) {
                 log.error("SshJsClientInstaller: Task #{}: JS installation script failed: {}", getTaskCounter(), jsScript);
                 getStreamLogger().logMessage(
-                        String.format("\n  Task #%d :  JS installation script failed: %s\n", getTaskCounter(), jsScript));
+                        "\n  Task #%d :  JS installation script failed: %s\n".formatted(getTaskCounter(), jsScript));
                 cntFail++;
                 exitResult = INSTRUCTION_RESULT.FAIL;
                 if (!isContinueOnFail()) {
@@ -101,21 +101,21 @@ public class SshJsClientInstaller extends SshClientInstaller {
             if (result==INSTRUCTION_RESULT.EXIT) {
                 log.info("SshJsClientInstaller: Task #{}: JS installation script processing exits", getTaskCounter());
                 getStreamLogger().logMessage(
-                        String.format("\n  Task #%d :  JS installation script processing exits\n", getTaskCounter()));
+                        "\n  Task #%d :  JS installation script processing exits\n".formatted(getTaskCounter()));
                 cntSuccess++;
                 exitResult = INSTRUCTION_RESULT.EXIT;
                 break;
             } else {
                 log.info("SshJsClientInstaller: Task #{}: JS installation script succeeded: {}", getTaskCounter(), jsScript);
                 getStreamLogger().logMessage(
-                        String.format("\n  Task #%d :  JS installation script succeeded: %s\n", getTaskCounter(), jsScript));
+                        "\n  Task #%d :  JS installation script succeeded: %s\n".formatted(getTaskCounter(), jsScript));
                 cntSuccess++;
                 exitResult = INSTRUCTION_RESULT.SUCCESS;
             }
         }
         log.info("\n  -------------------------------------------------------------------------\n  Task #{} :  JS installation scripts processed: successful={}, failed={}, exit-result={}", getTaskCounter(), cntSuccess, cntFail, exitResult);
         getStreamLogger().logMessage(
-                String.format("\n  ----------------------------------------------------------------------\n  Task #%d :  JS installation scripts processed: successful=%d, failed=%d, exit-result=%s\n", getTaskCounter(), cntSuccess, cntFail, exitResult));
+                "\n  ----------------------------------------------------------------------\n  Task #%d :  JS installation scripts processed: successful=%d, failed=%d, exit-result=%s\n".formatted(getTaskCounter(), cntSuccess, cntFail, exitResult));
         return exitResult;
     }
 

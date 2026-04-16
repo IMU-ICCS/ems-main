@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import javax.management.Notification;
 import java.util.Date;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
@@ -80,14 +81,14 @@ public class ControlServiceMBean implements NotificationPublisherAware {
             final Notification notification = new Notification("java.lang.String",
                     getClass().getName(),
                     notificationSequence.get(),
-                    "A random number:  "+(Math.random()*10000000000L));
+                    "A random number:  "+(ThreadLocalRandom.current().nextDouble()*10000000000L));
             notificationPublisher.sendNotification(notification);
             log.warn("!!!!!!!!!!!!!!!!!!!!!!!! trigger/1: {}", notification);
 
             final Notification notification2 = new Notification("java.lang.Double",
                     "source2",
                     notificationSequence.getAndIncrement(),
-                    ""+(Math.random()*10000000000L));
+                    ""+(ThreadLocalRandom.current().nextDouble()*10000000000L));
             notificationPublisher.sendNotification(notification2);
             log.warn("!!!!!!!!!!!!!!!!!!!!!!!! trigger/2: {}", notification2);
         }

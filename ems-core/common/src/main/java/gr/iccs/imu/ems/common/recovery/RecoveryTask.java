@@ -14,7 +14,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.FileReader;
 import java.lang.reflect.Type;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +32,7 @@ public interface RecoveryTask {
     void runNodeRecovery(List<RECOVERY_COMMAND> recoveryCommandsList, RecoveryContext context) throws Exception;
 
     default void runNodeRecovery(String recoveryCommandsFile, RecoveryContext context) throws Exception {
-        try (FileReader reader = new FileReader(Paths.get(recoveryCommandsFile).toFile())) {
+        try (FileReader reader = new FileReader(Path.of(recoveryCommandsFile).toFile())) {
             Type listType = new TypeToken<List<RECOVERY_COMMAND>>(){}.getType();
             List<RECOVERY_COMMAND> recoveryCommandsList = new Gson().fromJson(reader, listType);
             runNodeRecovery(recoveryCommandsList, context);

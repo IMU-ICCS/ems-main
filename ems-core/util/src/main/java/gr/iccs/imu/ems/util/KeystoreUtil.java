@@ -31,7 +31,6 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.*;
@@ -280,7 +279,7 @@ public class KeystoreUtil {
     {
         log.debug("KeystoreUtil: Reading certificate from file: {}", certFile);
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        Certificate cert = cf.generateCertificate(Files.newInputStream(Paths.get(certFile)));
+        Certificate cert = cf.generateCertificate(Files.newInputStream(Path.of(certFile)));
         log.trace("KeystoreUtil: Certificate: {}", cert);
 
         log.trace("KeystoreUtil: Importing certificate to keystore file: alias={}, file={}", entryName, keystoreFile);
@@ -300,7 +299,7 @@ public class KeystoreUtil {
         log.trace("KeystoreUtil: Certificate (PEM):\n{}", certPem);
 
         log.trace("KeystoreUtil: Storing certificate to file: {}", certFile);
-        try (PrintStream ps = new PrintStream(Files.newOutputStream(Paths.get(certFile)))) {
+        try (PrintStream ps = new PrintStream(Files.newOutputStream(Path.of(certFile)))) {
             ps.print(certPem);
             ps.flush();
         }

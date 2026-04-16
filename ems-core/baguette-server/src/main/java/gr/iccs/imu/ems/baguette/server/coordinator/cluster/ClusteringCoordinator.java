@@ -420,7 +420,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
         log.debug("instructClusterJoin: New cluster node nearby members: addresses={}, hostnames={}", addresses, hostnames);
 
         // Prepare cluster join commands
-        String command = String.format("%s  %s:%s:%s  start-election=%b  %s:%d  %s",
+        String command = "%s  %s:%s:%s  start-election=%b  %s:%d  %s".formatted(
                 zone.getId(),
                 topLevelGrouping, aggregatorGrouping, lastLevelGrouping,
                 startElection,

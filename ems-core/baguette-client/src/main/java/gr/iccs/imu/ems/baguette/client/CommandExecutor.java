@@ -35,10 +35,11 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -236,7 +237,7 @@ public class CommandExecutor {
                 Objects.<Map<String,String>>requireNonNullElse(LogsUtil.getLoggers(prefix), Map.of())
                         .entrySet().stream()
                         .sorted(Map.Entry.comparingByKey())
-                        .forEach(entry -> log.info("  {} {}", String.format("%-5s", entry.getValue()), entry.getKey()));
+                        .forEach(entry -> log.info("  {} {}", "%-5s".formatted(entry.getValue()), entry.getKey()));
 
             } else {
                 log.info("LOG LEVEL FOR LOGGER: {} --> {}", loggerName, LogsUtil.getLogLevel(loggerName));
@@ -309,13 +310,13 @@ public class CommandExecutor {
                     .build();
 
             ObjectMapper mapper = new ObjectMapper();
-            File file = Paths.get(fileName).toFile();
+            File file = Path.of(fileName).toFile();
             mapper.writer().writeValue(file, contents);
             log.info("Current configuration saved to file: {}", file.getPath());
 
         } else if ("READ-CONFIGURATION".equals(cmd)) {
             String fileName = (args.length>1) ? args[1].trim() : DEFAULT_CONF_DIR + "/config-export.json";
-            File file = Paths.get(fileName).toFile();
+            File file = Path.of(fileName).toFile();
             String content = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
 
             ObjectMapper mapper = new ObjectMapper();
@@ -375,14 +376,14 @@ public class CommandExecutor {
         } else if ("SEND-LOCAL-EVENT".equals(cmd)) {
             if (args.length < 2) return false;
             String destination = args[1].trim();
-            double value = args.length > 2 ? Double.parseDouble(args[2].trim()) : Math.random() * 1000;
+            double value = args.length > 2 ? Double.parseDouble(args[2].trim()) : ThreadLocalRandom.current().nextDouble() * 1000;
             log.trace("Sending local event: destination={}, metricValue={}", destination, value);
             sendLocalEvent(destination, value);
         } else if ("SEND-EVENT".equals(cmd)) {
             if (args.length < 3) return false;
             String connection = args[1].trim();
             String destination = args[2].trim();
-            double value = args.length > 3 ? Double.parseDouble(args[3].trim()) : Math.random() * 1000;
+            double value = args.length > 3 ? Double.parseDouble(args[3].trim()) : ThreadLocalRandom.current().nextDouble() * 1000;
             log.trace("Sending event: connection={}, destination={}, metricValue={}", connection, destination, value);
             sendEvent(connection, destination, value);
         } else if ("GENERATE-EVENTS-START".equals(cmd)) {
@@ -1194,7 +1195,7 @@ public class CommandExecutor {
             idFile = DEFAULT_ID_FILE;
 
         // Check if the cached client id file exists
-        File file = Paths.get(idFile).toFile();
+        File file = Path.of(idFile).toFile();
         if (! file.exists()) { log.warn("loadCachedClientId: Cached client id file not exists: {}", idFile); return null; }
         if (! file.isFile()) { log.warn("loadCachedClientId: Cached client id file is not a regular file: {}", idFile); return null; }
 
@@ -1233,7 +1234,7 @@ public class CommandExecutor {
             idFile = DEFAULT_ID_FILE;
         Properties p = new Properties();
         // Check if the cached client id file exists
-        File file = Paths.get(idFile).toFile();
+        File file = Path.of(idFile).toFile();
         if (file.exists() && file.isFile()) {
             try (InputStream in = new FileInputStream(idFile)) {
                 p.load(in);

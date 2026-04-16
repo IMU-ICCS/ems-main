@@ -18,6 +18,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import java.nio.file.Path;
@@ -40,10 +41,10 @@ public class InfoServiceProperties implements InitializingBean {
     @NotBlank
     private String metricsStreamEventName = "ems-metrics-event";
     private List<String> envVarPrefixes = Arrays.asList("WEBSSH_SERVICE_-^", "WEB_ADMIN_!^");
-                // ! at the end means to trim off the prefix; - at the end means to convert '_' to '-';
-                // ^ at the end means convert to upper case; ~ at the end means convert to lower case;
+    // ! at the end means to trim off the prefix; - at the end means to convert '_' to '-';
+    // ^ at the end means convert to upper case; ~ at the end means convert to lower case;
 
-    private FileExplorerProperties files = new FileExplorerProperties();
+    @Valid private FileExplorerProperties files = new FileExplorerProperties();
 
     private List<Path> logViewerFiles = Collections.emptyList();
 

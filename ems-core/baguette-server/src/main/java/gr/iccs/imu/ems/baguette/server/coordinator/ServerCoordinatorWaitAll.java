@@ -16,6 +16,7 @@ import gr.iccs.imu.ems.translate.TranslationContext;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Vector;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 public class ServerCoordinatorWaitAll implements ServerCoordinator {
@@ -73,7 +74,7 @@ public class ServerCoordinatorWaitAll implements ServerCoordinator {
         Thread runner = new Thread(new Runnable() {
             public void run() {
                 // Pick a random client for Broker
-                int sel = (int) Math.round((numClients - 1) * Math.random());
+                int sel = (int) Math.round((numClients - 1) * ThreadLocalRandom.current().nextDouble());
                 if (sel >= numClients) sel = numClients - 1;
                 broker = clients.get(sel);
                 log.info("ServerCoordinatorWaitAll: Client #{} will become BROKER", broker.getId());

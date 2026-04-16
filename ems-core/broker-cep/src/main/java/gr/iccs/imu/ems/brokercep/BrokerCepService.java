@@ -41,7 +41,7 @@ import java.util.Set;
 
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
+@AllArgsConstructor(onConstructor_ ={@Autowired})
 public class BrokerCepService {
     private BrokerCepProperties properties;
     private BrokerConfig brokerConfig;

@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -125,7 +125,7 @@ public class ClientInstallationProperties implements InitializingBean {
     private Map loadYamlFromFile(String jsonFile) {
         if (StringUtils.isNotBlank(jsonFile)) {
             try {
-                String jsonValue = Files.readString(Paths.get(jsonFile));
+                String jsonValue = Files.readString(Path.of(jsonFile));
                 if (StringUtils.isNotBlank(jsonValue)) {
                     return objectMapper.readValue(jsonValue, Map.class);
                 }

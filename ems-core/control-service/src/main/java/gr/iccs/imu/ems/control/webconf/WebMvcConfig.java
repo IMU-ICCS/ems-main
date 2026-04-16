@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.stereotype.Component;
@@ -32,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
+@Configuration
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
     private final ApplicationContext applicationContext;

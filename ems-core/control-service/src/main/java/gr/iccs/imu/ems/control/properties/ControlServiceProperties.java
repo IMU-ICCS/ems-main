@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 //import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 
 import static gr.iccs.imu.ems.util.EmsConstant.EMS_PROPERTIES_PREFIX;
@@ -46,14 +47,14 @@ public class ControlServiceProperties {
 
     private boolean printBuildInfo;
 
-    private IpSetting ipSetting = IpSetting.PUBLIC_IP;
-    private ExecutionWare executionware = ExecutionWare.PROACTIVE;
+    @Valid private IpSetting ipSetting = IpSetting.PUBLIC_IP;
+    @Valid private ExecutionWare executionware = ExecutionWare.PROACTIVE;
 
     private String upperwareGrouping = GROUPING.GLOBAL.name();
     private String metasolverConfigurationUrl;
     private String notificationUrl;
 
-    private Preload preload = new Preload();
+    @Valid private Preload preload = new Preload();
 
     private boolean skipTranslation;
     private boolean skipMvvRetrieve;
@@ -74,7 +75,7 @@ public class ControlServiceProperties {
     private int exitCode = 0;
 
     // control.ssl.** settings
-    @NestedConfigurationProperty
+    @NestedConfigurationProperty @Valid
     private KeystoreAndCertificateProperties ssl;
 
     @Data

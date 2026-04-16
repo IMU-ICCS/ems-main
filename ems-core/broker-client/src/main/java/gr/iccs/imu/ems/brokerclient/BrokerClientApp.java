@@ -31,7 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.script.*;
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
@@ -408,7 +408,7 @@ public class BrokerClientApp {
         if (payload==null) return null;
         String payloadTrim = payload.trim();
         if (StringUtils.startsWith(payloadTrim, "@")) {
-            payload = Files.readString(Paths.get(StringUtils.substring(payloadTrim, 1)));
+            payload = Files.readString(Path.of(StringUtils.substring(payloadTrim, 1)));
         }
         if ("-".equals(payloadTrim)) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -628,7 +628,7 @@ public class BrokerClientApp {
         if (append && overwrite)
             throw new IllegalArgumentException("Options -A (append) and -O (overwrite) cannot be used together");
         String fileName = args[aa++];
-        File file = Paths.get(fileName).toFile();
+        File file = Path.of(fileName).toFile();
         String ext = StringUtils.substringAfterLast(file.getName(), ".");
         if (StringUtils.isNotBlank(format)) {
             if (!("csv".equalsIgnoreCase(format) || "json".equalsIgnoreCase(format)))
@@ -797,7 +797,7 @@ public class BrokerClientApp {
         if (args[aa].startsWith("-M"))
             format = args[aa++].substring(2).toLowerCase();
         String fileName = args[aa++];
-        File file = Paths.get(fileName).toFile();
+        File file = Path.of(fileName).toFile();
         String ext = StringUtils.substringAfterLast(file.getName(), ".");
         if (StringUtils.isNotBlank(format)) {
             if (!("csv".equalsIgnoreCase(format) || "json".equalsIgnoreCase(format)))

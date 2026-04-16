@@ -261,7 +261,7 @@ public class Sshd {
 
     public List<String> getActiveClients() {
         return ClientShellCommand.getActive().stream()
-                .map(c -> String.format("%s %s %s:%d", c.getId(),
+                .map(c -> "%s %s %s:%d".formatted(c.getId(),
                         c.getClientIpAddress(),
                         c.getClientClusterNodeHostname(),
                         c.getClientClusterNodePort()))

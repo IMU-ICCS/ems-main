@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -31,7 +31,7 @@ public class OpenMetricsParser {
         OpenMetricsParser parser = new OpenMetricsParser();
         for (String file : args) {
             log.info("Processing file: {}", file);
-            List<String> lines = Files.readAllLines(Paths.get(file));
+            List<String> lines = Files.readAllLines(Path.of(file));
             List<MetricInstance> metricInstances = parser.processInput(lines.toArray(new String[0]));
             log.info("Results:\n{}", metricInstances);
         }

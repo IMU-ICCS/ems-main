@@ -171,14 +171,14 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
     private boolean checkConfig(Map<String, Serializable> config) {
         List<String> errors = new ArrayList<>();
         String push = config.getOrDefault("push", "").toString();
-        if (! "false".equalsIgnoreCase(push)) errors.add(String.format("Not a Pull sensor. Expected '%s' but found '%s'", false, push));
+        if (! "false".equalsIgnoreCase(push)) errors.add("Not a Pull sensor. Expected '%s' but found '%s'".formatted(false, push));
 
         String destination = config.getOrDefault("name", "").toString();
         if (StringUtils.isBlank(destination)) errors.add("No destination (name) provided");
 
         if (config.get("configuration") instanceof Map configMap) {
             String type = configMap.getOrDefault("type", "").toString();
-            if (! getName().equalsIgnoreCase(type)) errors.add(String.format("Type mismatch. Expected '%s' but found '%s'", getName(), type));
+            if (! getName().equalsIgnoreCase(type)) errors.add("Type mismatch. Expected '%s' but found '%s'".formatted(getName(), type));
 
             int port = Integer.parseInt( configMap.getOrDefault("port", DEFAULT_PROMETHEUS_PORT).toString() );
             if (port<=0 || port>=65536) errors.add("Invalid port provided: "+port);

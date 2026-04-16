@@ -37,7 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -120,7 +120,7 @@ public class BrokerClient {
 
         // load properties
         Properties p = new Properties();
-        File cfgFile = Paths.get(configPropFile).toFile();
+        File cfgFile = Path.of(configPropFile).toFile();
         if (cfgFile.exists() && cfgFile.isFile()) {
             //ClassLoader loader = Thread.currentThread().getContextClassLoader();
             //try (java.io.InputStream in = loader.getClass().getResourceAsStream(configPropFile)) { p.load(in); }

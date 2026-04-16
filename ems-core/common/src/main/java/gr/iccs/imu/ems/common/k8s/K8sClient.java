@@ -29,7 +29,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -59,9 +59,9 @@ public class K8sClient implements Closeable {
         // Get K8S client configuration
         String serviceAccountPath = getConfig("K8S_SERVICE_ACCOUNT_SECRETS_PATH", K8S_SERVICE_ACCOUNT_SECRETS_PATH_DEFAULT);
         String masterUrl = getConfig("KUBERNETES_SERVICE_HOST", null);
-        String caCert = Files.readString(Paths.get(serviceAccountPath, "ca.crt"));
-        String token = Files.readString(Paths.get(serviceAccountPath, "token"));
-        String namespace = Files.readString(Paths.get(serviceAccountPath, "namespace"));
+        String caCert = Files.readString(Path.of(serviceAccountPath, "ca.crt"));
+        String token = Files.readString(Path.of(serviceAccountPath, "token"));
+        String namespace = Files.readString(Path.of(serviceAccountPath, "namespace"));
         boolean dryRun = Boolean.parseBoolean( getConfig("EMS_CLIENT_DEPLOYMENT_DRY_RUN", "false") );
         log.debug("""
             K8sClient configuration:
@@ -390,7 +390,7 @@ public class K8sClient implements Closeable {
 
     private String getNamespace() throws IOException {
         String serviceAccountPath = getConfig("K8S_SERVICE_ACCOUNT_SECRETS_PATH", K8S_SERVICE_ACCOUNT_SECRETS_PATH_DEFAULT);
-        return Files.readString(Paths.get(serviceAccountPath, "namespace"));
+        return Files.readString(Path.of(serviceAccountPath, "namespace"));
     }
 
     private <T>List<T> emptyIfNull(List<T> list) {

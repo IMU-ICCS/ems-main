@@ -51,7 +51,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.*;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -603,7 +603,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
                 // Get TC file name
                 fileName = getTcFileName(appModelId, fileName);
-                if (Paths.get(fileName).toFile().exists()) {
+                if (Path.of(fileName).toFile().exists()) {
                     log.warn("ControlServiceCoordinator.translateAppModelAndStore(): The specified Translation Context file already exists. Its contents will be overwritten: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
                 }
 
@@ -637,7 +637,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
             try {
                 fileName = getTcFileName(appModelId, fileName);
-                if (! Paths.get(fileName).toFile().exists()) {
+                if (! Path.of(fileName).toFile().exists()) {
                     log.error("ControlServiceCoordinator.loadStoredTranslationContext(): The specified Translation Context file does not exist: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
                     throw new IllegalArgumentException("The specified Translation Context file does not exist. Check property: control.tc-load-file=" + properties.getTcLoadFile() + ", file-name=" + fileName);
                 }

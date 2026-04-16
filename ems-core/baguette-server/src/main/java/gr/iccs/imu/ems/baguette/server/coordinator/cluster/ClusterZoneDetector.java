@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -151,7 +152,7 @@ public class ClusterZoneDetector implements IClusterZoneDetector {
         if (StringUtils.isBlank(zoneId)) {
             switch (assignmentToDefaultClusters) {
                 case RANDOM:
-                    zoneId = defaultClusters.get((int) (Math.random() * defaultClusters.size()));
+                    zoneId = defaultClusters.get((int) (ThreadLocalRandom.current().nextDouble() * defaultClusters.size()));
                     break;
                 case SEQUENTIAL:
                     zoneId = defaultClusters.get(currentDefaultCluster.getAndUpdate(operand -> (operand + 1) % defaultClusters.size()));

@@ -93,13 +93,13 @@ public class LogLevelICommandExecutor implements ICommandExecutor, InitializingB
                             .filter(entry ->
                                     StringUtils.startsWith(entry.getKey(), prefix))
                             .forEach(entry -> {
-                                    log.info("  {} {}", String.format("%-5s",entry.getValue()), entry.getKey());
+                                    log.info("  {} {}", "%-5s".formatted(entry.getValue()), entry.getKey());
                                     if (returnMap) resultMap.put(entry.getKey(), entry.getValue());
                             });
                     Objects.<Map<String,String>>requireNonNullElse(LogsUtil.getLoggers(prefix), Map.of())
                             .entrySet().stream()
                             .sorted(Map.Entry.comparingByKey())
-                            .forEach(entry -> log.info("  {} {}", String.format("%-5s", entry.getValue()), entry.getKey()));
+                            .forEach(entry -> log.info("  {} {}", "%-5s".formatted(entry.getValue()), entry.getKey()));
                     return resultMap;
                 } else {
                     String logLevel = LogsUtil.getLogLevel(loggerName);

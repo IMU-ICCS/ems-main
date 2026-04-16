@@ -122,7 +122,7 @@ public class BrokerCommandsReceiver implements InitializingBean {
         } else if (results instanceof Serializable s) {
             resultsSer = s;
         } else {
-            resultsSer = String.format("Object not serializable: %s: %s", results.getClass().getName(), results);
+            resultsSer = "Object not serializable: %s: %s".formatted(results.getClass().getName(), results);
         }
         sendCommandResult(command, resultsSer);
     }

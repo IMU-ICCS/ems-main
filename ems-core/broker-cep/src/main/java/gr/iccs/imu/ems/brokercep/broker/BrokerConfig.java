@@ -52,7 +52,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -327,7 +327,7 @@ public class BrokerConfig implements InitializingBean {
             String dir = StringUtils.firstNonBlank(properties.getBrokerPersistenceDirectory(), "data/activemq");
             log.debug("BrokerConfig.createBrokerService(): Setting persistence adapter (Kaha): directory: {}", dir);
             KahaDBPersistenceAdapter kahaDBPersistenceAdapter = new KahaDBPersistenceAdapter();
-            kahaDBPersistenceAdapter.setDirectory(Paths.get(dir).toFile());
+            kahaDBPersistenceAdapter.setDirectory(Path.of(dir).toFile());
             brokerService.setPersistenceAdapter(kahaDBPersistenceAdapter);
         }
 

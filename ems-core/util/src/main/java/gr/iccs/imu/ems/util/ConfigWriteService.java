@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -65,7 +64,7 @@ public class ConfigWriteService {
     public Configuration getOrCreateConfigFile(@NonNull String fileName, String format) {
         if (StringUtils.isBlank(format) && StringUtils.endsWithIgnoreCase(fileName, ".json")) format = "json";
         final Format fmt = EnumUtils.getEnumIgnoreCase(Format.class, format, Format.PROPERTIES);
-        return configurations.computeIfAbsent(fileName, s -> new Configuration(Paths.get(fileName), fmt));
+        return configurations.computeIfAbsent(fileName, s -> new Configuration(Path.of(fileName), fmt));
     }
 
     public boolean removeConfigFile(@NonNull String fileName, boolean alsoRemoveFile) {

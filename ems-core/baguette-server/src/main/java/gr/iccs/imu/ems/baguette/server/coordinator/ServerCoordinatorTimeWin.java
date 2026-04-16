@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 public class ServerCoordinatorTimeWin implements ServerCoordinator {
@@ -130,7 +131,7 @@ public class ServerCoordinatorTimeWin implements ServerCoordinator {
 
         // Pick a random client for Broker
         int howmany = registeredIntime.size();
-        int sel = (int) Math.round((howmany - 1) * Math.random());
+        int sel = (int) Math.round((howmany - 1) * ThreadLocalRandom.current().nextDouble());
         if (sel >= howmany) sel = howmany - 1;
         broker = registeredIntime.get(sel);
         log.info("ServerCoordinatorTimeWin: Client {} will become BROKER", broker.getId());

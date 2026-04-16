@@ -36,7 +36,6 @@ import java.io.*;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -87,7 +86,7 @@ public class FilesController {
         String mvcPrefix = "/files/dir/" + rootId;
         String pathStr = getPathFromRequest(request, webRequest, mvcPrefix);
 
-        Path path = Paths.get(roots.get(rootId).toString(), pathStr);
+        Path path = Path.of(roots.get(rootId).toString(), pathStr);
         log.debug("listDirFiles(): --- Effective Path: {}", path);
         if (path.toFile().exists()) {
             if (path.toFile().isDirectory()) {
@@ -121,7 +120,7 @@ public class FilesController {
         String mvcPrefix = "/files/get/" + rootId + "/";
         String pathStr = getPathFromRequest(request, webRequest, mvcPrefix);
 
-        File file = Paths.get(roots.get(rootId).toString(), pathStr).toFile();
+        File file = Path.of(roots.get(rootId).toString(), pathStr).toFile();
         log.debug("getFile(): --- Effective Path: {}", file);
         if (!file.exists()) {
             //return ResponseEntity.badRequest().body( toStringInputStream("File not exists") );
@@ -186,7 +185,7 @@ public class FilesController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Specified path is not under any allowed root: "+filePath);
         }
 
-        File file = Paths.get(pathStr).toFile();
+        File file = Path.of(pathStr).toFile();
         log.debug("getFileFromPath(): --- Effective Path: {}", file);
         if (!file.exists()) {
             //return ResponseEntity.badRequest().body( toStringInputStream("File not exists") );

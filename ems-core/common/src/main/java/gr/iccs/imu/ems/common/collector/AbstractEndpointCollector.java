@@ -341,10 +341,10 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
             // Local node data collection URL
             url = properties.getUrl();
             if (StringUtils.isBlank(url))
-                url = String.format(properties.getUrlOfNodesWithoutClient(), "127.0.0.1");
+                url = properties.getUrlOfNodesWithoutClient().formatted("127.0.0.1");
         } else {
             // Remote node data collection URL
-            url = String.format(properties.getUrlOfNodesWithoutClient(), nodeAddress);
+            url = properties.getUrlOfNodesWithoutClient().formatted(nodeAddress);
         }
         log.debug("Collectors::{}:   Collecting data from url: {}", collectorId, url);
 

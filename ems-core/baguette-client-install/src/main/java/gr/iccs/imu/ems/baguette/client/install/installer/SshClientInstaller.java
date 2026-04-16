@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.*;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.InvalidKeySpecException;
@@ -486,7 +485,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         log.debug("SshClientInstaller: task #{}: EXEC: New channel id: {}", taskCounter, channel.getChannelId());
         //streamLogger.getInvertedIn().write(command.getBytes());
         streamLogger.logMessage("EXEC: %s\n".formatted(command));
-        try {
+        try (channel) {
             // Sending command to remote side
             log.debug("SshClientInstaller: task #{}: EXEC: Sending command for execution: {}   (connect timeout: {}ms)", taskCounter, command, connectTimeout);
             session.resetIdleTimeout();
@@ -508,8 +507,6 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             log.debug("SshClientInstaller: task #{}: EXEC: Exit event set: {}", taskCounter, eventSet);
             exitStatus = channel.getExitStatus();
             log.debug("SshClientInstaller: task #{}: EXEC: Exit status: {}", taskCounter, exitStatus);
-        } finally {
-            channel.close();
         }
 
         return exitStatus;
@@ -584,7 +581,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
              */
 
             // Write contents to a temporary local file
-            File tmpDir = Paths.get(properties.getServerTmpDir()).toFile();
+            File tmpDir = Path.of(properties.getServerTmpDir()).toFile();
             tmpDir.mkdirs();
             File tmp = File.createTempFile("bci_upload_", ".tmp", tmpDir);
             log.debug("SshClientInstaller: Write to temp. file: task #{}: temp-file: {}, remote: {}, content-length: {}", taskCounter, tmp, remoteFilePath, content.length());
@@ -641,8 +638,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             // Execute installation instructions
             log.info("SshClientInstaller: Task #{}: Executing installation instructions set: {}", taskCounter, instructionsSet.getDescription());
             streamLogger.logMessage(
-                    String.format("\n  ----------------------------------------------------------------------\n  Task #%d :  Executing instruction set: %s\n",
-                    taskCounter, instructionsSet.getDescription()));
+                    "\n  ----------------------------------------------------------------------\n  Task #%d :  Executing instruction set: %s\n".formatted(
+                            taskCounter, instructionsSet.getDescription()));
             INSTRUCTION_RESULT result = executeInstructions(instructionsSet);
             if (result==INSTRUCTION_RESULT.FAIL) {
                 log.error("SshClientInstaller: Task #{}: Installation Instructions set failed: {}", taskCounter, instructionsSet.getDescription());
@@ -763,14 +760,14 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     break;*/
                 case FILE:
                     //log.info("SshClientInstaller: Task #{}: FILE: {}, content-length={}", taskCounter, ins.getFileName(), ins.getContents().length());
-                    if (Paths.get(ins.localFileName()).toFile().isDirectory()) {
+                    if (Path.of(ins.localFileName()).toFile().isDirectory()) {
                         log.info("SshClientInstaller: Task #{}: FILE: COPY-PROCESS DIR: {} -> {}", taskCounter, ins.localFileName(), ins.fileName());
                         result = copyDir(ins.localFileName(), ins.fileName(), valueMap);
                     } else
-                    if (Paths.get(ins.localFileName()).toFile().isFile()) {
+                    if (Path.of(ins.localFileName()).toFile().isFile()) {
                         log.info("SshClientInstaller: Task #{}: FILE: COPY-PROCESS FILE: {} -> {}", taskCounter, ins.localFileName(), ins.fileName());
-                        Path sourceFile = Paths.get(ins.localFileName());
-                        Path sourceBaseDir = Paths.get(ins.localFileName()).getParent();
+                        Path sourceFile = Path.of(ins.localFileName());
+                        Path sourceBaseDir = Path.of(ins.localFileName()).getParent();
                         result = copyFile(sourceFile, sourceBaseDir, ins.fileName(), valueMap, ins.executable());
                     } else {
                         log.error("SshClientInstaller: Task #{}: FILE: ERROR: Local file is not directory or normal file: {}", taskCounter, ins.localFileName());
@@ -870,7 +867,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     public boolean copyDir(String sourceDir, String targetDir, Map<String,String> valueMap) throws IOException {
         // Copy files from EMS server to Baguette Client
         if (StringUtils.isNotEmpty(sourceDir) && StringUtils.isNotEmpty(targetDir)) {
-            Path baseDir = Paths.get(sourceDir).toAbsolutePath();
+            Path baseDir = Path.of(sourceDir).toAbsolutePath();
             try (Stream<Path> stream = Files.walk(baseDir, Integer.MAX_VALUE)) {
                 List<Path> paths = stream
                         .filter(Files::isRegularFile)
@@ -938,7 +935,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
         // Read local file
         String[] linesArr;
-        try (Stream<String> lines = Files.lines(Paths.get(ins.localFileName()))) {
+        try (Stream<String> lines = Files.lines(Path.of(ins.localFileName()))) {
             linesArr = lines.toArray(String[]::new);
         } catch (IOException e) {
             log.error("SshClientInstaller: processPatterns: Error while reading local file: {} -- Exception: ", ins.localFileName(), e);

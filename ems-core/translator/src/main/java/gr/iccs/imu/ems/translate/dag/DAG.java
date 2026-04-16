@@ -252,7 +252,7 @@ public class DAG {
             else log.debug("DAG.addEdge(): Edge is already in DAG: {} --> {}", elemFrom.getName(), elemTo.getName());
             return edge;
         } else {
-            throw new RuntimeException(String.format("Adding edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s",
+            throw new RuntimeException("Adding edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s".formatted(
                     elemFrom.getName(), elemTo.getName(), (nodeFrom != null ? nodeFrom.getName() : null), (nodeTo != null ? nodeTo.getName() : null)));
         }
     }
@@ -303,7 +303,7 @@ public class DAG {
             else log.warn("DAG.removeEdge(): Edge not found in DAG: {} --> {}", elemFrom.getName(), elemTo.getName());
             return deletedEdge;
         } else {
-            throw new RuntimeException(String.format("Removing edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s",
+            throw new RuntimeException("Removing edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s".formatted(
                     elemFrom.getName(), elemTo.getName(), (nodeFrom != null ? nodeFrom.getName() : null), (nodeTo != null ? nodeTo.getName() : null)));
         }
     }

@@ -426,7 +426,7 @@ public class K8sNetdataCollector implements IClientCollector, INetdataCollector,
 
         // Scrape Netdata node(s)
         nodesToScrape.forEach(nodeAddress -> {
-            String url = String.format("http://%s:%d%s", nodeAddress, cfgCtx.port, cfgCtx.urlSuffix);
+            String url = "http://%s:%d%s".formatted(nodeAddress, cfgCtx.port, cfgCtx.urlSuffix);
             try {
                 log.info("K8sNetdataCollector: collectData(): Scraping Netdata node: {}", url);
                 collectDataFromNode(cfgCtx, url, nodeAddress.toString());

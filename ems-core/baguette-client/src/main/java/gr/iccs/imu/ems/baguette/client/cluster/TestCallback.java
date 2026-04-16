@@ -13,6 +13,8 @@ import io.atomix.cluster.ClusterMembershipEvent;
 import io.atomix.cluster.Member;
 import io.atomix.utils.net.Address;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class TestCallback extends AbstractLogBase implements BrokerUtil.NodeCallback {
     private String address;
     private String state = "L1";
@@ -31,7 +33,7 @@ public class TestCallback extends AbstractLogBase implements BrokerUtil.NodeCall
         }
         state = "initializing L2";
         out_print("__TestNode at {}: Initializing", address);
-        for (int i = 0; i < (int) (Math.random() * 5 + 5); i++) {
+        for (int i = 0; i < (int) (ThreadLocalRandom.current().nextDouble() * 5 + 5); i++) {
             out_print(".");
             try {
                 Thread.sleep(1000);
@@ -52,7 +54,7 @@ public class TestCallback extends AbstractLogBase implements BrokerUtil.NodeCall
         }
         state = "clearing L2";
         out_print("__TestNode at {}: Stepping down", address);
-        for (int i = 0; i < (int) (Math.random() * 4 + 2); i++) {
+        for (int i = 0; i < (int) (ThreadLocalRandom.current().nextDouble() * 4 + 2); i++) {
             out_print(".");
             try {
                 Thread.sleep(1000);
