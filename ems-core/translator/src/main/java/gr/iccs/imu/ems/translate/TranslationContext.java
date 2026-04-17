@@ -10,6 +10,8 @@
 package gr.iccs.imu.ems.translate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.google.gson.Gson;
 import gr.iccs.imu.ems.translate.dag.DAG;
 import gr.iccs.imu.ems.translate.dag.DAGNode;
@@ -66,13 +68,11 @@ public class TranslationContext implements Serializable {
     private final Set<String> SLO = new LinkedHashSet<>();
 
     // Component-to-Sensor map
-    @Getter
-    @JsonIgnore
+    @Getter @JsonSetter(nulls = Nulls.AS_EMPTY)
     private final transient Map<Component, Set<Sensor>> C2S = new HashMap<>();        //XXX:TODO-LOW: Convert to strings
 
     // Data-to-Sensor map
-    @Getter
-    @JsonIgnore
+    @Getter @JsonSetter(nulls = Nulls.AS_EMPTY)
     private final transient Map<gr.iccs.imu.ems.translate.model.Data, Set<Sensor>> D2S = new HashMap<>();             //XXX:TODO-LOW: Convert to strings
 
     // Sensor Monitors set
@@ -88,19 +88,15 @@ public class TranslationContext implements Serializable {
     private final Map<String, Set<String>> G2T = new HashMap<>();
 
     // Composite Metric Variables set
-    @Getter
-    @JsonIgnore
+    @Getter @JsonSetter(nulls = Nulls.AS_EMPTY)
     private final Set<String> CMVar = new LinkedHashSet<>();
-    @Getter
-    @JsonIgnore
+    @Getter @JsonSetter(nulls = Nulls.AS_EMPTY)
     private final transient Set<MetricVariable> CMVar_1 = new LinkedHashSet<>();
 
     // Raw Metric Variables set
-    @Getter
-    @JsonIgnore
+    @Getter @JsonSetter(nulls = Nulls.AS_EMPTY)
     private final Set<String> RMVar = new LinkedHashSet<>();
-    @Getter
-    @JsonIgnore
+    @Getter @JsonSetter(nulls = Nulls.AS_EMPTY)
     private final transient Set<MetricVariable> RMVar_1 = new LinkedHashSet<>();
 
     // Metric Variable Values set (i.e. non-composite metric variable)
@@ -112,9 +108,9 @@ public class TranslationContext implements Serializable {
     private final Set<FunctionDefinition> FUNC = new LinkedHashSet<>();
 
     // Topics-Connections-per-Grouping
-    @JsonIgnore
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     private final transient Map<String, String> providedTopics = new HashMap<>();                       // topic-grouping where this topic is provided
-    @JsonIgnore
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     private final transient Map<String, Set<String>> requiredTopics = new HashMap<>();                  // topic-set of groupings where this topic is required
     protected final Map<String, Map<String, Set<String>>> topicConnections = new HashMap<>();           // grouping-provided topic in grouping-groupings that require provided topic
     protected boolean needsRefresh;

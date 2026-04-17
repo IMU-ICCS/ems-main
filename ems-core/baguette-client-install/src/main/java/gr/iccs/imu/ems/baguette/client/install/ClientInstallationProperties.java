@@ -9,8 +9,8 @@
 
 package gr.iccs.imu.ems.baguette.client.install;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 import gr.iccs.imu.ems.util.EmsConstant;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,7 +34,7 @@ import java.util.regex.Pattern;
 @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "baguette.client.install")
 public class ClientInstallationProperties implements InitializingBean {
 
-    private final static ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+    private final static ObjectMapper objectMapper = new YAMLMapper();
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -129,7 +130,7 @@ public class ClientInstallationProperties implements InitializingBean {
                 if (StringUtils.isNotBlank(jsonValue)) {
                     return objectMapper.readValue(jsonValue, Map.class);
                 }
-            } catch (IOException e) {
+            } catch (JacksonException | IOException e) {
                 throw new RuntimeException("Json property parsing failed", e);
             }
         }

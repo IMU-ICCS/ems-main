@@ -9,10 +9,9 @@
 
 package gr.iccs.imu.ems.brokercep.event;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import gr.iccs.imu.ems.brokercep.properties.BrokerCepProperties;
+import jakarta.jms.*;
+import jakarta.jms.Queue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -21,9 +20,11 @@ import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.scheduling.TaskScheduler;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
-import jakarta.jms.*;
-import jakarta.jms.Queue;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -118,13 +119,15 @@ public class EventRecorder extends LinkedHashMap<String, Object> implements Runn
 
         if (recordFormat==FORMAT.CSV) {
             csvPrinter = new CSVPrinter(recordWriter, CSVFormat.DEFAULT
-                    .withHeader("Timestamp", "Destination", "Mime", "Type", "Contents", "Properties"));
+                    .builder().setHeader("Timestamp", "Destination", "Mime", "Type", "Contents", "Properties").get());
             csvPrinter.flush();
         }
         if (recordFormat==FORMAT.JSON) {
-            jsonGenerator = new JsonFactory()
-                    .createGenerator(recordWriter)
-                    .setPrettyPrinter(new DefaultPrettyPrinter());
+            jsonGenerator = JsonMapper.builder()
+                    .enable(SerializationFeature.INDENT_OUTPUT)
+                    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .build()
+                    .createGenerator(recordWriter);
             jsonGenerator.writeStartArray();
             jsonGenerator.flush();
         }
@@ -236,13 +239,13 @@ public class EventRecorder extends LinkedHashMap<String, Object> implements Runn
         }
         if (recordFormat==FORMAT.JSON) {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField("id", messageId);
-            jsonGenerator.writeNumberField("timestamp", timestamp);
-            jsonGenerator.writeStringField("destination", destinationName);
-            jsonGenerator.writeStringField("mime", mime);
-            jsonGenerator.writeStringField("type", type);
-            jsonGenerator.writeStringField("content", content);
-            jsonGenerator.writeStringField("properties", properties);
+            jsonGenerator.writeStringProperty("id", messageId);
+            jsonGenerator.writeNumberProperty("timestamp", timestamp);
+            jsonGenerator.writeStringProperty("destination", destinationName);
+            jsonGenerator.writeStringProperty("mime", mime);
+            jsonGenerator.writeStringProperty("type", type);
+            jsonGenerator.writeStringProperty("content", content);
+            jsonGenerator.writeStringProperty("properties", properties);
             jsonGenerator.writeEndObject();
             jsonGenerator.flush();
         }

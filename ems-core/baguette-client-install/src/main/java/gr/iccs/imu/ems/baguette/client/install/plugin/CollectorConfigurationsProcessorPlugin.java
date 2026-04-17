@@ -10,8 +10,8 @@
 package gr.iccs.imu.ems.baguette.client.install.plugin;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import gr.iccs.imu.ems.baguette.client.install.ClientInstallationTask;
 import gr.iccs.imu.ems.baguette.client.install.InstallationContextProcessorPlugin;
 import gr.iccs.imu.ems.util.ConfigWriteService;
@@ -20,6 +20,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -63,11 +64,11 @@ public class CollectorConfigurationsProcessorPlugin implements InstallationConte
 
         try {
             log.debug("CollectorConfigurationsProcessorPlugin: Task #{}: Pull-Sensor collector configurations: \n{}", taskCounter, collectorConfigs);
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            collectorConfigsStr = mapper
+            collectorConfigsStr = JsonMapper.builder()
+                    .changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_NULL).withValueInclusion(JsonInclude.Include.NON_NULL))
+                    .build()
                     .writeValueAsString(collectorConfigs);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.error("CollectorConfigurationsProcessorPlugin: Task #{}: EXCEPTION while processing sensor configs. Skipping them.\n",
                     taskCounter, e);
         }

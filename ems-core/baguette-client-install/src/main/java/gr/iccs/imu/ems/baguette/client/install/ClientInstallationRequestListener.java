@@ -9,9 +9,8 @@
 
 package gr.iccs.imu.ems.baguette.client.install;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import gr.iccs.imu.ems.baguette.client.install.api.INodeRegistration;
 import gr.iccs.imu.ems.baguette.client.install.instruction.InstructionsService;
 import gr.iccs.imu.ems.baguette.client.install.instruction.InstructionsSet;
@@ -30,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-
+import tools.jackson.core.JacksonException;
 import jakarta.jms.*;
 import java.time.Instant;
 import java.util.*;
@@ -84,6 +83,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
                     }
                 } catch (Exception e) {
                     log.error("ClientInstallationRequestListener: ERROR: while loading instructions set: {}", name);
+                    log.debug("ClientInstallationRequestListener: ERROR: while loading instructions set: {}\n", name, e);
                 }
             }
         });
@@ -243,7 +243,7 @@ public class ClientInstallationRequestListener implements InitializingBean {
         clientInstaller.addTask(newTask);
     }
 
-    private Map<String, String> extractRequest(Message message) throws JMSException, JsonProcessingException {
+    private Map<String, String> extractRequest(Message message) throws JMSException, JacksonException {
         if (message instanceof ActiveMQTextMessage textMessage) {
             log.debug("ClientInstallationRequestListener: Message payload: {}", textMessage.getText());
             TypeReference<Map<String,String>> typeRef = new TypeReference<>() { };

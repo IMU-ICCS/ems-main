@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.13</version>
+        <version>4.0.5</version>
         <relativePath></relativePath>
     </parent>
 
@@ -106,10 +106,10 @@
         <okio.version>3.10.2</okio.version>
 
         <!-- Control Service dependency versions -->
-        <hawtio.version>4.5.0</hawtio.version>
+        <hawtio.version>5.1.0</hawtio.version>
         <spring.boot.admin.version>3.5.5</spring.boot.admin.version>
         <micrometer.registry.prometheus.version>1.15.5</micrometer.registry.prometheus.version>
-        <springdoc.version>2.8.17</springdoc.version>
+        <springdoc.version>3.0.3</springdoc.version>
         <jjwt.version>0.13.0</jjwt.version>
 
         <!-- Translator dependency versions -->
@@ -138,18 +138,8 @@
         <dependencies>
             <dependency>
                 <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
                 <version>${commons-text.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.yaml</groupId>
-                <artifactId>snakeyaml</artifactId>
-                <version>${snakeyaml.version}</version>
             </dependency>
 
             <dependency>
@@ -180,6 +170,7 @@
 
     <build>
         <plugins>
+            <!-- OpenRewrire: Migrate from SB 3.4 to 3.5 -->
             <!--<plugin>
                 <groupId>org.openrewrite.maven</groupId>
                 <artifactId>rewrite-maven-plugin</artifactId>
@@ -188,6 +179,25 @@
                     <exportDatatables>true</exportDatatables>
                     <activeRecipes>
                         <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_5</recipe>
+                    </activeRecipes>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.openrewrite.recipe</groupId>
+                        <artifactId>rewrite-spring</artifactId>
+                        <version>6.29.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>-->
+            <!-- OpenRewrire: Migrate from SB 3.5 to 4.0 -->
+            <!--<plugin>
+                <groupId>org.openrewrite.maven</groupId>
+                <artifactId>rewrite-maven-plugin</artifactId>
+                <version>6.36.0</version>
+                <configuration>
+                    <exportDatatables>true</exportDatatables>
+                    <activeRecipes>
+                        <recipe>org.openrewrite.java.spring.boot4.UpgradeSpringBoot_4_0</recipe>
                     </activeRecipes>
                 </configuration>
                 <dependencies>

@@ -30,7 +30,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *      Property: host
  *
  * 3) Set environment variables:
- *      PAASAGE_CONFIG_DIR=....
  *      EMS_CONFIG_DIR=....
  *      SPRING_CONFIG_LOCATION=classpath:rule-templates.yml,file:${EMS_CONFIG_DIR}/ems-server.yml
  *

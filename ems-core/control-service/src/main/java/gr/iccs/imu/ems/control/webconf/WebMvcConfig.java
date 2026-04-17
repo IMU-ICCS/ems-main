@@ -9,11 +9,10 @@
 
 package gr.iccs.imu.ems.control.webconf;
 
+import gr.iccs.imu.ems.control.properties.ControlServiceProperties;
 import jakarta.servlet.Filter;
 import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -37,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
     private final ApplicationContext applicationContext;
+    private final ControlServiceProperties properties;
 
     @Override
     public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
@@ -60,7 +59,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
             HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
             //HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
-            ServletRequest contentCachingRequestWrapper = new ContentCachingRequestWrapper(httpRequest);
+            ServletRequest contentCachingRequestWrapper = new ContentCachingRequestWrapper(httpRequest, properties.getRequestCacheSize());
             //ServletResponse contentCachingResponseWrapper = new ContentCachingResponseWrapper(httpResponse);
             log.trace("contentCachingFilter(): request={}, content-caching-request={}", servletRequest, contentCachingRequestWrapper);
             //log.trace("contentCachingFilter(): response={}, content-caching-response={}", servletResponse, contentCachingResponseWrapper);

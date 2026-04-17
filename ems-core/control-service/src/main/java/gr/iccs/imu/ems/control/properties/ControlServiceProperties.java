@@ -74,6 +74,8 @@ public class ControlServiceProperties {
     private long exitGracePeriod = 10;
     private int exitCode = 0;
 
+    private int requestCacheSize = 0;
+
     // control.ssl.** settings
     @NestedConfigurationProperty @Valid
     private KeystoreAndCertificateProperties ssl;

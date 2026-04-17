@@ -9,9 +9,11 @@
 
 package gr.iccs.imu.ems.baguette.client.install.instruction;
 
-import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import tools.jackson.core.json.JsonReadFeature;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -78,10 +80,9 @@ public class InstructionsService implements EnvironmentAware {
     public String processPlaceholders(String s, Map<String,String> valueMap) {
         if (StringUtils.isBlank(s)) return s;
         s = StringSubstitutor.replace(s, valueMap);
-        s = environment.resolvePlaceholders(s);
         //s = environment.resolveRequiredPlaceholders(s);
         //s = s.replace('\\', '/');
-        return s;
+        return environment.resolvePlaceholders(s);
     }
 
     public InstructionsSet loadInstructionsFile(@NonNull String fileName) throws IOException {
@@ -127,7 +128,9 @@ public class InstructionsService implements EnvironmentAware {
         log.trace("InstructionsService: JSON instructions file contents: \n{}", jsonStr);
 
         // Create InstructionsSet object from JSON
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonMapper.builder()
+                .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                .build();
         InstructionsSet instructionsSet = mapper.readerFor(InstructionsSet.class)
                 .with(JsonReadFeature.ALLOW_JAVA_COMMENTS)
                 .readValue(jsonStr);
@@ -143,9 +146,10 @@ public class InstructionsService implements EnvironmentAware {
         String yamlStr = new String(bdata, StandardCharsets.UTF_8);
         log.trace("InstructionsService: YAML instructions file contents: \n{}", yamlStr);
 
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        InstructionsSet instructionsSet =
-                mapper.readValue(yamlStr, InstructionsSet.class);
+        YAMLMapper mapper = YAMLMapper.builder()
+                .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                .build();
+        InstructionsSet instructionsSet = mapper.readValue(yamlStr, InstructionsSet.class);
         instructionsSet.setFileName(yamlFile);
         log.trace("InstructionsService: Installation instructions loaded from YAML file: {}\n{}", yamlFile, instructionsSet);
 

@@ -9,7 +9,6 @@
 
 package gr.iccs.imu.ems.baguette.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import gr.iccs.imu.ems.baguette.client.cluster.*;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.brokercep.BrokerCepStatementSubscriber;
@@ -31,9 +30,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -144,7 +145,7 @@ public class CommandExecutor {
         if (StringUtils.isBlank(clientId))
             clientId = loadCachedClientId();
         if (StringUtils.isBlank(clientId)) {
-            this.clientId = RandomStringUtils.randomAlphanumeric(DEFAULT_ID_LENGTH);
+            this.clientId = RandomStringUtils.secure().nextAlphanumeric(DEFAULT_ID_LENGTH);
             saveClientId(clientId);
         }
     }
@@ -309,18 +310,20 @@ public class CommandExecutor {
                     .groupings(this.groupings)
                     .build();
 
-            ObjectMapper mapper = new ObjectMapper();
+            JsonMapper mapper = JsonMapper.builder()
+                    .enable(SerializationFeature.INDENT_OUTPUT)
+                    .build();
             File file = Path.of(fileName).toFile();
-            mapper.writer().writeValue(file, contents);
+            mapper.writeValue(file, contents);
             log.info("Current configuration saved to file: {}", file.getPath());
 
         } else if ("READ-CONFIGURATION".equals(cmd)) {
             String fileName = (args.length>1) ? args[1].trim() : DEFAULT_CONF_DIR + "/config-export.json";
             File file = Path.of(fileName).toFile();
-            String content = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+            String content = Files.readString(file.toPath());
 
-            ObjectMapper mapper = new ObjectMapper();
-            ConfigurationContents config = mapper.readValue(content, ConfigurationContents.class);
+            ConfigurationContents config =
+                    JsonMapper.builder().build().readValue(content, ConfigurationContents.class);
             log.debug("Configuration read from file: {}\n{}", file, config);
 
             // Clear current state
@@ -331,7 +334,7 @@ public class CommandExecutor {
             if (StringUtils.isNotBlank(newId))
                 saveClientId(newId);
 
-            config.getGroupings().forEach(groupings::put);
+            groupings.putAll(config.getGroupings());
 
             String activeConf = config.getActiveGrouping();
             if (StringUtils.isNotBlank(activeConf))
@@ -1209,7 +1212,7 @@ public class CommandExecutor {
             String id = p.getProperty("client.id", null);
             if (StringUtils.isNotBlank(id)) {
                 id = id.trim();
-                log.info("loadCachedClientId: Used cached Client Id: {}", clientId);
+                log.info("loadCachedClientId: Used cached Client Id: {}", id);
                 return id;
             } else {
                 log.warn("loadCachedClientId: No cached Client id found in file: {}", idFile);
@@ -1273,9 +1276,9 @@ public class CommandExecutor {
 
     @SneakyThrows
     private String getBrokerConfigurationAsString() {
-        ObjectMapper mapper = new ObjectMapper();
+        JsonMapper mapper = new JsonMapper();
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            mapper.writer().writeValue(baos, getBrokerConfiguration());
+            mapper.writeValue(baos, getBrokerConfiguration());
             String configStr = Base64.getEncoder().encodeToString(baos.toByteArray());
             log.debug("getBrokerConfigurationAsString: {}", configStr);
             return configStr;
@@ -1285,7 +1288,7 @@ public class CommandExecutor {
     @SneakyThrows
     private BrokerConnectionConfig getBrokerConfigurationFromString(String configStr) {
         log.debug("getBrokerConfigurationFromString: INPUT: {}", configStr);
-        ObjectMapper mapper = new ObjectMapper();
+        JsonMapper mapper = new JsonMapper();
         BrokerConnectionConfig config = mapper
                 .readValue(Base64.getDecoder().decode(configStr), BrokerConnectionConfig.class);
         log.debug("getBrokerConfigurationFromString: OUTPUT: {}", config);

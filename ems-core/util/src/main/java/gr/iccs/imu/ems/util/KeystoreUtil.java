@@ -11,6 +11,7 @@ package gr.iccs.imu.ems.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -178,17 +179,21 @@ public class KeystoreUtil {
             String[] names = extSAN.split(",");
             List<GeneralName> altNames = new ArrayList<>();
             for (String name : names) {
-                if (StringUtils.startsWithIgnoreCase(name, "dns:")) {
-                    name = name.substring("dns:".length());
-                    if (StringUtils.isNotBlank(name))
-                        altNames.add(new GeneralName(GeneralName.dNSName, name));
-                } else
-                if (StringUtils.startsWithIgnoreCase(name, "ip:")) {
-                    name = name.substring("ip:".length());
-                    if (StringUtils.isNotBlank(name))
-                        altNames.add(new GeneralName(GeneralName.iPAddress, name));
-                } else
-                    log.warn("KeystoreUtil: Ignoring element of Subject Alt. Names: {}", name);
+                try {
+                    if (Strings.CI.startsWith(name, "dns:")) {
+                        name = name.substring("dns:".length());
+                        if (StringUtils.isNotBlank(name))
+                            altNames.add(new GeneralName(GeneralName.dNSName, name));
+                    } else if (Strings.CI.startsWith(name, "ip:")) {
+                        name = name.substring("ip:".length());
+                        if (StringUtils.isNotBlank(name))
+                            altNames.add(new GeneralName(GeneralName.iPAddress, name));
+                    } else
+                        log.warn("KeystoreUtil: Ignoring element of Subject Alt. Names: {}", name);
+                } catch (Exception e) {
+                    log.error("KeystoreUtil: Error parsing Subject Alt. Names: {}", name, e);
+                    throw e;
+                }
             }
             GeneralNames subjectAltName = new GeneralNames(altNames.toArray(new GeneralName[0]));
             certBuilder.addExtension(Extension.subjectAlternativeName, false, subjectAltName);

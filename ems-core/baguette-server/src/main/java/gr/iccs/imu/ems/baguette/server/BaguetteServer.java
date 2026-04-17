@@ -9,9 +9,8 @@
 
 package gr.iccs.imu.ems.baguette.server;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import gr.iccs.imu.ems.baguette.server.properties.BaguetteServerProperties;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.common.recovery.RecoveryConstant;
@@ -29,6 +28,7 @@ import org.slf4j.event.Level;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -415,7 +415,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         return entry;
     }
 
-    public ClientConfiguration getClientConfiguration(ClientShellCommand c) throws JsonProcessingException {
+    public ClientConfiguration getClientConfiguration(ClientShellCommand c) throws JacksonException {
         String collectorConfigsStr = ConfigWriteService.getInstance()
                 .getOrCreateConfigFile(
                         EmsConstant.EMS_CLIENT_K8S_CONFIG_MAP_FILE,

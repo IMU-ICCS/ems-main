@@ -14,7 +14,7 @@ import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
-import org.springframework.context.expression.MapAccessor;
+import org.springframework.expression.spel.support.MapAccessor;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 

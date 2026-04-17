@@ -13,7 +13,6 @@ set PWD=%cd%
 cd %~dp0..
 set BASEDIR=%cd%
 IF NOT DEFINED EMS_CONFIG_DIR set EMS_CONFIG_DIR=%BASEDIR%\config-files
-IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\config-files
 
 :: Copy dependencies if missing
 if exist pom.xml (

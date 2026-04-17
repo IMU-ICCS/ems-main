@@ -12,7 +12,6 @@ PREVWORKDIR=`pwd`
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 cd ${BASEDIR}
 if [[ -z $EMS_CONFIG_DIR ]]; then EMS_CONFIG_DIR=${BASEDIR}/config-files; export EMS_CONFIG_DIR; fi
-if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=${BASEDIR}/config-files; export PAASAGE_CONFIG_DIR; fi
 
 # Copy dependencies if missing
 if [[ -f ${BASEDIR}/control-service/pom.xml ]]; then

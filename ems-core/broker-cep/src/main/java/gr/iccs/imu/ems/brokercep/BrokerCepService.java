@@ -9,22 +9,21 @@
 
 package gr.iccs.imu.ems.brokercep;
 
-import com.google.gson.Gson;
 import gr.iccs.imu.ems.brokercep.broker.BrokerConfig;
 import gr.iccs.imu.ems.brokercep.cep.CepService;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.brokercep.properties.BrokerCepProperties;
 import gr.iccs.imu.ems.util.*;
+import jakarta.jms.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.jmx.BrokerView;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
-import jakarta.jms.*;
 import javax.management.ObjectName;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -41,7 +40,7 @@ import java.util.Set;
 
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor_ ={@Autowired})
+@AllArgsConstructor
 public class BrokerCepService {
     private BrokerCepProperties properties;
     private BrokerConfig brokerConfig;
@@ -56,7 +55,7 @@ public class BrokerCepService {
     @Getter
     private EventCache eventCache;
 
-    private Gson gson;
+    private JsonMapper mapper;
 
     public BrokerCepProperties getBrokerCepProperties() {
         return properties;
@@ -287,7 +286,7 @@ public class BrokerCepService {
 
         // Create a message
         //ObjectMessage message = session.createObjectMessage(event);
-        String payload = convertToJson ? gson.toJson(event) : (event!=null ? event.toString() : null);
+        String payload = convertToJson ? mapper.writeValueAsString(event) : (event!=null ? event.toString() : null);
         log.trace("BrokerCepService.publishEvent(): Message payload: topic={}, convert-to-json={}, payload={}", destination, convertToJson, payload);
         TextMessage message = session.createTextMessage(payload);
 

@@ -11,14 +11,14 @@ package gr.iccs.imu.ems.util;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.boot.logging.DeferredLog;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertySource;
-import org.springframework.stereotype.Component;
 
-@Component
+@Order
 public class NetUtilPostProcessor implements EnvironmentPostProcessor {
     private static final DeferredLog log = new DeferredLog();
 
@@ -37,7 +37,7 @@ public class NetUtilPostProcessor implements EnvironmentPostProcessor {
         private String defaultPublicIp = "127.0.0.1";
 
         public NetUtilPropertySource() {
-            super("ems-net-util-property-source");
+            this("ems-net-util-property-source");
         }
 
         public NetUtilPropertySource(String name) {

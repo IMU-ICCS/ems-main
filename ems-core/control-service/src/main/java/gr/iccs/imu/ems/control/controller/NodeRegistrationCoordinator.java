@@ -30,8 +30,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.boot.web.server.autoconfigure.ServerProperties;
+import org.springframework.boot.web.server.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -39,6 +39,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -266,9 +267,9 @@ public class NodeRegistrationCoordinator implements InitializingBean {
     }
 
     public String guessBaseUrl() {
-        int serverPort = webServerAppCtxt.getWebServer().getPort();
+        int serverPort = Objects.requireNonNull(webServerAppCtxt.getWebServer()).getPort();
         String staticResourceContext = getStaticResourcePath();
-        boolean serverSslEnabled = serverProperties.getSsl().isEnabled();
+        boolean serverSslEnabled = Objects.requireNonNull(serverProperties.getSsl()).isEnabled();
         String serverSslKeystore = serverProperties.getSsl().getKeyStore();
         String serverSslKeyAlias = serverProperties.getSsl().getKeyAlias();
         log.trace("NodeRegistrationCoordinator.guessBaseUrl: Server: port={}, context={} -- SSL enabled={}, keystore={}, alias={}",

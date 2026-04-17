@@ -10,6 +10,8 @@
 package gr.iccs.imu.ems.baguette.server;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import gr.iccs.imu.ems.baguette.server.coordinator.cluster.IClusterZone;
 import gr.iccs.imu.ems.util.StrUtil;
 import lombok.*;
@@ -38,13 +40,13 @@ public class NodeRegistryEntry {
     @Getter private Instant stateLastUpdate;
     @Getter private String reference = UUID.randomUUID().toString();
     @Getter private List<Object> errors = new LinkedList<>();
-    @JsonIgnore
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     @Getter private transient Map<String, String> preregistration = new LinkedHashMap<>();
-    @JsonIgnore
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     @Getter private transient Map<String, String> installation = new LinkedHashMap<>();
-    @JsonIgnore
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     @Getter private transient Map<String, String> registration = new LinkedHashMap<>();
-    @JsonIgnore
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     @Getter private transient Map<String, String> removal = new LinkedHashMap<>();
     @JsonIgnore
     @Getter @Setter private transient IClusterZone clusterZone;

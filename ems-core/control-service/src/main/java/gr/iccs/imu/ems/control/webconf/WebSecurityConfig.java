@@ -68,7 +68,7 @@ public class WebSecurityConfig implements InitializingBean {
 
     private final Map<String,Long> otpCache = new HashMap<>();
 
-    @Value("${melodic.security.enabled:true}")
+    @Value("${ems.security.enabled:true}")
     private boolean securityEnabled;
     private boolean propertiesCopied;
 
@@ -533,7 +533,7 @@ public class WebSecurityConfig implements InitializingBean {
     }
 
     public String otpCreate() {
-        String newOtp = RandomStringUtils.randomAlphanumeric(32, 64);
+        String newOtp = RandomStringUtils.secure().nextAlphanumeric(32, 64);
         otpCache.put(newOtp, System.currentTimeMillis());
         return newOtp;
     }

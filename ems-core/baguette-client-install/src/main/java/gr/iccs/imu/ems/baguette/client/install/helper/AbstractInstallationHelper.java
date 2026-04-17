@@ -27,8 +27,8 @@ import org.apache.tomcat.util.net.SSLHostConfigCertificate;
 //import org.rauschig.jarchivelib.ArchiverFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.context.WebServerInitializedEvent;
-import org.springframework.boot.web.embedded.tomcat.TomcatWebServer;
+import org.springframework.boot.tomcat.TomcatWebServer;
+import org.springframework.boot.web.server.context.WebServerInitializedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.FileSystemResource;
 
@@ -63,7 +63,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
     }
 
     @Override
-    public void onApplicationEvent(WebServerInitializedEvent event) {
+    public void onApplicationEvent(@NonNull WebServerInitializedEvent event) {
         log.debug("AbstractInstallationHelper.onApplicationEvent(): event={}", event);
         TomcatWebServer tomcat = (TomcatWebServer) event.getSource();
 
@@ -285,8 +285,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
             String targetFile,
             String tmpFile,
             String contents,
-            String clientTmpDir
-    ) throws IOException
+            String clientTmpDir)
     {
         if (StringUtils.isEmpty(tmpFile))
             tmpFile = clientTmpDir+"/installEMS_"+System.currentTimeMillis();

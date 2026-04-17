@@ -9,11 +9,6 @@
 
 package gr.iccs.imu.ems.brokerclient;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.google.gson.Gson;
 import gr.iccs.imu.ems.brokerclient.event.EventGenerator;
 import gr.iccs.imu.ems.brokerclient.event.EventGeneratorCli;
@@ -27,6 +22,13 @@ import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.json.JsonReadFeature;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import javax.script.*;
 import java.io.*;
@@ -661,7 +663,7 @@ public class BrokerClientApp {
         if (recordFormat==RECORD_FORMAT.CSV) {
             if (recordFile.length()==0)
                 csvPrinter = new CSVPrinter(recordWriter, CSVFormat.DEFAULT
-                        .builder().setHeader("Timestamp", "Destination", "Mime", "Type", "Contents", "Properties").build());
+                        .builder().setHeader("Timestamp", "Destination", "Mime", "Type", "Contents", "Properties").get());
             else
                 csvPrinter = new CSVPrinter(recordWriter, CSVFormat.DEFAULT);
 
@@ -671,9 +673,11 @@ public class BrokerClientApp {
             }));
         } else
         if (recordFormat==RECORD_FORMAT.JSON) {
-            jsonGenerator = new JsonFactory()
-                    .createGenerator(recordWriter)
-                    .setPrettyPrinter(new DefaultPrettyPrinter());
+            jsonGenerator = JsonMapper.builder()
+                    .enable(SerializationFeature.INDENT_OUTPUT)
+                    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .build()
+                    .createGenerator(recordWriter);
             jsonGenerator.writeStartArray();
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -758,12 +762,12 @@ public class BrokerClientApp {
             } else
             if (recordFormat==RECORD_FORMAT.JSON) {
                 jsonGenerator.writeStartObject();
-                jsonGenerator.writeNumberField("timestamp", timestamp);
-                jsonGenerator.writeStringField("destination", destinationName);
-                jsonGenerator.writeStringField("mime", mime);
-                jsonGenerator.writeStringField("type", type);
-                jsonGenerator.writeStringField("content", content);
-                jsonGenerator.writeStringField("properties", properties);
+                jsonGenerator.writeNumberProperty("timestamp", timestamp);
+                jsonGenerator.writeStringProperty("destination", destinationName);
+                jsonGenerator.writeStringProperty("mime", mime);
+                jsonGenerator.writeStringProperty("type", type);
+                jsonGenerator.writeStringProperty("content", content);
+                jsonGenerator.writeStringProperty("properties", properties);
                 jsonGenerator.writeEndObject();
                 jsonGenerator.flush();
             }
@@ -894,10 +898,14 @@ public class BrokerClientApp {
 
     private static void playbackEventsFromJson(BrokerClient client, long[] prevValues, boolean useInterval, boolean useDelay,
                                                AtomicLong countSuccess, AtomicLong countFail, String url)
-            throws JMSException, IOException
+            throws IOException
     {
         Reader playbackReader = new BufferedReader(new FileReader(recordFile));
-        JsonParser jsonParser = new JsonFactory().createParser(playbackReader);
+        JsonParser jsonParser = JsonMapper.builder()
+                .enable(JsonReadFeature.ALLOW_JAVA_COMMENTS)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build().createParser(playbackReader);
+
 
         if (jsonParser.nextToken() == JsonToken.START_ARRAY) {
             while (jsonParser.nextToken() == JsonToken.START_OBJECT) {
@@ -910,16 +918,18 @@ public class BrokerClientApp {
                 String properties = "";
 
                 while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-                    String fieldName = jsonParser.getCurrentName();
+                    String fieldName = jsonParser.currentName();
                     jsonParser.nextToken();
-                    if ("timestamp".equals(fieldName)) timestamp = jsonParser.getLongValue();
-                    else if ("destination".equals(fieldName)) destinationName = jsonParser.getText();
-                    else if ("mime".equals(fieldName)) mime = jsonParser.getText();
-                    else if ("type".equals(fieldName)) type = jsonParser.getText();
-                    else if ("content".equals(fieldName)) contents = jsonParser.getText();
-                    else if ("properties".equals(fieldName)) properties = jsonParser.getText();
-                    else
-                        log.warn("REPLAY> UNKNOWN JSON field at event #{}: {}", countSuccess.get()+countFail.get()+1, fieldName);
+                    switch (fieldName) {
+                        case "timestamp" -> timestamp = jsonParser.getLongValue();
+                        case "destination" -> destinationName = jsonParser.getString();
+                        case "mime" -> mime = jsonParser.getString();
+                        case "type" -> type = jsonParser.getString();
+                        case "content" -> contents = jsonParser.getString();
+                        case "properties" -> properties = jsonParser.getString();
+                        case null, default ->
+                                log.warn("REPLAY> UNKNOWN JSON field at event #{}: {}", countSuccess.get() + countFail.get() + 1, fieldName);
+                    }
                 }
 
                 log.trace("REPLAY> Event data: timestamp={}, destination={}, mime={}, type={}, content={}, properties={}",
