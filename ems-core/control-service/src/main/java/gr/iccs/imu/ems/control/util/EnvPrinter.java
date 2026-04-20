@@ -3,6 +3,7 @@ package gr.iccs.imu.ems.control.util;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.PropertySource;
@@ -12,6 +13,7 @@ import java.util.TreeMap;
 
 @Slf4j
 @Service
+@ConditionalOnBooleanProperty("ems.debug.printenv")
 @RequiredArgsConstructor
 public class EnvPrinter implements InitializingBean {
     private final ConfigurableEnvironment env;
@@ -32,7 +34,6 @@ public class EnvPrinter implements InitializingBean {
                 log.debug("  Source: {}", eps.getName());
                 for (String key : eps.getPropertyNames()) {
                     Object value = eps.getProperty(key);
-                    System.out.println(key + " = " + value);
                     log.debug("    {}: {}", key, value);
                 }
             }

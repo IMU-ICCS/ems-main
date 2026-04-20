@@ -61,8 +61,8 @@ public class ControlServiceProperties {
     private boolean skipBrokerCep;
     private boolean skipBaguette;
     private boolean skipCollectors;
-    private boolean skipMetasolver;
-    private boolean skipNotification;
+    private boolean skipMetasolver = true;
+    private boolean skipNotification = true;
 
     private boolean deployAllGroupings;
 
