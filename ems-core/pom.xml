@@ -27,6 +27,7 @@
 
     <properties>
         <revision>8.0.0-SNAPSHOT</revision>
+        <ems.version>${revision}</ems.version>
 
         <!-- Source encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -57,18 +58,12 @@
         <net.nicoulaj.checksum-maven-plugin.version>1.11</net.nicoulaj.checksum-maven-plugin.version>
         <write-properties-file-maven-plugin.version>1.0.1</write-properties-file-maven-plugin.version>
 
-        <!-- Gson version -->
-        <gson.version>2.13.2</gson.version>
-        <!-- Apache Commons Lang3 version -->
-        <commons-lang3.version>3.19.0</commons-lang3.version>
         <!-- Apache Commons Text version -->
         <commons-text.version>1.14.0</commons-text.version>
         <!-- Esper version -->
         <esper.version>7.1.0</esper.version>
         <!-- MathParser version -->
         <mathparser.version>6.1.0</mathparser.version>
-        <!-- Lombok version -->
-        <lombok.version>1.18.44</lombok.version>
         <!-- ActiveMQ (classic) version -->
         <activemq.version>6.2.4</activemq.version>
         <xstream.version>1.4.21</xstream.version>   <!-- Required by ActiveMQ-STOMP -->
@@ -136,12 +131,73 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- EMS modules dependency management -->
+            <dependency>
+                <groupId>gr.iccs.imu.ems</groupId>
+                <artifactId>web-admin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>gr.iccs.imu.ems</groupId>
+                <artifactId>util</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>gr.iccs.imu.ems</groupId>
+                <artifactId>broker-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>gr.iccs.imu.ems</groupId>
+                <artifactId>broker-cep</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>gr.iccs.imu.ems</groupId>
+                <artifactId>translator</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>gr.iccs.imu.ems</groupId>
+                <artifactId>common</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>gr.iccs.imu.ems</groupId>
+                <artifactId>baguette-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>gr.iccs.imu.ems</groupId>
+                <artifactId>baguette-server</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>gr.iccs.imu.ems</groupId>
+                <artifactId>baguette-client-install</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>gr.iccs.imu.ems</groupId>
+                <artifactId>control-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>gr.iccs.imu.ems</groupId>
+                <artifactId>control-service</artifactId>
+                <version>${revision}</version>
+                <type>jar</type>
+                <classifier>original</classifier>
+            </dependency>
+
+            <!-- Apache dependency management-->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
                 <version>${commons-text.version}</version>
             </dependency>
 
+            <!-- Bouncy castle dependency management-->
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcpg-jdk18on</artifactId>
@@ -285,7 +341,6 @@
                             <path>
                                 <groupId>org.projectlombok</groupId>
                                 <artifactId>lombok</artifactId>
-                                <version>${lombok.version}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>

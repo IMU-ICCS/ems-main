@@ -10,8 +10,6 @@
 package gr.iccs.imu.ems.baguette.client.install.plugin;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
 import gr.iccs.imu.ems.baguette.client.install.ClientInstallationTask;
 import gr.iccs.imu.ems.baguette.client.install.InstallationContextProcessorPlugin;
 import gr.iccs.imu.ems.util.ConfigWriteService;
@@ -21,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -57,6 +56,7 @@ public class CollectorConfigurationsProcessorPlugin implements InstallationConte
                         collectorConfigs
                                 .computeIfAbsent(type, key->new LinkedList<>())
                                 .add(monitor.getSensor());
+                        log.trace("CollectorConfigurationsProcessorPlugin: Task #{}: Added monitor sensor: {}", taskCounter, monitor.getSensor());
                     }
                 }
             }

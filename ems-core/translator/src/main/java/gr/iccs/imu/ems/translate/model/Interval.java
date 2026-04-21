@@ -21,8 +21,8 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 // See: eu.melodic.models.interfaces.Interval
 public class Interval extends AbstractInterfaceRootObject {
-    @ToString
-    public enum UnitType { DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS, MICROSECONDS, NANOSECONDS,
+    public enum UnitType {
+        DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS, MICROSECONDS, NANOSECONDS,
         // From ChronoUnits
         MILLIS, MICROS, NANOS
     }
