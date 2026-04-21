@@ -8,10 +8,10 @@
 #
 
 ARG RUN_IMAGE=eclipse-temurin
-ARG RUN_IMAGE_TAG=21.0.7_6-jre
+ARG RUN_IMAGE_TAG=21.0.10_7-jre-noble
 
 # -----------------   Run image   -----------------
-FROM eclipse-temurin:17-jdk-alpine
+FROM $RUN_IMAGE:$RUN_IMAGE_TAG
 
 # Install required and optional packages
 #RUN apt-get update \
