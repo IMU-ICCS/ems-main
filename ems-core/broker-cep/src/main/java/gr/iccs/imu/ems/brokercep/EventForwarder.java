@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +48,7 @@ public class EventForwarder implements InitializingBean, Runnable {
                 brokerCepService.getBrokerCepProperties().getBrokerUrlForConsumer()
                         .equals(brokerConnectionConfig.getUrl());
         eventForwardingQueue.add(new EventForwardTask(sender, isLocalPublish, brokerConnectionConfig, topic, eventMap, success, failure));
-        log.debug("EventForwarder: {} task in the queue", eventForwardingQueue.size());
+        log.debug("EventForwarder: {} tasks in the queue", eventForwardingQueue.size());
     }
 
     public void addEventForwardTask(@NonNull BrokerCepStatementSubscriber sender, String grouping,  String brokerUrl, String certificate, String username, String password, @NonNull String topic, @NonNull Map<String,Object> eventMap, Runnable success, Runnable failure) {
@@ -124,7 +124,7 @@ public class EventForwarder implements InitializingBean, Runnable {
 
                 // Check if sender forwards have been cleared (indicating that this node became an aggregator)
                 boolean configChanged = false;
-                boolean forwardsExist = task.getSender().getForwardToGroupings() != null && task.getSender().getForwardToGroupings().size() > 0;
+                boolean forwardsExist = task.getSender().getForwardToGroupings() != null && ! task.getSender().getForwardToGroupings().isEmpty();
                 log.trace("-   Forwards exist: {}", forwardsExist);
 
                 if (forwardsExist) {
@@ -140,17 +140,17 @@ public class EventForwarder implements InitializingBean, Runnable {
                     String username2 = bcc!=null ? bcc.getUsername() : null;
                     String password2 = bcc!=null ? bcc.getPassword() : null;
 
-                    if (!StringUtils.equals(brokerUrl, brokerUrl2)) {
+                    if (!Strings.CS.equals(brokerUrl, brokerUrl2)) {
                         log.warn("-   Forward broker config changed: sender: {}, broker-url: {} -> {}, event: {}", senderName, brokerUrl, brokerUrl2, task.getEventMap());
                         brokerUrl = brokerUrl2;
                         configChanged = true;
                     }
-                    if (!StringUtils.equals(username, username2)) {
+                    if (!Strings.CS.equals(username, username2)) {
                         log.warn("-   Forward broker config changed: sender: {}, username: {} -> {}, event: {}", senderName, username, username2, task.getEventMap());
                         username = username2;
                         configChanged = true;
                     }
-                    if (!StringUtils.equals(password, password2)) {
+                    if (!Strings.CS.equals(password, password2)) {
                         log.warn("-   Forward broker config changed: sender: {}, password: ******** -> ********, event: {}", senderName, task.getEventMap());
                         password = password2;
                         configChanged = true;

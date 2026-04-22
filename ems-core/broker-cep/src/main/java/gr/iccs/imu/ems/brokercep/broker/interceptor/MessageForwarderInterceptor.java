@@ -13,6 +13,8 @@ import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.brokercep.properties.BrokerCepProperties;
 import gr.iccs.imu.ems.util.StrUtil;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.apache.activemq.command.ActiveMQTextMessage;
@@ -23,7 +25,6 @@ import org.springframework.context.ApplicationContext;
 import jakarta.jms.JMSException;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -52,20 +53,14 @@ public class MessageForwarderInterceptor extends AbstractMessageInterceptor {
     }
 
     protected static class MessageQueueProcessor implements Runnable {
+        @Getter
         private final BlockingQueue<Message> messageQueue = new LinkedBlockingQueue<>();
+        @Setter
         private ApplicationContext applicationContext;
         private BrokerCepService brokerCepService;
         private Thread runner;
         private boolean keepRunning;
         protected List<BrokerCepProperties.ForwardDestinationConfig> forwardDestinations;
-
-        public void setApplicationContext(ApplicationContext applicationContext) {
-            this.applicationContext = applicationContext;
-        }
-
-        public Queue<Message> getMessageQueue() {
-            return messageQueue;
-        }
 
         @Override
         public void run() {
@@ -138,7 +133,7 @@ public class MessageForwarderInterceptor extends AbstractMessageInterceptor {
                     return false;
                 }
             }
-            if (forwardDestinations.size()==0) {
+            if (forwardDestinations.isEmpty()) {
                 log.debug("MessageQueueProcessor: No forward destinations specified. Discarding message: {}", m);
                 return false;
             }
