@@ -1,0 +1,239 @@
+#
+# Copyright (C) 2017-2026 Institute of Communication and Computer Systems (imu.iccs.gr)
+#
+# This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+# Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+# If a copy of the MPL was not distributed with this file, you can obtain one at
+# https://www.mozilla.org/en-US/MPL/2.0/
+#
+
+services:
+  ems:
+    container_name: "ems"
+    image: ${EMS_IMAGE_REPO}:${EMS_IMAGE_TAG}${EMS_IMAGE_TAG_EXTRA:-}
+    environment:
+      #
+      # ===== CIPHER settings =====
+      #
+      # ===== Kubernetes settings =====
+      - K8S_ENABLED=false
+      - K8S_WATCHER_ENABLED=false
+      - K8S_DEPLOY_EMS_CLIENTS_ON_KUBERNETES_ENABLED=false
+      #
+      # ===== INITIALIZATION settings =====
+      #   --- Entrypoint and run.sh ---
+#      - EMS_CONFIG_DIR=/opt/ems-server/config
+      - JASYPT_PASSWORD=${P_JASYPT_PASSWORD}
+      #- EMS_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,address=*:8000,suspend=n
+      #- JAVA_OPTS=-agentlib:native-image-agent=config-output-dir=/native-image
+      #- JAVA_OPTS=-agentlib:native-image-agent=config-merge-dir=/native-image
+      #- JAVA_TOOL_OPTIONS=-XX:+UnlockDiagnosticVMOptions -XX:NativeMemoryTracking=summary -XX:+PrintNMTStatistics
+      #
+      # ===== Log settings =====
+#      - LOG_CONFIG_FILE=/opt/ems-server/config/logback-conf/logback-spring.xml
+#      - LOG_FILE=/opt/ems-server/logs/ems.log
+#      - LOGS_DIR=/opt/ems-server/logs
+      #- LOGGING_LEVEL_GR_ICCS_IMU_EMS_TRANSLATE=TRACE
+      #
+      # ===== External dependencies settings =====
+      #- EXTRA_LOADER_PATHS=/plugins/*               # the paths inside EMS server container
+      #- SCAN_PACKAGES=eu.nebulous.ems               # packages to scan for components (Nebulous)
+      #- SCAN_PACKAGES=eu.melodic.ems                # packages to scan for components (Melodic/Morphemic)
+      #
+      # ===== EMS Control Service settings =====
+      - EMS_IP_SETTING=DEFAULT_IP
+      #- EMS_SERVER_ADDRESS=ems ...or SERVER_IP
+      #- PASSWORD_ENCODER_CLASS=gr.iccs.imu.ems.util.password.IdentityPasswordEncoder
+      #
+      #- NOTIFICATION_URL=https://mule:8088
+      #- METASOLVER_URL=http://metasolver:8092/updateConfiguration
+      #- CONTROL_PRINT_BUILD_INFO=true
+      - EMS_LOG_REQUESTS=false
+      - EMS_TC_FILE=/opt/ems-server/models/TC/%s.json
+      #- EMS_TC_FILE=/opt/ems-server/logs/_TC.json
+      #- EMS_TC_LOAD_FILE=/opt/ems-server/logs/TC/_TC-%s.json
+      #- EMS_TC_SAVE_FILE=/opt/ems-server/logs/TC/_TC-%s.json
+      - EMS_PRELOAD_APP_MODEL=test2.yml
+      - EMS_PRELOAD_CP_MODEL=
+      #
+      # =====  Security and Web Management settings  =====
+      - CONTROL_SSL_KEY_ENTRY_GENERATE=IF_IP_CHANGED        # Keystore & Truststore are generated during container startup
+      - CONTROL_SSL_KEYSTORE_FILE=/opt/ems-server/certs/ems-keystore.p12
+      - CONTROL_SSL_KEYSTORE_PASSWORD=${P_KEYSTORE_PASSWORD}
+      - CONTROL_SSL_TRUSTSTORE_FILE=/opt/ems-server/certs/common-truststore.p12
+      - CONTROL_SSL_TRUSTSTORE_PASSWORD=${P_KEYSTORE_PASSWORD}
+      - CONTROL_SSL_CERTIFICATE_FILE=/opt/ems-server/certs/ems.crt
+      #
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
+      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
+      #
+      #- MELODIC_SECURITY_ENABLED=false
+      - JWT_SECRET=${P_JWT_SECRET}
+      #- WEB_SECURITY_JWT_AUTHENTICATION_ENABLED=false
+      - WEB_SECURITY_JWT_AUTHENTICATION_REQUEST_PARAMETER=jwt    #XXX:TODO: Comment out these two settings for improved security
+      - WEB_SECURITY_JWT_AUTHENTICATION_PRINT_SAMPLE_TOKEN=true
+      #- WEB_SECURITY_API_KEY_AUTHENTICATION_ENABLED=false
+      - WEB_SECURITY_API_KEY_AUTHENTICATION_VALUE=${P_WEB_API_KEY_VALUE}
+      #- WEB_SECURITY_OTP_AUTHENTICATION_ENABLED=false
+      #- WEB_SECURITY_OTP_AUTHENTICATION_DURATION=3600000
+      #- WEB_SECURITY_FORM_AUTHENTICATION_ENABLED=false
+      #- WEB_SECURITY_FORM_AUTHENTICATION_USERNAME=admin
+      - WEB_SECURITY_FORM_AUTHENTICATION_PASSWORD=${P_WEB_ADMIN_PASSWORD}
+      #
+      # =====  Topic Beacon settings  =====
+      #- BEACON_ENABLED=false
+      - BEACON_INITIAL_DELAY=10000
+      - BEACON_DELAY=10000
+      #
+      # ===== EMS server --DEBUG-- settings =====
+      #- CONTROL_SKIP_TRANSLATION=true
+      - CONTROL_SKIP_MVV_RETRIEVE=true
+      #- CONTROL_SKIP_BROKER_CEP=true
+      #- CONTROL_SKIP_BAGUETTE=true
+      #- CONTROL_SKIP_COLLECTORS=true
+      #- CONTROL_SKIP_METASOLVER=true
+      #- CONTROL_SKIP_NOTIFICATION=true
+      #- CONTROL_DEPLOY_ALL_GROUPINGS=true
+      #
+      # ===== EMS server exit and restart settings =====
+      - CONTROL_EXIT_ALLOWED=true
+      - RESTART_EXIT_CODE=99
+      #
+      # ===== Translator settings =====
+      #- TRANSLATOR_TRANSLATOR_TYPE=CAMEL_FILE
+      #- TRANSLATOR_TRANSLATOR_PROPERTIES_JSON={ "camelFile.modelsDir":"/opt/ems-server/models/", "camelWeb.baseUrl":"http://localhost/models/", "camelWeb.modelsDir":"/opt/ems-server/models/", "camelWeb.deleteFile":false }
+      - TRANSLATOR_MODELS_DIR=/opt/ems-server/models
+      #- TRANSLATOR_EXTENSION_MODEL=extension.yml
+      #
+      #- TRANSLATOR_PRINT_RESULTS=false
+      #- TRANSLATOR_DAG_PRINT_DOT_ENABLED=true
+      #- TRANSLATOR_DAG_EXPORT_TO_FILE_ENABLED=true
+      #- TRANSLATOR_DAG_EXPORT_FORMATS=png, svg
+      #- TRANSLATOR_DAG_EXPORT_IMAGE_WIDTH=600
+      #
+      # ===== Broker-CEP settings =====
+      - BROKERCEP_ADDITIONAL_BROKER_CREDENTIALS=${P_BROKERCEP_CREDENTIALS:-}
+      #- BROKERCEP_STATS_PRINTER_ENABLED=true
+      #- BROKERCEP_STATS_PRINTER_AS_JSON=true
+      #- BROKERCEP_STATS_PRINTER_AS_CSV=true
+      #- BROKERCEP_STATS_PRINTER_INIT_DELAY=10
+      #- BROKERCEP_STATS_PRINTER_RATE=10
+      #
+      # ===== Nebulous-specific settings -- at Nebulous core =====
+      #   NOTE:  Comment out 'TRANSLATOR_MODELS_DIR' to use default models folder
+      #- BOOT_ENABLED=true               # 'true' only at Nebulous core
+      #- BOOT_INITIALIZER_ENABLED=false  # 'true' only at App. cluster
+      #- K8S_ENABLED=false
+      #- K8S_DEPLOY_EMS_CLIENTS_ON_KUBERNETES_ENABLED=false
+      #- K8S_WATCHER_ENABLED=false
+      #
+      # ===== Nebulous-specific settings -- at Application cluster =====
+      #- BOOT_ENABLED=false              # 'true' only at Nebulous core
+      #- BOOT_INITIALIZER_ENABLED=true   # 'true' only at App. cluster
+      #- K8S_ENABLED=false
+      #- K8S_DEPLOY_EMS_CLIENTS_ON_KUBERNETES_ENABLED=false
+      #- K8S_WATCHER_ENABLED=false
+      #
+      # ===== Nebulous-specific settings -- common =====
+      - EXTERNAL_ENABLED=false
+      - EXTERNAL_BROKER_ADDRESS=activemq  # host.docker.internal
+      - EXTERNAL_BROKER_PORT=5672
+      - EXTERNAL_BROKER_USERNAME=admin
+      - EXTERNAL_BROKER_PASSWORD=admin
+      #
+      # ===== Baguette Server settings =====
+      #- BAGUETTE_SERVER_ADDRESS=${P_BAGUETTE_SERVER_ADDRESS}
+      - BAGUETTE_SERVER_CREDENTIALS=${P_BAGUETTE_SERVER_CREDENTIALS:-{}
+      #
+      # ===== Server-side client recovery settings =====
+      #- SELF_HEALING_ENABLED=true
+      #- SELF_HEALING_MODE=INCLUDED
+      #- SELF_HEALING_RECOVERY_DELAY=10000
+      #- SELF_HEALING_RECOVERY_RETRY_DELAY=60000
+      #- SELF_HEALING_RECOVERY_MAX_RETRIES=3
+      #- SELF_HEALING_RECOVERY_FILE_BAGUETTE=file:/opt/ems-server/config/baguette-client-install/linux/recover-baguette.json
+      #- SELF_HEALING_RECOVERY_FILE_NETDATA=
+      #
+      # =====  EMS Info Service & Web Admin  =====
+      #
+      # ===== EMS server monitoring settings =====
+      - EMS_SYSMON_ENABLED=true
+      - EMS_SYSMON_PERIOD=1000
+      - EMS_SYSMON_COMMAND=./bin/sysmon.sh
+      #- EMS_SYSMON_TOPIC=_EMS_SERVER_METRICS
+      #- EMS_SYSMON_TOPIC=_EMS_SERVER_
+      #- EMS_SYSMON_PUBLISH_AS_METRICS=true
+      #
+      # ===== EMS server file browsing =====
+      #- INFO_FILES_ENABLED=true
+      - INFO_FILES_ROOTS=/opt/ems-server/logs, /opt/ems-server/config, /opt/ems-server/public_resources/resources
+      - INFO_FILES_EXTENSIONS_BLOCKED=.pem, .p12, .sh
+      #
+      # ===== EMS server log viewer =====
+      - INFO_LOGVIEWERFILES=/opt/ems-server/logs/ems.log
+      #
+      # ===== WebSSH settings =====
+#      - WEBSSH_SERVICE_URL=https://${SERVER_IP}:4433/?hostname=x&username=x&cref={0}
+      #
+      # ===== Leaflet Map settings =====
+      #- WEB_ADMIN_LEAFLET_MAP_TYPE=stadia-outdoors
+      #- WEB_ADMIN_LEAFLET_MAP_TYPE=openstreetmap
+      #- WEB_ADMIN_LEAFLET_MAP_TYPE=user-defined
+      #- WEB_ADMIN_LEAFLET_MAP_TILES_URL=https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+      #- WEB_ADMIN_LEAFLET_MAP_ZOOM=19
+      #- WEB_ADMIN_LEAFLET_MAP_ATTRIBUTION=&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors
+      #
+      #
+      # =====  EMS client settings  =====
+      # =====  EMS clients - Security and Authentication settings  =====
+#      - EMS_CLIENT_JASYPT_PASSWORD=${P_JASYPT_PASSWORD:-}
+      - EMS_CLIENT_ADDITIONAL_BROKER_CREDENTIALS=${P_BROKERCEP_CREDENTIALS:-}
+      #- EMS_CLIENT_BROKER_USERNAME=ccc
+      #- EMS_CLIENT_BROKER_PASSWORD=333
+#      - EMS_CLIENT_KEYSTORE_SECRET=${P_KEYSTORE_PASSWORD}
+#      - EMS_CLIENT_TRUSTSTORE_SECRET=${P_KEYSTORE_PASSWORD}
+      #
+      # ===== EMS server post-boot command =====
+      - POST_BOOT_COMMAND=/deploy-ems-clients.sh
+      #- POST_BOOT_COMMAND_EXEC_POLL=5
+      #- POST_BOOT_COMMAND_DELAY=0
+      #
+    ports:
+      - "2222:2222"
+      - "8111:8111"
+      - "61617:61617"
+      - "61616:61616"
+      - "61610:61610"
+      - "5672:5672"
+    volumes:
+      - ./logs:/opt/ems-server/logs
+      - ./certs:/opt/ems-server/certs
+      - ./models:/opt/ems-server/models
+      - ./deploy-ems-clients.sh:/deploy-ems-clients.sh
+
+  vm1:
+    container_name: "vm1"
+#    image: vm-with-prometheus
+    image: vm-with-netdata
+    working_dir: "/home/ubuntu/baguette-client"
+    ports:
+      - "1022:22"
+      - "1016:61616"
+      - "1017:61617"
+      - "1099:19999"
+    volumes:
+      - ./prometheus/sample-exporter.sh:/opt/prometheus/sample-exporter.sh
+#      - ./vm1/logback-spring.xml:/home/ubuntu/baguette-client/conf/logback-spring.xml
+
+  vm2:
+    container_name: "vm2"
+#    image: vm-with-prometheus
+    image: vm-with-netdata
+    working_dir: "/home/ubuntu/baguette-client"
+    ports:
+      - "2022:22"
+      - "2016:61616"
+      - "2017:61617"
+      - "2099:19999"
+    volumes:
+      - ./prometheus/sample-exporter.sh:/opt/prometheus/sample-exporter.sh
