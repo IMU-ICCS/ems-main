@@ -23,14 +23,10 @@
 		<dependency>
 			<groupId>gr.iccs.imu.ems</groupId>
 			<artifactId>broker-cep</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>gr.iccs.imu.ems</groupId>
 			<artifactId>translator</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>*</groupId>
@@ -41,7 +37,6 @@
 		<dependency>
 			<groupId>gr.iccs.imu.ems</groupId>
 			<artifactId>common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.sshd/apache-sshd -->
@@ -88,7 +83,6 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>

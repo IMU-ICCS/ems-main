@@ -24,7 +24,6 @@
         <dependency>
             <groupId>gr.iccs.imu.ems</groupId>
             <artifactId>util</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <!-- Spring-boot JMS dependencies -->

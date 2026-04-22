@@ -70,14 +70,14 @@
         <!-- QPid AMQP client version -->
         <qpid-jms-client.version>2.9.0</qpid-jms-client.version>
         <!-- Jasypt version -->
-        <jasypt.starter.version>3.0.5</jasypt.starter.version>
+        <jasypt.starter.version>4.0.4</jasypt.starter.version>
         <!-- Apache SSHD version -->
         <apache-sshd.version>2.16.0</apache-sshd.version>
         <mina-core.version>2.2.4</mina-core.version>
         <!-- Bouncy Castle version -->
         <bouncy-castle.version>1.82</bouncy-castle.version>
         <!-- Guava version -->
-        <guava.version>33.5.0-jre</guava.version>
+        <guava.version>33.6.0-jre</guava.version>
         <!-- Apache Commons-CSV -->
         <commons-csv.version>1.14.1</commons-csv.version>
         <!-- Cryptacular -->
@@ -85,7 +85,7 @@
 
         <!-- Baguette Server dependency versions -->
         <!-- org.glassfish.jersey.core version -->
-        <glassfish.jersey.core.version>3.1.11</glassfish.jersey.core.version>
+        <glassfish.jersey.core.version>4.0.2</glassfish.jersey.core.version>
 
         <!-- Baguette Client dependency versions -->
         <!-- Atomix version -->
@@ -94,16 +94,15 @@
 
         <!-- Common module dependency versions -->
         <!-- io.fabric8 :: kubernetes-client -->
-        <kubernetes.client.version>7.4.0</kubernetes.client.version>
+        <kubernetes.client.version>7.6.1</kubernetes.client.version>
         <!-- okhttp (used by kubernetes-client) -->
-        <okhttp.version>4.12.0</okhttp.version>
+        <okhttp.version>5.3.2</okhttp.version>
         <!-- okio (used by kubernetes-client) -->
-        <okio.version>3.10.2</okio.version>
+        <okio.version>3.17.0</okio.version>
 
         <!-- Control Service dependency versions -->
         <hawtio.version>5.1.0</hawtio.version>
         <spring.boot.admin.version>3.5.5</spring.boot.admin.version>
-        <micrometer.registry.prometheus.version>1.15.5</micrometer.registry.prometheus.version>
         <springdoc.version>3.0.3</springdoc.version>
         <jjwt.version>0.13.0</jjwt.version>
 
