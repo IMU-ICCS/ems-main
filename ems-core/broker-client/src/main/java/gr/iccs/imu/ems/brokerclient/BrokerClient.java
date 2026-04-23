@@ -9,8 +9,6 @@
 
 package gr.iccs.imu.ems.brokerclient;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import gr.iccs.imu.ems.brokerclient.event.EventMap;
 import gr.iccs.imu.ems.brokerclient.properties.BrokerClientProperties;
 import gr.iccs.imu.ems.util.PasswordUtil;
@@ -32,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -61,7 +60,8 @@ public class BrokerClient {
     private Connection connection;
     private Session session;
     private HashMap<MessageListener,Set<MessageConsumer>> listeners = new HashMap<>();
-    private Gson gson = new GsonBuilder().create();
+    @Autowired
+    private JsonMapper jsonMapper;
     private boolean keepRunning;
     private Future<?> receiveEventsWithAutoReconnectFuture;
 
@@ -308,7 +308,7 @@ public class BrokerClient {
                         String k = key != null ? key.toString() : null;
                         mapMsg.setObject(k, val);
                     }
-                    payloadText = gson.toJson(event);
+                    payloadText = jsonMapper.writeValueAsString(event);
                     message = mapMsg;
                     break;
                 } else {
@@ -318,7 +318,7 @@ public class BrokerClient {
                 }
             case OBJECT:
                 payloadText = (event instanceof Map)
-                        ? gson.toJson(event)
+                        ? jsonMapper.writeValueAsString(event)
                         : event.toString();
                 message = session.createObjectMessage(event);
                 break;
@@ -342,7 +342,7 @@ public class BrokerClient {
             case TEXT:
             default:
                 payloadText = event instanceof Map
-                        ? gson.toJson(event)
+                        ? jsonMapper.writeValueAsString(event)
                         : event.toString();
                 message = session.createTextMessage(payloadText);
                 break;

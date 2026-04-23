@@ -10,13 +10,14 @@
 
 package gr.iccs.imu.ems.util;
 
-import com.google.gson.Gson;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  *  Converts a String to a CredentialsMap
@@ -24,18 +25,15 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @ConfigurationPropertiesBinding
+@RequiredArgsConstructor
 public class CredentialsMapConverter implements Converter<String, CredentialsMap> {
-    private Gson gson;
-
-    public CredentialsMapConverter() {
-        gson = new Gson();
-    }
+    private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
     @Override
     public CredentialsMap convert(@NonNull String s) {
         if (StringUtils.isNotBlank(s)) {
             try {
-                CredentialsMap credentialsMap = gson.fromJson(s.trim(), CredentialsMap.class);
+                CredentialsMap credentialsMap = jsonMapper.readValue(s.trim(), CredentialsMap.class);
                 log.debug("CredentialsMapConverter: result: {}", credentialsMap);
                 return credentialsMap;
             } catch (Throwable t) {

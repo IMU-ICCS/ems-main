@@ -9,11 +9,10 @@
 
 package gr.iccs.imu.ems.common.recovery;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.FileReader;
-import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +32,8 @@ public interface RecoveryTask {
 
     default void runNodeRecovery(String recoveryCommandsFile, RecoveryContext context) throws Exception {
         try (FileReader reader = new FileReader(Path.of(recoveryCommandsFile).toFile())) {
-            Type listType = new TypeToken<List<RECOVERY_COMMAND>>(){}.getType();
-            List<RECOVERY_COMMAND> recoveryCommandsList = new Gson().fromJson(reader, listType);
+            List<RECOVERY_COMMAND> recoveryCommandsList =
+                    JsonMapper.builder().build().readValue(reader, new TypeReference<>() {});
             runNodeRecovery(recoveryCommandsList, context);
         }
     }

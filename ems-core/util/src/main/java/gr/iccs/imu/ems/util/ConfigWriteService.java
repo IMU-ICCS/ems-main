@@ -9,8 +9,6 @@
 
 package gr.iccs.imu.ems.util;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -32,7 +31,7 @@ import java.util.Properties;
 @Service
 public class ConfigWriteService {
     private final Map<String,Configuration> configurations = new HashMap<>();
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final JsonMapper jsonMapper;
 
     private static volatile ConfigWriteService instance;
 
@@ -45,7 +44,8 @@ public class ConfigWriteService {
         return instance;
     }
 
-    private ConfigWriteService() {
+    private ConfigWriteService(@NonNull JsonMapper jsonMapper) {
+        this.jsonMapper = jsonMapper;
         if (instance!=null)
             throw new IllegalStateException("ConfigWriteService has already been initialized");
         instance = this;
@@ -124,7 +124,7 @@ public class ConfigWriteService {
         }
 
         private String asJson() {
-            return gson.toJson(contentMap);
+            return jsonMapper.writeValueAsString(contentMap);
         }
     }
 }

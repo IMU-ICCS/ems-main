@@ -9,14 +9,14 @@
 
 package gr.iccs.imu.ems.brokercep.event;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import gr.iccs.imu.ems.util.StrUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.Serializable;
 import java.util.*;
@@ -30,8 +30,9 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class EventMap extends LinkedHashMap<String, Object> implements Serializable {
-
-    private static Gson gson = new GsonBuilder().create();
+    private static JsonMapper jsonMapper = JsonMapper.builder()
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .build();
     private static AtomicLong eventIdSequence = new AtomicLong(0);
 
     // Standard/Known Event fields configuration
@@ -162,13 +163,13 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
         }
         return eventMap;
         */
-        EventMap eventMap = gson.fromJson(s, EventMap.class);
+        EventMap eventMap = jsonMapper.readValue(s, EventMap.class);
         eventMap.checkEvent();
         return eventMap;
     }
 
     public static Map parseMap(@NonNull String s) {
-        Map map = gson.fromJson(s, Map.class);
+        Map map = jsonMapper.readValue(s, Map.class);
         Object ts = map.get(TIMESTAMP_NAME);
         if (ts instanceof Double d) map.put(TIMESTAMP_NAME, d.longValue());
         return map;
@@ -278,6 +279,6 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     }
 
     public String toJsonString() {
-        return gson.toJson(this);
+        return jsonMapper.writeValueAsString(this);
     }
 }

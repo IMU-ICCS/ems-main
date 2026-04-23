@@ -9,10 +9,6 @@
 
 package gr.iccs.imu.ems.control.util;
 
-import com.google.gson.*;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-import com.google.gson.stream.JsonWriter;
 import gr.iccs.imu.ems.baguette.server.ClientShellCommand;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
@@ -30,8 +26,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
@@ -52,7 +48,7 @@ public class TopicBeacon implements InitializingBean {
     private final BeaconContext beaconContext = new BeaconContext(this);
     private final List<BeaconPlugin> beaconPlugins;
 
-    private Gson gson;
+    private final JsonMapper jsonMapper;
     private String previousModelId = "";
     private final AtomicLong modelVersion = new AtomicLong(0);
 
@@ -62,9 +58,6 @@ public class TopicBeacon implements InitializingBean {
             log.warn("Topic Beacon is disabled");
             return;
         }
-
-        // initialize a Gson instance
-        initializeGson();
 
         // initialize plugins
         beaconPlugins.stream().filter(Objects::nonNull).forEach(plugin -> {
@@ -151,15 +144,11 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public String toJson(Object o) {
-        if (gson==null)
-            initializeGson();
-        return gson.toJson(o);
+        return jsonMapper.writeValueAsString(o);
     }
 
     public <T> T fromJson(String s, Class<T> type) {
-        if (gson==null)
-            initializeGson();
-        return gson.fromJson(s, type);
+        return jsonMapper.readValue(s, type);
     }
 
     public void transmitInfo() throws JMSException {

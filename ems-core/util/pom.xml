@@ -39,10 +39,10 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Gson -->
+        <!-- Jackson dependencies -->
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <!-- Apache Commons Text -->

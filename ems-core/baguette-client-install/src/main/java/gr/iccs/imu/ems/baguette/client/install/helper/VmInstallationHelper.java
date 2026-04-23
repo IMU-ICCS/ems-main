@@ -9,8 +9,6 @@
 
 package gr.iccs.imu.ems.baguette.client.install.helper;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import gr.iccs.imu.ems.baguette.client.install.ClientInstallationProperties;
 import gr.iccs.imu.ems.baguette.client.install.ClientInstallationTask;
 import gr.iccs.imu.ems.baguette.client.install.SshConfig;
@@ -28,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -57,6 +56,8 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
     private static VmInstallationHelper instance;
 
     private final ClientInstallationProperties clientInstallationProperties;
+
+    private final JsonMapper jsonMapper;
 
     public static AbstractInstallationHelper getInstance() {
         return instance;
@@ -353,10 +354,9 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
 
                 // Pretty print instructionsSet JSON
                 if (log.isTraceEnabled()) {
-                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
                     StringWriter stringWriter = new StringWriter();
                     try (PrintWriter writer = new PrintWriter(stringWriter)) {
-                        gson.toJson(instructionsSet, writer);
+                        jsonMapper.writeValue(writer, instructionsSet);
                     }
                     log.trace("VmInstallationHelper.prepareInstructionsForLinux: Installation instructions for LINUX: json:\n{}", stringWriter);
                 }

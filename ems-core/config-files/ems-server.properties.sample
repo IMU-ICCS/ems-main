@@ -34,6 +34,7 @@ jasypt.encryptor.ivGeneratorClassname = org.jasypt.iv.NoIvGenerator
 ### Misc
 spring.output.ansi.enabled=ALWAYS
 spring.jackson.default-property-inclusion=non_null
+spring.jackson.serialization.indent-output=true
 spring.threads.virtual.enabled=true
 
 

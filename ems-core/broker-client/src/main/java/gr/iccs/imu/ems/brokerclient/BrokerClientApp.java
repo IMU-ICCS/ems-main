@@ -9,7 +9,6 @@
 
 package gr.iccs.imu.ems.brokerclient;
 
-import com.google.gson.Gson;
 import gr.iccs.imu.ems.brokerclient.event.EventGenerator;
 import gr.iccs.imu.ems.brokerclient.event.EventGeneratorCli;
 import gr.iccs.imu.ems.brokerclient.event.EventMap;
@@ -57,7 +56,7 @@ public class BrokerClientApp {
     private static long playbackInterval = -1;
     private static long playbackDelay = -1;
     private static double playbackSpeed = 1.0;
-    private static Gson gson = new Gson();
+    private static JsonMapper jsonMapper =  new JsonMapper();
     private static boolean printAsJson = true;
 
     private enum RECORD_FORMAT { CSV, JSON }
@@ -131,7 +130,7 @@ public class BrokerClientApp {
             boolean processPlaceholders = !args[aa].startsWith("-PP") || Boolean.parseBoolean(args[aa++].substring(3));
             String payload = args[aa++];
             payload = getPayload(payload, processPlaceholders);
-            EventMap event = gson.fromJson(payload, EventMap.class);
+            EventMap event = jsonMapper.readValue(payload, EventMap.class);
             sendEvent(url, username, password, topic, type, event, collectProperties(args, aa));
         } else
         if ("publish3".equalsIgnoreCase(command)) {
@@ -143,7 +142,7 @@ public class BrokerClientApp {
             payload = getPayload(payload, processPlaceholders);
             Map<String, String> properties = collectProperties(args, aa);
             if ("map".equalsIgnoreCase(type)) {
-                EventMap event = gson.fromJson(payload, EventMap.class);
+                EventMap event = jsonMapper.readValue(payload, EventMap.class);
                 sendEvent(url, username, password, topic, type, event, properties);
             } else {
                 sendEvent(url, username, password, topic, type, payload, properties);
@@ -616,8 +615,8 @@ public class BrokerClientApp {
         if (obj==null) return null;
         if (!printAsJson) return obj.toString();
         if (obj instanceof String s)
-            obj = gson.fromJson(s, Map.class);
-        return gson.toJson(obj);
+            obj = jsonMapper.readValue(s, Map.class);
+        return jsonMapper.writeValueAsString(obj);
     }
 
     private static int initRecording(String[] args, int aa) throws IOException {
@@ -728,7 +727,7 @@ public class BrokerClientApp {
                     String k = en.nextElement().toString();
                     map.put(k, mapMessage.getObject(k));
                 }
-                content = gson.toJson(map);
+                content = jsonMapper.writeValueAsString(map);
             } else
             if (message instanceof BytesMessage bytesMessage) {
                 type = BrokerClient.MESSAGE_TYPE.BYTES.name();
@@ -747,7 +746,7 @@ public class BrokerClientApp {
                 String k = en.nextElement().toString();
                 propertiesMap.put(k, message.getStringProperty(k));
             }
-            String properties = gson.toJson(propertiesMap);
+            String properties = jsonMapper.writeValueAsString(propertiesMap);
 
             /*String properties = amqMessage.getProperties()
                     .entrySet().stream()
@@ -961,7 +960,7 @@ public class BrokerClientApp {
 
     private static Map<String, String> getPropertiesFromString(String properties) {
         LinkedHashMap<String,String> result = new LinkedHashMap<>();
-        gson.fromJson(properties, Map.class).forEach((k,v) -> {
+        jsonMapper.readValue(properties, Map.class).forEach((k, v) -> {
             if (k!=null && v!=null)
                 result.put(k.toString(), v.toString());
         });
@@ -987,7 +986,7 @@ public class BrokerClientApp {
             }
         } else
         if ("MAP".equalsIgnoreCase(type)) {
-            payload = gson.fromJson(contents, EventMap.class);
+            payload = jsonMapper.readValue(contents, EventMap.class);
         } else
         if ("BYTES".equalsIgnoreCase(type)) {
             payload = Base64.getDecoder().decode(contents);

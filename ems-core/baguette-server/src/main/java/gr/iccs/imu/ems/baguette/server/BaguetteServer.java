@@ -34,6 +34,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.Serializable;

@@ -9,8 +9,6 @@
 
 package gr.iccs.imu.ems.control.controller;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import gr.iccs.imu.ems.baguette.server.BaguetteServer;
 import gr.iccs.imu.ems.baguette.server.NodeRegistry;
 import gr.iccs.imu.ems.baguette.server.ServerCoordinator;
@@ -22,9 +20,7 @@ import gr.iccs.imu.ems.control.collector.netdata.ServerNetdataCollector;
 import gr.iccs.imu.ems.control.plugin.*;
 import gr.iccs.imu.ems.control.properties.ControlServiceProperties;
 import gr.iccs.imu.ems.control.util.TopicBeacon;
-import gr.iccs.imu.ems.control.util.TranslationContextMonitorGsonDeserializer;
 import gr.iccs.imu.ems.control.util.mvv.NoopMetricVariableValuesServiceImpl;
-import gr.iccs.imu.ems.util.EventBus;
 import gr.iccs.imu.ems.translate.NoopTranslator;
 import gr.iccs.imu.ems.translate.TranslationContext;
 import gr.iccs.imu.ems.translate.TranslationContextPrinter;
@@ -32,6 +28,7 @@ import gr.iccs.imu.ems.translate.Translator;
 import gr.iccs.imu.ems.translate.model.Monitor;
 import gr.iccs.imu.ems.translate.model.Sink;
 import gr.iccs.imu.ems.translate.mvv.MetricVariableValuesService;
+import gr.iccs.imu.ems.util.EventBus;
 import gr.iccs.imu.ems.util.PasswordUtil;
 import lombok.Getter;
 import lombok.NonNull;
@@ -49,6 +46,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -69,6 +67,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     private final ApplicationContext applicationContext;
     private final ControlServiceProperties properties;
+    private final JsonMapper jsonMapper;
     @Getter private final BaguetteServer baguetteServer;
     private final NodeRegistry nodeRegistry;
     private final WebClient webClient;
@@ -609,9 +608,8 @@ public class ControlServiceCoordinator implements InitializingBean {
 
                 // Store _TC in a file
                 log.debug("ControlServiceCoordinator.translateAppModelAndStore(): Start serializing _TC data in file: {}", fileName);
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 Writer writer = new FileWriter(fileName);
-                gson.toJson(_TC, writer);
+                jsonMapper.writeValue(writer, _TC);
                 writer.close();
 
 //                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
@@ -644,10 +642,11 @@ public class ControlServiceCoordinator implements InitializingBean {
                 log.info("ControlServiceCoordinator.loadStoredTranslationContext(): Loading translator data from file: {}", fileName);
                 log.debug("ControlServiceCoordinator.loadStoredTranslationContext(): Start deserializing _TC data from file: {}", fileName);
                 Reader reader = new FileReader(fileName);
-                Gson gson = new GsonBuilder()
-                        .registerTypeAdapter(Monitor.class, new TranslationContextMonitorGsonDeserializer())
-                        .create();
-                _TC = gson.fromJson(reader, TranslationContext.class);
+                /*JsonMapper objectMapper = JsonMapper.builder()
+                        .addModule(new SimpleModule()
+                                .addDeserializer(Monitor.class, new TranslationContextMonitorJacksonDeserializer()))
+                        .build();*/
+                _TC = jsonMapper.readValue(reader, TranslationContext.class);
                 reader.close();
                 log.debug("ControlServiceCoordinator.loadStoredTranslationContext(): Deserialized _TC data from file: {}", fileName);
             } catch (IOException ex) {
@@ -895,8 +894,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         // POST configuration to MetaSolver
         String metaSolverEndpoint = properties.getMetasolverConfigurationUrl();
-        Gson gson = new Gson();
-        String json = gson.toJson(msConfig);
+        String json = jsonMapper.writeValueAsString(msConfig);
         log.debug("ControlServiceCoordinator.configureMetaSolver(): MetaSolver configuration in JSON: {}", json);
 
         try {

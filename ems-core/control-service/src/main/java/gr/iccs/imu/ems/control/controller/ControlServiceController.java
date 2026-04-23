@@ -9,10 +9,6 @@
 
 package gr.iccs.imu.ems.control.controller;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import gr.iccs.imu.ems.translate.TranslationContext;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +23,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -39,6 +36,7 @@ import java.util.stream.Collectors;
 public class ControlServiceController {
 
     private final ControlServiceCoordinator coordinator;
+    private final JsonMapper jsonMapper;
 
     @Getter
     private List<String> controllerEndpoints;
@@ -70,8 +68,8 @@ public class ControlServiceController {
     }
 
     private Map<String,String> extractAppIds(String requestStr) {
-        // Use Gson to get model id's from request body (in JSON format)
-        JsonObject jObj = new Gson().fromJson(requestStr, JsonObject.class);
+        // Get model id's from request body (in JSON format)
+        Map jObj = jsonMapper.readValue(requestStr, Map.class);
         String appModelId = Optional.ofNullable(jObj.get("app-model-id")).map(je -> stripQuotes(je.toString())).orElse(null);
         if (StringUtils.isBlank(appModelId))
             appModelId = Optional.ofNullable(jObj.get("applicationId")).map(je -> stripQuotes(je.toString())).orElse(null);
@@ -97,7 +95,7 @@ public class ControlServiceController {
         }
 
         // Get app model from request (if provided)
-        String appModel = Optional.ofNullable(jObj.get("app-model")).map(JsonElement::getAsString).orElse("");
+        String appModel = Optional.ofNullable(jObj.get("app-model")).map(Object::toString).orElse("");
 
         return Map.of("appModelId", StringUtils.defaultIfBlank(appModelId, ""),
                 "appExecModelId", StringUtils.defaultIfBlank(appExecModelId, ""),
@@ -114,8 +112,8 @@ public class ControlServiceController {
         log.debug("ControlServiceController.newAppExecModel(): Received request: {}", requestStr);
         log.trace("ControlServiceController.newAppExecModel(): JWT token: {}", jwtToken);
 
-        // Use Gson to get model id's from request body (in JSON format)
-        JsonObject jobj = new Gson().fromJson(requestStr, JsonObject.class);
+        // Get model id's from request body (in JSON format)
+        Map jobj = jsonMapper.readValue(requestStr, Map.class);
         String appExecModelId = Optional.ofNullable(jobj.get("app-exec-model-id")).map(je -> stripQuotes(je.toString())).orElse(null);
         log.info("ControlServiceController.newAppExecModel(): App execution model id from request: {}", appExecModelId);
 
@@ -139,9 +137,9 @@ public class ControlServiceController {
         log.debug("ControlServiceController.setConstants(): Received request: {}", requestStr);
         log.trace("ControlServiceController.setConstants(): JWT token: {}", jwtToken);
 
-        // Use Gson to get constants from request body (in JSON format)
-        Type type = new TypeToken<Map<String,Double>>(){}.getType();
-        Map<String, Double> constants = new Gson().fromJson(requestStr, type);
+        // Get constants from request body (in JSON format)
+        Map<String, Double> constants =
+                jsonMapper.readValue(requestStr, new TypeReference<>() {});
         log.info("ControlServiceController.setConstants(): Constants from request: {}", constants);
 
         // Start App Exec model processing in a worker thread

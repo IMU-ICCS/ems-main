@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -52,6 +53,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
     private final BrokerConfig brokerConfig;
     private final BrokerService brokerService;    // Added in order to ensure that BrokerService will be instantiated first
     private final CepService cepService;
+    private final JsonMapper jsonMapper;
 
     private Connection connection;
     private Session session;
@@ -211,7 +213,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
 
                 // Send message to Esper
                 //cepService.handleEvent(mesg.getText(), messageDestination.getPhysicalName());
-                EventMap eventMap = new com.google.gson.Gson().fromJson(mesg.getText(), EventMap.class);
+                EventMap eventMap = jsonMapper.readValue(mesg.getText(), EventMap.class);
                 copyEventProperties(message, eventMap);
                 log.trace("BrokerCepConsumer.onMessage(): event-map={}", eventMap);
                 cepService.handleEvent(eventMap, messageDestination.getPhysicalName());

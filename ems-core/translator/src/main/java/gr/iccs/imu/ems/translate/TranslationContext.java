@@ -12,7 +12,6 @@ package gr.iccs.imu.ems.translate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import com.google.gson.Gson;
 import gr.iccs.imu.ems.translate.dag.DAG;
 import gr.iccs.imu.ems.translate.dag.DAGNode;
 import gr.iccs.imu.ems.translate.model.*;
@@ -146,11 +145,6 @@ public class TranslationContext implements Serializable {
 
     @Getter
     protected final Map<String, Object> additionalResults = new LinkedHashMap<>();
-
-    @JsonIgnore
-    private final transient Gson gson = new Gson();                     // Used when cloning
-    /*@JsonIgnore                                                       // Alternative: clone with Jackson instead of Gson
-    private final transient ObjectMapper objectMapper = new ObjectMapper();*/
 
     // ====================================================================================================================================================
     // Constructors

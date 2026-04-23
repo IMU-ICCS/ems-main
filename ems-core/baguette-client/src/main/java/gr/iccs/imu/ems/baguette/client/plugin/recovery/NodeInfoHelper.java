@@ -9,7 +9,6 @@
 
 package gr.iccs.imu.ems.baguette.client.plugin.recovery;
 
-import com.google.gson.Gson;
 import gr.iccs.imu.ems.baguette.client.CommandExecutor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +16,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +30,7 @@ import java.util.Map;
 public class NodeInfoHelper {
     private final CommandExecutor commandExecutor;
     private final HashMap<String,Map> nodeInfoCache = new HashMap<>();
-    private final Gson gson = new Gson();
+    private final JsonMapper jsonMapper;
 
     @SneakyThrows
     public Map getNodeInfo(String nodeId, @NonNull String nodeAddress) {
@@ -47,7 +47,7 @@ public class NodeInfoHelper {
                 String response = commandExecutor.getLastInputLine();
                 log.debug("NodeInfoHelper: getNodeInfo(): Node Info from EMS server: id={}, address={}\n{}", nodeId, nodeAddress, response);
                 if (StringUtils.isNotBlank(response)) {
-                    nodeInfo = gson.fromJson(response, Map.class);
+                    nodeInfo = jsonMapper.readValue(response, Map.class);
                 }
                 nodeInfoCache.put(nodeAddress, nodeInfo);
             } catch (Exception ex) {

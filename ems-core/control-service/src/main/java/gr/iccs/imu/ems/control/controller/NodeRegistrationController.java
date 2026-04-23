@@ -9,8 +9,6 @@
 
 package gr.iccs.imu.ems.control.controller;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import gr.iccs.imu.ems.baguette.server.BaguetteServer;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,8 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
-import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
 
@@ -30,6 +29,7 @@ import java.util.Map;
 public class NodeRegistrationController {
     private final ControlServiceCoordinator coordinator;
     private final NodeRegistrationCoordinator nodeRegistrationCoordinator;
+    private final JsonMapper jsonMapper;
 
     // ------------------------------------------------------------------------------------------------------------
     // Baguette control methods
@@ -53,8 +53,8 @@ public class NodeRegistrationController {
         log.debug("NodeRegistrationController.baguetteRegisterNode(): Node json:\n{}", jsonNode);
 
         // Extract node information from json
-        Type type = new TypeToken<Map<String, Object>>(){}.getType();
-        Map<String,Object> nodeMap = new Gson().fromJson(jsonNode, type);
+        Map<String,Object> nodeMap =
+                jsonMapper.readValue(jsonNode, new TypeReference<>() {});
         String nodeId = (String) nodeMap.get("id");
         log.info("NodeRegistrationController.baguetteRegisterNode(): node-id: {}", nodeId);
         log.debug("NodeRegistrationController.baguetteRegisterNode(): Node information: map={}", nodeMap);

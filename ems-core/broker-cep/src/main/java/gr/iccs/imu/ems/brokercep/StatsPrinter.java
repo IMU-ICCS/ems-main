@@ -9,8 +9,6 @@
 
 package gr.iccs.imu.ems.brokercep;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import gr.iccs.imu.ems.brokercep.cep.CepService;
 import gr.iccs.imu.ems.brokercep.properties.BrokerCepProperties;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -31,7 +30,7 @@ import java.util.stream.Collectors;
 public class StatsPrinter implements InitializingBean, Runnable {
     private final BrokerCepProperties properties;
     private final TaskScheduler taskScheduler;
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final JsonMapper jsonMapper;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -58,7 +57,7 @@ public class StatsPrinter implements InitializingBean, Runnable {
         stats.put("CEP.incoming.events", CepService.getEventCounter());
 
         if (properties.isStatsPrinterAsJson())
-            log.info("BCEP statistics:\n{}", gson.toJson(stats));
+            log.info("BCEP statistics:\n{}", jsonMapper.writeValueAsString(stats));
         if (properties.isStatsPrinterAsCsv())
             log.info("BCEP statistics:\n{}\n{}",
                     String.join(",", stats.keySet()),

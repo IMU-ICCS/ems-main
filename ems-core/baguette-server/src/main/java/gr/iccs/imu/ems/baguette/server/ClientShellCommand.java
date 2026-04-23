@@ -14,24 +14,29 @@ import gr.iccs.imu.ems.api.comm.ClientConfiguration;
 import gr.iccs.imu.ems.api.comm.GroupingConfiguration;
 import gr.iccs.imu.ems.baguette.server.coordinator.cluster.IClusterZone;
 import gr.iccs.imu.ems.common.recovery.RecoveryConstant;
-import gr.iccs.imu.ems.util.*;
+import gr.iccs.imu.ems.util.EventBus;
+import gr.iccs.imu.ems.util.PasswordUtil;
+import gr.iccs.imu.ems.util.SerializationUtil;
+import gr.iccs.imu.ems.util.StrUtil;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.sshd.common.session.Session;
 import org.apache.sshd.common.session.SessionListener;
-import org.apache.sshd.server.channel.ChannelSession;
-import org.apache.sshd.server.command.Command;
 import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.ExitCallback;
+import org.apache.sshd.server.channel.ChannelSession;
+import org.apache.sshd.server.command.Command;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.session.ServerSessionAware;
 import org.cryptacular.util.CertUtil;
 import org.slf4j.event.Level;
+import tools.jackson.databind.json.JsonMapper;
 
-import jakarta.validation.constraints.NotBlank;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -352,7 +357,7 @@ public class ClientShellCommand implements Command, Runnable, ServerSessionAware
                         log.debug("{}--> NODE PRE-REGISTRATION INFO: address={}\n{}", getId(), nodeAddress, preregInfo);
 
                         if (preregInfo!=null) {
-                            String preregInfoStr = new Gson().toJson(preregInfo);
+                            String preregInfoStr = JsonMapper.builder().build().writeValueAsString(preregInfo);
                             log.trace("{}--> NODE PRE-REGISTRATION INFO STRING: STR={}\n{}", getId(), nodeAddress, preregInfoStr);
                             sendToClient(preregInfoStr);
                         } else {
@@ -368,7 +373,7 @@ public class ClientShellCommand implements Command, Runnable, ServerSessionAware
         } else if (line.startsWith("-NOTIFY-GROUPING-CHANGE:")) {
             String newGrouping = line.substring("-NOTIFY-GROUPING-CHANGE:".length()).trim();
             log.info("{}--> Client grouping changed: {} --> {}", getId(), clientGrouping, newGrouping);
-            if (StringUtils.isNotBlank(newGrouping) && ! StringUtils.equals(clientGrouping, newGrouping))
+            if (StringUtils.isNotBlank(newGrouping) && ! Strings.CS.equals(clientGrouping, newGrouping))
                 this.clientGrouping = newGrouping;
         } else if (line.startsWith("-NOTIFY-STATUS-CHANGE:")) {
             String newNodeStatus = line.substring("-NOTIFY-STATUS-CHANGE:".length()).trim();

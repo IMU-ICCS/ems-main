@@ -9,7 +9,6 @@
 
 package gr.iccs.imu.ems.baguette.client.install.helper;
 
-import com.google.gson.Gson;
 import gr.iccs.imu.ems.baguette.client.install.ClientInstallationProperties;
 import gr.iccs.imu.ems.baguette.client.install.instruction.InstructionsSet;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
@@ -31,6 +30,8 @@ import org.springframework.boot.tomcat.TomcatWebServer;
 import org.springframework.boot.web.server.context.WebServerInitializedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.FileSystemResource;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.*;
 import java.nio.file.*;
@@ -214,8 +215,8 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         List<String> jsonSets = null;
         if (!instructionsSets.isEmpty()) {
             // Convert 'instructionsSet' into json string
-            Gson gson = new Gson();
-            jsonSets = instructionsSets.stream().map(instructionsSet -> gson.toJson(instructionsSet, InstructionsSet.class)).collect(Collectors.toList());
+            final ObjectMapper objectMapper = JsonMapper.builder().build();
+            jsonSets = instructionsSets.stream().map(objectMapper::writeValueAsString).collect(Collectors.toList());
         }
         log.trace("AbstractInstallationHelper.getInstallationInstructionsForOs(): JSON instruction sets for node: node-map={}\n{}", entry.getPreregistration(), jsonSets);
         return Optional.ofNullable(jsonSets);
@@ -265,8 +266,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
             Path startDir,
             String copyToClientDir,
             String clientTmpDir,
-            Map<String,String> valueMap
-    ) throws IOException
+            Map<String,String> valueMap) throws IOException
     {
         String targetFile = StringUtils.substringAfter(p.toUri().toString(), startDir.toUri().toString());
         if (!targetFile.startsWith("/")) targetFile = "/"+targetFile;

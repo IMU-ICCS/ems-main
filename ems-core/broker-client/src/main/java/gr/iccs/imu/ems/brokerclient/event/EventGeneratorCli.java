@@ -9,13 +9,13 @@
 
 package gr.iccs.imu.ems.brokerclient.event;
 
-import com.google.gson.GsonBuilder;
 import gr.iccs.imu.ems.brokerclient.BrokerClient;
 import jakarta.jms.JMSException;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -29,6 +29,9 @@ import java.util.Map;
 public class EventGeneratorCli {
     private final BrokerClient client;
     private EventGenerator generator;
+    private JsonMapper jsonMapper = JsonMapper.builder()
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .build();
 
     private InputStream in;
     private BufferedReader rIn;
@@ -244,8 +247,7 @@ public class EventGeneratorCli {
                 out.println("Broker Username:  "+client.getBrokerUsername());
                 out.println("Client connected: "+client.isConnected());
                 out.println("Client properties:\n"
-                        + new GsonBuilder().setPrettyPrinting().create()
-                        .toJson(client.getClientProperties()));
+                        + jsonMapper.writeValueAsString(client.getClientProperties()));
             }
             case "help", "?" ->
                     out.println("""
