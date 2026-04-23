@@ -37,9 +37,10 @@ public class ConfigWriteService {
 
     public static synchronized ConfigWriteService getInstance() {
         if (instance==null) {
-            synchronized (ConfigWriteService.class) {
+            /*synchronized (ConfigWriteService.class) {
                 if (instance == null) new ConfigWriteService();
-            }
+            }*/
+            throw new IllegalStateException("ConfigWriteService has not been initialized");
         }
         return instance;
     }

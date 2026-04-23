@@ -91,49 +91,6 @@ public class TopicBeacon implements InitializingBean {
         }
     }
 
-    private void initializeGson() {
-        gson = new GsonBuilder()
-                .disableHtmlEscaping()
-                .registerTypeAdapter(Instant.class, new TypeAdapter<Instant>() {
-                    @Override
-                    public void write(JsonWriter out, Instant value) throws IOException {
-                        if (value==null)
-                            out.nullValue();
-                        else
-                            out.jsonValue(value.toString());
-                    }
-
-                    @Override
-                    public Instant read(JsonReader in) throws IOException {
-                        JsonToken token = in.peek();
-                        if (token==JsonToken.STRING) {
-                            String s = in.nextString();
-                            if (StringUtils.isEmpty(s))
-                                return null;
-                            return Instant.parse(s);
-                        } else
-                            throw new IllegalArgumentException("InstantGsonTypeAdapter: Expected a string primitive but encountered "+token);
-                    }
-                }.nullSafe())
-                .registerTypeAdapter(Instant.class,
-                        (JsonSerializer<Instant>) (src, typeOfSrc, context) ->
-                                (src==null) ? JsonNull.INSTANCE : new JsonPrimitive(src.toString()))
-                .registerTypeAdapter(Instant.class,
-                        (JsonDeserializer<Instant>) (json, typeOfT, context) -> {
-                            if (json.isJsonNull()) return null;
-                            if (!json.isJsonPrimitive())
-                                throw new IllegalArgumentException("InstantGsonDeserializer [1]: Expected a string primitive but encountered "+json);
-                            JsonPrimitive primitive = json.getAsJsonPrimitive();
-                            if (!primitive.isString())
-                                throw new IllegalArgumentException("InstantGsonDeserializer [2]: Expected a string primitive but encountered "+json);
-                            String s = primitive.getAsString();
-                            if (StringUtils.isEmpty(s))
-                                return null;
-                            return Instant.parse(s);
-                        })
-                .create();
-    }
-
     private <T>Set<T> emptyIfNull(Set<T> s) {
         if (s==null) return Collections.emptySet();
         return s;
