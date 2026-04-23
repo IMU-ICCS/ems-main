@@ -9,8 +9,8 @@
 
 package gr.iccs.imu.ems.common.collector.netdata;
 
+import gr.iccs.imu.ems.api.EmsConstant;
 import gr.iccs.imu.ems.common.collector.AbstractEndpointCollectorProperties;
-import gr.iccs.imu.ems.util.EmsConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;

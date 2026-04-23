@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static gr.iccs.imu.ems.util.GroupingConfiguration.BrokerConnectionConfig;
+import static gr.iccs.imu.ems.api.comm.GroupingConfiguration.BrokerConnectionConfig;
 
 @Slf4j
 public class TestCoordinator extends NoopCoordinator {

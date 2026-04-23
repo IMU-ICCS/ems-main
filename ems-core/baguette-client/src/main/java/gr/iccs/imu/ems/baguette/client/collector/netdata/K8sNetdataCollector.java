@@ -9,6 +9,7 @@
 
 package gr.iccs.imu.ems.baguette.client.collector.netdata;
 
+import gr.iccs.imu.ems.api.EmsConstant;
 import gr.iccs.imu.ems.baguette.client.IClientCollector;
 import gr.iccs.imu.ems.baguette.client.collector.ClientCollectorContext;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
@@ -16,7 +17,6 @@ import gr.iccs.imu.ems.common.collector.CollectorConstant;
 import gr.iccs.imu.ems.common.collector.CollectorContext;
 import gr.iccs.imu.ems.common.collector.netdata.INetdataCollector;
 import gr.iccs.imu.ems.common.collector.netdata.NetdataCollectorProperties;
-import gr.iccs.imu.ems.util.EmsConstant;
 import gr.iccs.imu.ems.util.EventBus;
 import gr.iccs.imu.ems.util.StrUtil;
 import lombok.Data;

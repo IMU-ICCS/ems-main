@@ -9,6 +9,8 @@
 
 package gr.iccs.imu.ems.util.password;
 
+import gr.iccs.imu.ems.api.PasswordEncoder;
+
 public class AsterisksPasswordEncoder implements PasswordEncoder {
     public String encode(String password) {
         return "********";

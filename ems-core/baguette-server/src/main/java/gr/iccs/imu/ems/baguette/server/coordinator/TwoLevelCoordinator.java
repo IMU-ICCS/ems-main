@@ -9,11 +9,11 @@
 
 package gr.iccs.imu.ems.baguette.server.coordinator;
 
+import gr.iccs.imu.ems.api.comm.GROUPING;
 import gr.iccs.imu.ems.baguette.server.BaguetteServer;
 import gr.iccs.imu.ems.baguette.server.ClientShellCommand;
 import gr.iccs.imu.ems.common.selfhealing.SelfHealingManager;
 import gr.iccs.imu.ems.translate.TranslationContext;
-import gr.iccs.imu.ems.util.GROUPING;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static gr.iccs.imu.ems.util.GroupingConfiguration.BrokerConnectionConfig;
+import static gr.iccs.imu.ems.api.comm.GroupingConfiguration.BrokerConnectionConfig;
 
 @Slf4j
 public class TwoLevelCoordinator extends NoopCoordinator {

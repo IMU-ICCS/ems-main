@@ -7,8 +7,9 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package gr.iccs.imu.ems.util.password;
+package gr.iccs.imu.ems.api;
 
-public interface PasswordEncoder {
-    String encode(String password);
+public interface Plugin {
+    default void start() {}
+    default void stop() {}
 }

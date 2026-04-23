@@ -9,12 +9,12 @@
 
 package gr.iccs.imu.ems.baguette.server;
 
+import gr.iccs.imu.ems.api.comm.GroupingConfiguration;
 import gr.iccs.imu.ems.translate.TranslationContext;
-import gr.iccs.imu.ems.util.GroupingConfiguration;
 
 import java.util.Map;
 
-import static gr.iccs.imu.ems.util.GroupingConfiguration.BrokerConnectionConfig;
+import static gr.iccs.imu.ems.api.comm.GroupingConfiguration.BrokerConnectionConfig;
 
 public interface ServerCoordinator {
     default boolean isSupported(TranslationContext tc) { return true; }

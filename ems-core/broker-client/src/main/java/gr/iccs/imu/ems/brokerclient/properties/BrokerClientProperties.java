@@ -9,7 +9,7 @@
 
 package gr.iccs.imu.ems.brokerclient.properties;
 
-import gr.iccs.imu.ems.util.EmsConstant;
+import gr.iccs.imu.ems.api.EmsConstant;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;

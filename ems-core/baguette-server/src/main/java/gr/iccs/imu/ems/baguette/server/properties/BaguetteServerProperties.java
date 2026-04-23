@@ -9,9 +9,12 @@
 
 package gr.iccs.imu.ems.baguette.server.properties;
 
+import gr.iccs.imu.ems.api.EmsConstant;
 import gr.iccs.imu.ems.baguette.server.ServerCoordinator;
 import gr.iccs.imu.ems.util.CredentialsMap;
-import gr.iccs.imu.ems.util.EmsConstant;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -19,9 +22,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

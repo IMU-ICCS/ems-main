@@ -9,7 +9,7 @@
 
 package gr.iccs.imu.ems.common.command;
 
-import gr.iccs.imu.ems.util.EmsConstant;
+import gr.iccs.imu.ems.api.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;

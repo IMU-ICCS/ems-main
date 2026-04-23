@@ -9,6 +9,7 @@
 
 package gr.iccs.imu.ems.util.password;
 
+import gr.iccs.imu.ems.api.PasswordEncoder;
 import org.apache.commons.lang3.StringUtils;
 
 public class PresentPasswordEncoder implements PasswordEncoder {

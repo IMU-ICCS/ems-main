@@ -16,7 +16,7 @@ import com.google.gson.Gson;
 import gr.iccs.imu.ems.translate.dag.DAG;
 import gr.iccs.imu.ems.translate.dag.DAGNode;
 import gr.iccs.imu.ems.translate.model.*;
-import gr.iccs.imu.ems.util.FunctionDefinition;
+import gr.iccs.imu.ems.api.comm.FunctionDefinition;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;

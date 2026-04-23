@@ -116,6 +116,7 @@
     </properties>
 
     <modules>
+        <module>api</module>
         <module>web-admin</module>
         <module>util</module>
         <module>broker-client</module>
@@ -131,6 +132,11 @@
     <dependencyManagement>
         <dependencies>
             <!-- EMS modules dependency management -->
+            <dependency>
+                <groupId>gr.iccs.imu.ems</groupId>
+                <artifactId>api</artifactId>
+                <version>${revision}</version>
+            </dependency>
             <dependency>
                 <groupId>gr.iccs.imu.ems</groupId>
                 <artifactId>web-admin</artifactId>

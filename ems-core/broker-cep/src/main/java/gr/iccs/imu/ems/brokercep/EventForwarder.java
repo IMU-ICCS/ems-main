@@ -9,8 +9,8 @@
 
 package gr.iccs.imu.ems.brokercep;
 
+import gr.iccs.imu.ems.api.comm.GroupingConfiguration;
 import gr.iccs.imu.ems.brokercep.properties.BrokerCepProperties;
-import gr.iccs.imu.ems.util.GroupingConfiguration;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

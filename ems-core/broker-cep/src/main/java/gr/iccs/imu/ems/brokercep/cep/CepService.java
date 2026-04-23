@@ -10,8 +10,8 @@
 package gr.iccs.imu.ems.brokercep.cep;
 
 import com.espertech.esper.client.*;
+import gr.iccs.imu.ems.api.comm.FunctionDefinition;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
-import gr.iccs.imu.ems.util.FunctionDefinition;
 import gr.iccs.imu.ems.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

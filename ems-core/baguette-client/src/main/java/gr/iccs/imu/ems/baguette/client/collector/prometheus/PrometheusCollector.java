@@ -9,13 +9,13 @@
 
 package gr.iccs.imu.ems.baguette.client.collector.prometheus;
 
+import gr.iccs.imu.ems.api.comm.GROUPING;
+import gr.iccs.imu.ems.api.comm.GroupingConfiguration;
 import gr.iccs.imu.ems.baguette.client.IClientCollector;
 import gr.iccs.imu.ems.baguette.client.collector.ClientCollectorContext;
 import gr.iccs.imu.ems.common.collector.CollectorContext;
 import gr.iccs.imu.ems.common.collector.prometheus.PrometheusCollectorProperties;
 import gr.iccs.imu.ems.util.EventBus;
-import gr.iccs.imu.ems.util.GROUPING;
-import gr.iccs.imu.ems.util.GroupingConfiguration;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.TaskScheduler;

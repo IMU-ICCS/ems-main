@@ -9,8 +9,8 @@
 
 package gr.iccs.imu.ems.control.properties;
 
+import gr.iccs.imu.ems.api.EmsConstant;
 import gr.iccs.imu.ems.control.util.EventBusCache;
-import gr.iccs.imu.ems.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;

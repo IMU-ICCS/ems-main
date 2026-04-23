@@ -9,11 +9,11 @@
 
 package gr.iccs.imu.ems.baguette.server;
 
-import gr.iccs.imu.ems.util.GroupingConfiguration;
+import gr.iccs.imu.ems.api.comm.GroupingConfiguration;
 
 import java.util.Map;
 
-import static gr.iccs.imu.ems.util.GroupingConfiguration.BrokerConnectionConfig;
+import static gr.iccs.imu.ems.api.comm.GroupingConfiguration.BrokerConnectionConfig;
 
 /**
  * Baguette Client Configuration creation helper

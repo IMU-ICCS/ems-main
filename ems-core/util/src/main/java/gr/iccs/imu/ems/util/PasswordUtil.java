@@ -9,8 +9,9 @@
 
 package gr.iccs.imu.ems.util;
 
+import gr.iccs.imu.ems.api.EmsConstant;
+import gr.iccs.imu.ems.api.PasswordEncoder;
 import gr.iccs.imu.ems.util.password.AsterisksPasswordEncoder;
-import gr.iccs.imu.ems.util.password.PasswordEncoder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

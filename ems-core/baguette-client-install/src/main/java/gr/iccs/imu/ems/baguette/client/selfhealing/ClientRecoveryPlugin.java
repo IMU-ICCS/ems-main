@@ -9,6 +9,7 @@
 
 package gr.iccs.imu.ems.baguette.client.selfhealing;
 
+import gr.iccs.imu.ems.api.EmsConstant;
 import gr.iccs.imu.ems.baguette.client.install.ClientInstallationProperties;
 import gr.iccs.imu.ems.baguette.client.install.ClientInstallationTask;
 import gr.iccs.imu.ems.baguette.client.install.installer.SshClientInstaller;
@@ -18,7 +19,6 @@ import gr.iccs.imu.ems.baguette.server.ClientShellCommand;
 import gr.iccs.imu.ems.baguette.server.NodeRegistry;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
 import gr.iccs.imu.ems.common.selfhealing.SelfHealingManager;
-import gr.iccs.imu.ems.util.EmsConstant;
 import gr.iccs.imu.ems.util.EventBus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

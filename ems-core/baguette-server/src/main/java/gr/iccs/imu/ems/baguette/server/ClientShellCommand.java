@@ -10,7 +10,8 @@
 package gr.iccs.imu.ems.baguette.server;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.gson.Gson;
+import gr.iccs.imu.ems.api.comm.ClientConfiguration;
+import gr.iccs.imu.ems.api.comm.GroupingConfiguration;
 import gr.iccs.imu.ems.baguette.server.coordinator.cluster.IClusterZone;
 import gr.iccs.imu.ems.common.recovery.RecoveryConstant;
 import gr.iccs.imu.ems.util.*;

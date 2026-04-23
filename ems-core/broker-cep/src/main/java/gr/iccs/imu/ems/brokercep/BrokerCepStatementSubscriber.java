@@ -9,9 +9,9 @@
 
 package gr.iccs.imu.ems.brokercep;
 
+import gr.iccs.imu.ems.api.comm.GroupingConfiguration;
 import gr.iccs.imu.ems.brokercep.cep.StatementSubscriber;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
-import gr.iccs.imu.ems.util.GroupingConfiguration;
 import gr.iccs.imu.ems.util.PasswordUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

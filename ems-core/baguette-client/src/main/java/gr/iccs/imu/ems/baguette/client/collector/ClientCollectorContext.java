@@ -9,14 +9,14 @@
 
 package gr.iccs.imu.ems.baguette.client.collector;
 
+import gr.iccs.imu.ems.api.comm.ClientConfiguration;
+import gr.iccs.imu.ems.api.comm.GroupingConfiguration;
 import gr.iccs.imu.ems.baguette.client.BaguetteClientProperties;
 import gr.iccs.imu.ems.baguette.client.CommandExecutor;
 import gr.iccs.imu.ems.baguette.client.Sshc;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.common.client.SshClient;
 import gr.iccs.imu.ems.common.collector.CollectorContext;
-import gr.iccs.imu.ems.util.ClientConfiguration;
-import gr.iccs.imu.ems.util.GroupingConfiguration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

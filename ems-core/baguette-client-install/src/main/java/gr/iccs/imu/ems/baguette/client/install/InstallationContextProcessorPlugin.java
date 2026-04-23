@@ -9,7 +9,7 @@
 
 package gr.iccs.imu.ems.baguette.client.install;
 
-import gr.iccs.imu.ems.util.Plugin;
+import gr.iccs.imu.ems.api.Plugin;
 
 public interface InstallationContextProcessorPlugin extends Plugin {
     void processBeforeInstallation(ClientInstallationTask task, long taskCounter);

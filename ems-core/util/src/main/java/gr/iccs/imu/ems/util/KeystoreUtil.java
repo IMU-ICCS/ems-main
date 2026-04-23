@@ -9,6 +9,7 @@
 
 package gr.iccs.imu.ems.util;
 
+import gr.iccs.imu.ems.api.IKeystoreAndCertificateProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;

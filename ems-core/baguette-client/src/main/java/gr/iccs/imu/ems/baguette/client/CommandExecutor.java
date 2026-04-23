@@ -9,6 +9,10 @@
 
 package gr.iccs.imu.ems.baguette.client;
 
+import gr.iccs.imu.ems.api.comm.ClientConfiguration;
+import gr.iccs.imu.ems.api.comm.FunctionDefinition;
+import gr.iccs.imu.ems.api.comm.GROUPING;
+import gr.iccs.imu.ems.api.comm.GroupingConfiguration;
 import gr.iccs.imu.ems.baguette.client.cluster.*;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.brokercep.BrokerCepStatementSubscriber;
@@ -44,7 +48,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import static gr.iccs.imu.ems.util.GroupingConfiguration.BrokerConnectionConfig;
+import static gr.iccs.imu.ems.api.comm.GroupingConfiguration.BrokerConnectionConfig;
 
 /**
  * Command Executor

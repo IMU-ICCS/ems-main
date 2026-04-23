@@ -9,6 +9,8 @@
 
 package gr.iccs.imu.ems.control.info;
 
+import gr.iccs.imu.ems.api.comm.FunctionDefinition;
+import gr.iccs.imu.ems.api.comm.GROUPING;
 import gr.iccs.imu.ems.baguette.server.ClientShellCommand;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.common.misc.SystemResourceMonitor;
@@ -23,8 +25,6 @@ import gr.iccs.imu.ems.control.properties.StaticResourceProperties;
 import gr.iccs.imu.ems.control.properties.WebSecurityProperties;
 import gr.iccs.imu.ems.control.util.EventBusCache;
 import gr.iccs.imu.ems.translate.TranslationContext;
-import gr.iccs.imu.ems.util.FunctionDefinition;
-import gr.iccs.imu.ems.util.GROUPING;
 import gr.iccs.imu.ems.util.NetUtil;
 import gr.iccs.imu.ems.util.StrUtil;
 import lombok.NonNull;

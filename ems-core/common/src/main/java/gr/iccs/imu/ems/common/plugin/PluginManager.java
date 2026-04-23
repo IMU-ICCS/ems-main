@@ -9,7 +9,7 @@
 
 package gr.iccs.imu.ems.common.plugin;
 
-import gr.iccs.imu.ems.util.Plugin;
+import gr.iccs.imu.ems.api.Plugin;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;

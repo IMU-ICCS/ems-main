@@ -9,7 +9,7 @@
 
 package gr.iccs.imu.ems.common.collector;
 
-import gr.iccs.imu.ems.util.Plugin;
+import gr.iccs.imu.ems.api.Plugin;
 
 public interface ICollector extends Plugin {
     String getName();

@@ -9,7 +9,7 @@
 
 package gr.iccs.imu.ems.brokercep.cep;
 
-import gr.iccs.imu.ems.util.FunctionDefinition;
+import gr.iccs.imu.ems.api.comm.FunctionDefinition;
 import gr.iccs.imu.ems.util.NetUtil;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;

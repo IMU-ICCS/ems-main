@@ -9,9 +9,9 @@
 
 package gr.iccs.imu.ems.baguette.server.coordinator.cluster;
 
+import gr.iccs.imu.ems.api.comm.ClientConfiguration;
 import gr.iccs.imu.ems.baguette.server.ClientShellCommand;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
-import gr.iccs.imu.ems.util.ClientConfiguration;
 import gr.iccs.imu.ems.util.KeystoreUtil;
 import gr.iccs.imu.ems.util.PasswordUtil;
 import lombok.*;

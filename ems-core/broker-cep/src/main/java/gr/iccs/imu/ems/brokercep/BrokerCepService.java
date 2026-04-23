@@ -9,6 +9,7 @@
 
 package gr.iccs.imu.ems.brokercep;
 
+import gr.iccs.imu.ems.api.comm.FunctionDefinition;
 import gr.iccs.imu.ems.brokercep.broker.BrokerConfig;
 import gr.iccs.imu.ems.brokercep.cep.CepService;
 import gr.iccs.imu.ems.brokercep.event.EventMap;

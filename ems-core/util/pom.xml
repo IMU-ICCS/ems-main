@@ -20,6 +20,12 @@
     <name>EMS - Utilities</name>
 
     <dependencies>
+        <!-- EMS API dependencies -->
+        <dependency>
+            <groupId>gr.iccs.imu.ems</groupId>
+            <artifactId>api</artifactId>
+        </dependency>
+
         <!-- Spring-Boot dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

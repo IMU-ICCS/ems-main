@@ -9,11 +9,11 @@
 
 package gr.iccs.imu.ems.common.collector;
 
+import gr.iccs.imu.ems.api.EmsConstant;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.common.client.SshClientProperties;
 import gr.iccs.imu.ems.common.misc.EventConstant;
 import gr.iccs.imu.ems.common.recovery.RecoveryConstant;
-import gr.iccs.imu.ems.util.EmsConstant;
 import gr.iccs.imu.ems.util.EventBus;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

@@ -9,9 +9,9 @@
 
 package gr.iccs.imu.ems.control.plugin;
 
+import gr.iccs.imu.ems.api.Plugin;
 import gr.iccs.imu.ems.control.controller.ControlServiceRequestInfo;
 import gr.iccs.imu.ems.translate.TranslationContext;
-import gr.iccs.imu.ems.util.Plugin;
 
 /**
  * Executed before/after Application Model processing by ControlServiceCoordinator

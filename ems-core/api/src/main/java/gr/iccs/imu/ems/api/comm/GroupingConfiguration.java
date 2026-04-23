@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package gr.iccs.imu.ems.util;
+package gr.iccs.imu.ems.api.comm;
 
 import lombok.*;
 

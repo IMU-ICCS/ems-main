@@ -10,10 +10,10 @@
 package gr.iccs.imu.ems.baguette.client.install.plugin;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import gr.iccs.imu.ems.api.EmsConstant;
 import gr.iccs.imu.ems.baguette.client.install.ClientInstallationTask;
 import gr.iccs.imu.ems.baguette.client.install.InstallationContextProcessorPlugin;
 import gr.iccs.imu.ems.util.ConfigWriteService;
-import gr.iccs.imu.ems.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

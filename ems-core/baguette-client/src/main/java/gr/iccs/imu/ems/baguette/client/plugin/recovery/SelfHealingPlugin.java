@@ -9,13 +9,13 @@
 
 package gr.iccs.imu.ems.baguette.client.plugin.recovery;
 
+import gr.iccs.imu.ems.api.Plugin;
 import gr.iccs.imu.ems.baguette.client.BaguetteClientProperties;
 import gr.iccs.imu.ems.baguette.client.CommandExecutor;
 import gr.iccs.imu.ems.baguette.client.collector.netdata.NetdataCollector;
 import gr.iccs.imu.ems.common.recovery.*;
 import gr.iccs.imu.ems.util.EventBus;
 import gr.iccs.imu.ems.util.PasswordUtil;
-import gr.iccs.imu.ems.util.Plugin;
 import gr.iccs.imu.ems.util.StrUtil;
 import io.atomix.cluster.ClusterMembershipEvent;
 import lombok.*;

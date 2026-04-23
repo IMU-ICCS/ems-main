@@ -9,9 +9,9 @@
 
 package gr.iccs.imu.ems.translate;
 
+import gr.iccs.imu.ems.api.comm.FunctionDefinition;
 import gr.iccs.imu.ems.translate.dag.DAGExporter;
 import gr.iccs.imu.ems.translate.model.NamedElement;
-import gr.iccs.imu.ems.util.FunctionDefinition;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

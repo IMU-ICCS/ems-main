@@ -9,9 +9,9 @@
 
 package gr.iccs.imu.ems.brokercep.properties;
 
+import gr.iccs.imu.ems.api.EmsConstant;
 import gr.iccs.imu.ems.brokercep.EventCache;
 import gr.iccs.imu.ems.brokercep.event.EventRecorder;
-import gr.iccs.imu.ems.util.EmsConstant;
 import gr.iccs.imu.ems.util.KeystoreAndCertificateProperties;
 import gr.iccs.imu.ems.util.NetUtil;
 import lombok.Data;

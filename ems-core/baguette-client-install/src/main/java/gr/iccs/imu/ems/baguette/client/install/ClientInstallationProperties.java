@@ -9,9 +9,7 @@
 
 package gr.iccs.imu.ems.baguette.client.install;
 
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.dataformat.yaml.YAMLMapper;
-import gr.iccs.imu.ems.util.EmsConstant;
+import gr.iccs.imu.ems.api.EmsConstant;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.ToString;
@@ -21,6 +19,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.IOException;
 import java.nio.file.Files;

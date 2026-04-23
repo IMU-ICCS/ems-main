@@ -9,8 +9,8 @@
 
 package gr.iccs.imu.ems.control.info;
 
+import gr.iccs.imu.ems.api.EmsConstant;
 import gr.iccs.imu.ems.control.properties.InfoServiceProperties;
-import gr.iccs.imu.ems.util.EmsConstant;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.Data;

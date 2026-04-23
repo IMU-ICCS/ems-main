@@ -9,8 +9,8 @@
 
 package gr.iccs.imu.ems.control.plugin;
 
+import gr.iccs.imu.ems.api.Plugin;
 import gr.iccs.imu.ems.control.util.TopicBeacon;
-import gr.iccs.imu.ems.util.Plugin;
 
 /**
  * TopicBeacon plugin

@@ -9,8 +9,8 @@
 
 package gr.iccs.imu.ems.control.plugin;
 
+import gr.iccs.imu.ems.api.Plugin;
 import gr.iccs.imu.ems.translate.TranslationContext;
-import gr.iccs.imu.ems.util.Plugin;
 
 /**
  * Executed after application model translation and TranslationContext store in TC JSON file,

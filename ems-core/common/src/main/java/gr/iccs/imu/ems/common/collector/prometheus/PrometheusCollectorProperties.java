@@ -9,8 +9,8 @@
 
 package gr.iccs.imu.ems.common.collector.prometheus;
 
+import gr.iccs.imu.ems.api.EmsConstant;
 import gr.iccs.imu.ems.common.collector.AbstractEndpointCollectorProperties;
-import gr.iccs.imu.ems.util.EmsConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;

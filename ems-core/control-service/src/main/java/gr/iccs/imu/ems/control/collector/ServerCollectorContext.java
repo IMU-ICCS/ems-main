@@ -9,12 +9,12 @@
 
 package gr.iccs.imu.ems.control.collector;
 
+import gr.iccs.imu.ems.api.comm.ClientConfiguration;
 import gr.iccs.imu.ems.baguette.server.NodeRegistry;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.common.collector.CollectorContext;
-import gr.iccs.imu.ems.util.ClientConfiguration;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

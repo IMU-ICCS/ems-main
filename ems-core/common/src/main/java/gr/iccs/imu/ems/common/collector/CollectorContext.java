@@ -9,10 +9,10 @@
 
 package gr.iccs.imu.ems.common.collector;
 
+import gr.iccs.imu.ems.api.comm.ClientConfiguration;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.common.client.SshClient;
 import gr.iccs.imu.ems.common.client.SshClientProperties;
-import gr.iccs.imu.ems.util.ClientConfiguration;
 
 import java.io.Serializable;
 import java.util.List;

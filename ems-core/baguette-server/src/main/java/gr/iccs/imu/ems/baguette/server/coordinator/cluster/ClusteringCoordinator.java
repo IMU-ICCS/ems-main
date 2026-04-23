@@ -9,14 +9,14 @@
 
 package gr.iccs.imu.ems.baguette.server.coordinator.cluster;
 
+import gr.iccs.imu.ems.api.comm.ClientConfiguration;
+import gr.iccs.imu.ems.api.comm.GROUPING;
 import gr.iccs.imu.ems.baguette.server.BaguetteServer;
 import gr.iccs.imu.ems.baguette.server.ClientShellCommand;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
 import gr.iccs.imu.ems.baguette.server.coordinator.NoopCoordinator;
 import gr.iccs.imu.ems.common.selfhealing.SelfHealingManager;
 import gr.iccs.imu.ems.translate.TranslationContext;
-import gr.iccs.imu.ems.util.ClientConfiguration;
-import gr.iccs.imu.ems.util.GROUPING;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ import org.slf4j.event.Level;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static gr.iccs.imu.ems.util.GroupingConfiguration.BrokerConnectionConfig;
+import static gr.iccs.imu.ems.api.comm.GroupingConfiguration.BrokerConnectionConfig;
 
 @Slf4j
 public class ClusteringCoordinator extends NoopCoordinator {

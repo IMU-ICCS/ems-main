@@ -9,7 +9,7 @@
 
 package gr.iccs.imu.ems.control.plugin;
 
-import gr.iccs.imu.ems.util.Plugin;
+import gr.iccs.imu.ems.api.Plugin;
 import lombok.*;
 
 import java.util.List;
