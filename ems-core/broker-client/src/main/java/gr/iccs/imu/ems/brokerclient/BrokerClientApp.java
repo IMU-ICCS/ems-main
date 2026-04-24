@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
+import tools.jackson.core.StreamReadFeature;
 import tools.jackson.core.json.JsonReadFeature;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.SerializationFeature;
@@ -56,7 +57,10 @@ public class BrokerClientApp {
     private static long playbackInterval = -1;
     private static long playbackDelay = -1;
     private static double playbackSpeed = 1.0;
-    private static JsonMapper jsonMapper =  new JsonMapper();
+    private static JsonMapper jsonMapper = JsonMapper.builder()
+            .enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
+            //.enable(JsonReadFeature.ALLOW_UNQUOTED_PROPERTY_NAMES)
+            .build();
     private static boolean printAsJson = true;
 
     private enum RECORD_FORMAT { CSV, JSON }
@@ -612,11 +616,19 @@ public class BrokerClientApp {
     }
 
     private static String asJson(Object obj) {
-        if (obj==null) return null;
-        if (!printAsJson) return obj.toString();
-        if (obj instanceof String s)
-            obj = jsonMapper.readValue(s, Map.class);
-        return jsonMapper.writeValueAsString(obj);
+        try {
+            if (obj==null) return null;
+            if (!printAsJson) return obj.toString();
+            if (obj instanceof String s) {
+                log.trace("BrokerClientApp: asJson: It is STRING: \n{}", s);
+                obj = jsonMapper.readValue(s, Map.class);
+            }
+            return jsonMapper.writeValueAsString(obj);
+        } catch (Exception e) {
+            log.error("BrokerClientApp: asJson: EXCEPTION: obj: {} {}\nException:\n",
+                    obj!=null?obj.getClass().getName():null, obj, e);
+            throw e;
+        }
     }
 
     private static int initRecording(String[] args, int aa) throws IOException {

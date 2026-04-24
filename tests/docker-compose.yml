@@ -173,7 +173,7 @@ services:
       - INFO_LOGVIEWERFILES=/opt/ems-server/logs/ems.log
       #
       # ===== WebSSH settings =====
-#      - WEBSSH_SERVICE_URL=https://${SERVER_IP}:4433/?hostname=x&username=x&cref={0}
+#      - WEBSSH_SERVICE_URL=https://${EMS_SERVER_ADDRESS}:4433/?hostname=x&username=x&cref={0}
       #
       # ===== Leaflet Map settings =====
       #- WEB_ADMIN_LEAFLET_MAP_TYPE=stadia-outdoors

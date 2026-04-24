@@ -147,14 +147,13 @@ public class TopicBeacon implements InitializingBean {
         coordinator.getTranslationContextOfAppModel(coordinator.getCurrentAppModelId())
                 .getMetricConstraints()
                 .forEach(c -> {
-                    String message = toJson(c);
-                    log.debug("Topic Beacon: Transmitting Metric Constraint threshold info: message={}, topics={}",
-                            message, properties.getThresholdTopics());
+                    log.debug("Topic Beacon: Transmitting Metric Constraint threshold info: metric-constraint={}, topics={}",
+                            c, properties.getThresholdTopics());
                     try {
-                        sendEventToTopics(message, properties.getThresholdTopics());
+                        sendEventToTopics(c, properties.getThresholdTopics());
                     } catch (JMSException e) {
-                        log.error("Topic Beacon: EXCEPTION while transmitting Metric Constraint threshold info: message={}, topics={}, exception: ",
-                                message, properties.getThresholdTopics(), e);
+                        log.error("Topic Beacon: EXCEPTION while transmitting Metric Constraint threshold info: metric-constraint={}, topics={}, exception: ",
+                                c, properties.getThresholdTopics(), e);
                     }
                 });
     }
