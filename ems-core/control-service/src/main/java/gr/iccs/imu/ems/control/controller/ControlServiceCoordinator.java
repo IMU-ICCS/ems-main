@@ -740,7 +740,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                     String topicName = topicRules.getKey();
                     for (String rule : topicRules.getValue()) {
                         brokerCep.getCepService().addStatementSubscriber(
-                                new BrokerCepStatementSubscriber("Subscriber_" + cnt++, topicName, rule, brokerCep, passwordUtil)
+                                new BrokerCepStatementSubscriber("Subscriber_" + cnt++, topicName, null, rule, brokerCep, passwordUtil)
                         );
                     }
                 }

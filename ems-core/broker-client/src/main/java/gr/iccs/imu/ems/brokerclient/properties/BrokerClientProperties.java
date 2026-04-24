@@ -29,6 +29,8 @@ public class BrokerClientProperties {
     private int managementConnectorPort = -1;
     private boolean preserveConnection;
 
+    private boolean writeDebugExports;
+
     private Ssl ssl = new Ssl();
 
     private String brokerUsername;
@@ -64,6 +66,8 @@ public class BrokerClientProperties {
         brokerUrlProperties = p.getProperty("brokerclient.broker-url-properties", "");
         managementConnectorPort = Integer.parseInt(p.getProperty("brokerclient.connector-port", "-1"));
         preserveConnection = Boolean.parseBoolean(p.getProperty("brokerclient.preserve-connection", "false"));
+
+        writeDebugExports = Boolean.parseBoolean(p.getProperty("brokerclient.write-debug-exports", "false"));
 
         ssl = new Ssl();
         ssl.truststoreFile = p.getProperty("brokerclient.ssl.truststore.file", "");

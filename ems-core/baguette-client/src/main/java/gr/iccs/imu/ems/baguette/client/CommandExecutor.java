@@ -304,6 +304,9 @@ public class CommandExecutor {
             log.info("SET ID: {}", id);
             saveClientId(id);
 
+        } else if ("WRITE-DEBUG-EXPORT".equals(cmd)) {
+            writeDebugExport(true);
+
         } else if ("WRITE-CONFIGURATION".equals(cmd)) {
             String fileName = (args.length>1) ? args[1].trim() : DEFAULT_CONF_DIR + "/config-export.json";
             ConfigurationContents contents = ConfigurationContents.builder()
@@ -350,6 +353,7 @@ public class CommandExecutor {
             out.println(String.join(", ", groupings.keySet()));
         } else if ("CLEAR-GROUPING-CONFIGS".equals(cmd)) {
             clearGroupings();
+            writeDebugExport(false);
         } else if ("GET-GROUPING-CONFIG".equals(cmd)) {
             if (args.length < 2) return false;
             GroupingConfiguration grouping = groupings.get(args[1].trim());
@@ -365,6 +369,7 @@ public class CommandExecutor {
             String configStr = String.join(" ", args).trim();
             log.trace("grouping-config-base64: {}", configStr);
             setGroupingConfiguration(configStr);
+            writeDebugExport(false);
         } else if ("GET-ACTIVE-GROUPING".equals(cmd)) {
             String activeGroupingName = activeGrouping != null ? activeGrouping.getName() : "-";
             log.info("Active grouping: {}", activeGroupingName);
@@ -374,6 +379,7 @@ public class CommandExecutor {
             String newGrouping = String.join(" ", args).trim();
             log.trace("new-active-grouping: {}", newGrouping);
             setActiveGrouping(newGrouping);
+            writeDebugExport(false);
         } else if ("SET-CONSTANTS".equals(cmd)) {
             if (args.length < 2) return false;
             String configStr = String.join(" ", args).trim();
@@ -1004,7 +1010,7 @@ public class CommandExecutor {
                         String subscriberName = "Subscriber_" + subscriberCount.getAndIncrement();
                         log.info("addGroupingsTill: + Adding subscriber for EPL statement: subscriber-name={}, topic={}, rule={}", subscriberName, topic, rule);
                         BrokerCepStatementSubscriber statementSubscriber =
-                                new BrokerCepStatementSubscriber(subscriberName, topic, rule, brokerCepService, passwordUtil, Collections.emptySet());
+                                new BrokerCepStatementSubscriber(subscriberName, topic, groupingName, rule, brokerCepService, passwordUtil, Collections.emptySet());
                         brokerCepService.getCepService().addStatementSubscriber(
                                 statementSubscriber
                         );
@@ -1016,11 +1022,8 @@ public class CommandExecutor {
         });
         log.trace("addGroupingsTill: Final groupingsSubscribers: {}", groupingsSubscribers);
 
-        // Clear forward-to-groupings settings of (old) active grouping
-        clearActiveGroupingForwards();
-
-        // Set forward-to-topic settings of new grouping (active to-be)
-        setGroupingForwards(newGroupingName);
+        // Update grouping forwards
+        updateGroupingForwards(newGroupingName);
 
         // Update truststore certificates from grouping settings
         updateCertificates(groupings.get(newGroupingName));
@@ -1054,58 +1057,114 @@ public class CommandExecutor {
         }
         eventTypes.forEach(s->brokerCepService.getBrokerCepBridge().removeConsumerOf(s));
 
-        // Clear forward-to-topic settings of (old) active grouping
-        clearActiveGroupingForwards();
-
-        // Set forward-to-topic settings of new grouping (active to-be)
-        setGroupingForwards(newGroupingName);
+        // Update grouping forwards
+        updateGroupingForwards(newGroupingName);
     }
 
-    private void clearActiveGroupingForwards() {
-        if (activeGrouping==null) {
-            log.debug("clearActiveGroupingForwards: No active grouping");
-            return;
-        }
-        log.debug("clearActiveGroupingForwards: Clearing forward-to-grouping settings of active grouping: {}", activeGrouping.getName());
-        log.trace("clearActiveGroupingForwards: Clearing groupingsSubscribers: BEFORE: {}", groupingsSubscribers);
-        List<BrokerCepStatementSubscriber> subscribers = groupingsSubscribers.get(activeGrouping.getName());
-        log.trace("clearActiveGroupingForwards: Clearing subscribers of grouping: {}: {}", activeGrouping.getName(), subscribers);
-        if (subscribers!=null) {
-            for (BrokerCepStatementSubscriber subscriber : subscribers) {
-                log.debug("clearActiveGroupingForwards: - Clearing forward-to-grouping settings for: subscriber={}, topic={}, forwards={}",
-                        subscriber.getName(), subscriber.getTopic(), subscriber.getForwardToGroupings());
-                subscriber.setForwardToGroupings(Collections.emptySet());
-            }
-        }
-        log.trace("clearActiveGroupingForwards: Clearing groupingsSubscribers: AFTER: {}", groupingsSubscribers);
+    private void clearGroupingForwards() {
+        log.warn("clearGroupingForwards: Clearing forward-to-grouping settings. Active grouping: {}",
+                activeGrouping!=null ? activeGrouping.getName() : "No active grouping");
+        log.warn("clearGroupingForwards: Clearing groupingsSubscribers: BEFORE: {}", groupingsSubscribers);
+
+        groupingsSubscribers.values().stream().flatMap(List::stream).forEach(subscriber -> {
+            log.warn("clearGroupingForwards: - Clearing forward-to-grouping settings for: subscriber={}, topic={}, forwards={}",
+                    subscriber.getName(), subscriber.getTopic(), subscriber.getForwardToGroupings());
+            subscriber.setForwardToGroupings(Collections.emptySet());
+        });
+        log.warn("clearGroupingForwards: Clearing groupingsSubscribers: AFTER: {}", groupingsSubscribers);
     }
 
     private void setGroupingForwards(String newGroupingName) {
-        GroupingConfiguration newGrouping = groupings.get(newGroupingName);
-        final Map<String,Set<BrokerConnectionConfig>> topicFwdUrls = new HashMap<>();
-        for (Map.Entry<String, Set<String>> topicRules : newGrouping.getRules().entrySet()) {
-            String topic = topicRules.getKey();
-            log.info("setGroupingForwards: Processing settings of topic: {}", topic);
-
-            // Build forward-to-groupings set for current topic
-            Set<BrokerConnectionConfig> forwardToGroupings = new HashSet<>();
-            Set<String> connections = newGrouping.getConnections().get(topic);
-            log.info("setGroupingForwards: + Adding connections for topic: {} --> {}", topic, connections);
-            if (connections != null) {
-                for (String fwdToGrouping : connections) {
-                    BrokerConnectionConfig fwdBrokerConn = newGrouping.getBrokerConnections().get(fwdToGrouping);
-                    forwardToGroupings.add(fwdBrokerConn);
-                }
-            }
-            log.info("setGroupingForwards: = forwardToGroupings of topic {}: {}", topic, forwardToGroupings);
-            topicFwdUrls.put(topic, forwardToGroupings);
+        // Check if new grouping is in available groupings
+        log.info("setGroupingForwards: New target Grouping: {}", newGroupingName, new RuntimeException("DUMMY"));
+        List<String> availableGroupings = new ArrayList<>(GROUPING.getNames().stream()
+                .filter(groupings::containsKey).toList());
+        Collections.reverse(availableGroupings);
+        log.info("setGroupingForwards: Available Groupings: {}", availableGroupings);
+        if (! availableGroupings.contains(newGroupingName)) {
+            log.error("setGroupingForwards: Available groupings do not include New grouping: {} not in {}",
+                    newGroupingName, availableGroupings, new RuntimeException("Available groupings do not include New grouping: "+newGroupingName));
+            return;
         }
-        log.trace("setGroupingForwards: Update groupingsSubscribers: BEFORE: {}", groupingsSubscribers);
-        groupingsSubscribers.get(newGroupingName).forEach(subscriber -> {
-            Set<BrokerConnectionConfig> fwdUrls = topicFwdUrls.get(subscriber.getTopic());
-            if (fwdUrls!=null) subscriber.setForwardToGroupings(fwdUrls);
+
+        // Get grouping to process
+        List<String> groupingsToProcess = availableGroupings.subList(0, availableGroupings.indexOf(newGroupingName) + 1);
+        List<String> remainingGroupings = availableGroupings.subList(groupingsToProcess.size(), availableGroupings.size());
+        log.info("setGroupingForwards: Grouping to process: {}", groupingsToProcess);
+        log.info("setGroupingForwards: Remaining grouping (to skip): {}", remainingGroupings);
+
+        // Process topic connections per grouping from lower to higher
+        final Map<String,Set<BrokerConnectionConfig>> topicFwdUrls = new HashMap<>();
+        int i = 0;
+        for (String groupingName : groupingsToProcess) {
+            // Get grouping configuration
+            GroupingConfiguration groupingConfig = groupings.get(groupingName);
+            if (groupingConfig == null) {
+                log.warn("setGroupingForwards: Missing GroupingConfiguration for: {}", groupingName);
+                log.error("setGroupingForwards: Missing GroupingConfiguration for: {}", groupingName,
+                        new RuntimeException("Missing GroupingConfiguration for: "+groupingName));
+                return;
+            }
+
+            // Process grouping connections
+            for (String topic : groupingConfig.getRules().keySet()) {
+                log.info("setGroupingForwards: Processing settings of topic: {} @ {}", topic, groupingName);
+
+                // Build forward-to-groupings set for current topic
+                Set<BrokerConnectionConfig> forwardToGroupings = new HashSet<>();
+                Set<String> connections = groupingConfig.getConnections().get(topic);
+                log.info("setGroupingForwards: + Adding connections for topic: {} @ {} --> {}", topic, groupingName, connections);
+                if (connections != null) {
+                    for (String fwdToGrouping : connections) {
+                        if (groupingsToProcess.contains(fwdToGrouping)) {
+                            log.info("setGroupingForwards: Connection to {} <= {} will be skipped: topic: {} @ {}", fwdToGrouping, newGroupingName, topic, groupingName);
+                        } else {
+                            log.info("setGroupingForwards: Connection to {} > {} will be ADDED: topic: {} @ {}", fwdToGrouping, newGroupingName, topic, groupingName);
+                            BrokerConnectionConfig fwdBrokerConn = groupingConfig.getBrokerConnections().get(fwdToGrouping);
+                            log.info("setGroupingForwards: Connection to {} will be ADDED: topic: {} @ {} --> {}", fwdToGrouping, topic, groupingName, fwdBrokerConn);
+                            forwardToGroupings.add(fwdBrokerConn);
+                        }
+                    }
+                }
+
+                // Add topic forwards for current grouping into the overall topic forwards
+                log.info("setGroupingForwards: = forwardToGroupings of topic {} @ {}: {}", topic, groupingName, forwardToGroupings);
+                topicFwdUrls.computeIfAbsent(topic, k -> new HashSet<>()).addAll(forwardToGroupings);
+            }
+
+            // Check if we have reached the target (new) grouping
+            if (groupingName.equals(newGroupingName)) {
+                log.info("setGroupingForwards: Reached the target (new) grouping: {}", newGroupingName);
+                log.info("setGroupingForwards: Remaining groupings are skipped: {}", availableGroupings.subList(i+1, availableGroupings.size()));
+                break;
+            }
+            i++;
+        }
+
+        log.warn("setGroupingForwards: Update groupingsSubscribers: BEFORE: {}", groupingsSubscribers);
+        groupingsSubscribers.values().stream().flatMap(List::stream).forEach(subscriber -> {
+            log.info("setGroupingForwards: Subscriber: name={}, topic={} @ {}",
+                    subscriber.getName(), subscriber.getTopic(), subscriber.getGrouping());
+            if (topicFwdUrls.containsKey(subscriber.getTopic())) {
+                Set<BrokerConnectionConfig> fwdUrls = topicFwdUrls.get(subscriber.getTopic());
+                log.warn("setGroupingForwards: Forwards for topic: {} : {} @ {} --> {}",
+                        subscriber.getName(), subscriber.getTopic(), subscriber.getGrouping(), fwdUrls);
+                if (fwdUrls != null)
+                    subscriber.setForwardToGroupings(fwdUrls);
+            } else {
+                log.warn("setGroupingForwards: Subscriber Topic not found topicFwdUrls: {}: {} @ {} \n{}",
+                        subscriber.getName(), subscriber.getTopic(), subscriber.getGrouping(), topicFwdUrls);
+            }
         });
-        log.trace("setGroupingForwards: Update groupingsSubscribers: AFTER: {}", groupingsSubscribers);
+        log.warn("setGroupingForwards: Update groupingsSubscribers: AFTER: {}", groupingsSubscribers);
+    }
+
+    private void updateGroupingForwards(String newGroupingName) {
+        // Clear forward-to-groupings topic settings of (old) active grouping
+        clearGroupingForwards();
+
+        // Set forward-to-groupings topic settings of new grouping (active to-be)
+        setGroupingForwards(newGroupingName);
     }
 
     protected void updateCertificates(@NonNull GroupingConfiguration grouping) {
@@ -1146,6 +1205,39 @@ public class CommandExecutor {
         } catch (Exception ex) {
             log.error("EXCEPTION while updating Trust store: ", ex);
         }
+    }
+
+    private void writeDebugExport(boolean forceWrite) {
+        if (! forceWrite && ! brokerClientProperties.isWriteDebugExports())
+            return;
+
+        if (StringUtils.isAnyBlank(clientId) || activeGrouping==null || groupings==null || groupings.isEmpty()) {
+            log.warn("writeDebugExport: Client is not yet configured: clientId={}, activeGrouping={}, groupings={}",
+                    clientId, activeGrouping, groupings);
+            return;
+        }
+
+        // Collect grouping configs
+        ConfigurationContents groupingConfigs = ConfigurationContents.builder()
+                .timestamp(System.currentTimeMillis())
+                .clientId(this.clientId)
+                .activeGrouping(this.activeGrouping.getName())
+                .groupings(this.groupings)
+                .build();
+
+        // Collect grouping subscribers
+        Map<String,Object> allInOne = new LinkedHashMap<>();
+        allInOne.put("groupingConfigs", groupingConfigs);
+
+        allInOne.put("groupingsSubscribers", groupingsSubscribers);
+
+        String fileName = DEFAULT_CONF_DIR + "/debug-export-"+java.time.Instant.now().toString()+".json";
+        JsonMapper mapper = JsonMapper.builder()
+                .enable(SerializationFeature.INDENT_OUTPUT)
+                .build();
+        File file = Path.of(fileName).toFile();
+        mapper.writeValue(file, allInOne);
+        log.info("writeDebugExport: Debug export saved to file: {}", file.getPath());
     }
 
     public void sendLocalEvent(String destination, double metricValue) {
@@ -1308,16 +1400,25 @@ public class CommandExecutor {
         log.debug("setBrokerConfiguration(): ACTIVE GROUPING: {}", activeGrouping.getName());
         log.debug("setBrokerConfiguration(): OLD BROKER CONNECTIONS:\n{}", activeGrouping.getBrokerConnections());
 
-        // Update broker connection configuration for aggregator grouping
+        // Check if aggregator connection data changed
         BrokerConnectionConfig oldConn = activeGrouping.getBrokerConnections().get(aggregatorGrouping);
+        if (oldConn.getGrouping().equals(brokerConfig.getGrouping())
+            && oldConn.getUrl().equals(brokerConfig.getUrl())
+            && oldConn.getUsername().equals(brokerConfig.getUsername())
+            && oldConn.getPassword().equals(brokerConfig.getPassword())
+            && oldConn.getCertificate().equals(brokerConfig.getCertificate()))
+        {
+            log.warn("setBrokerConfiguration(): CURRENT AND NEW BROKER CONNECTIONS ARE IDENTICAL. Skipping connection update:\n{}", oldConn);
+            return;
+        }
+
+        // Update broker connection configuration for aggregator grouping
         activeGrouping.getBrokerConnections().put(aggregatorGrouping, brokerConfig);
         log.debug("setBrokerConfiguration(): NEW BROKER CONNECTIONS:\n{}", activeGrouping.getBrokerConnections());
 
         // Update forward settings of active grouping
-        // Clear forward-to-groupings settings of active grouping
-        clearActiveGroupingForwards();
-        // Set forward-to-topic settings of active grouping
-        setGroupingForwards(activeGrouping.getName());
+        updateGroupingForwards(activeGrouping.getName());
+
         // Update truststore certificates from active grouping settings
         updateCertificates(activeGrouping);
     }

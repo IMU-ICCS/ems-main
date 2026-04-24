@@ -9,6 +9,8 @@
 
 package gr.iccs.imu.ems.brokercep;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import gr.iccs.imu.ems.api.comm.GroupingConfiguration;
 import gr.iccs.imu.ems.brokercep.cep.StatementSubscriber;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
@@ -35,14 +37,14 @@ public class BrokerCepStatementSubscriber implements StatementSubscriber {
     private final static AtomicLong counterForwardSuccess = new AtomicLong(0);
     private final static AtomicLong counterForwardFailure = new AtomicLong(0);
 
-    private final String name;
-    private final String topic;
-    private final String statement;
-    private final BrokerCepService brokerCep;
-    @ToString.Exclude
-    private final PasswordUtil passwordUtil;
+    @JsonProperty(index = 1) private final String name;
+    @JsonProperty(index = 2) private final String topic;
+    @JsonProperty(index = 3) private final String grouping;
+    @JsonProperty(index = 4) private final String statement;
+    @ToString.Exclude @JsonIgnore private final BrokerCepService brokerCep;
+    @ToString.Exclude @JsonIgnore private final PasswordUtil passwordUtil;
     @Setter
-    private Set<GroupingConfiguration.BrokerConnectionConfig> forwardToGroupings;
+    @JsonProperty(index = 5) private Set<GroupingConfiguration.BrokerConnectionConfig> forwardToGroupings;
 
     public void update(Map<String, Object> eventMap) {
         log.trace("BrokerCepStatementSubscriber.update(): INPUT: {}", eventMap);

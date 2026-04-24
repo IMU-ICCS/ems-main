@@ -236,6 +236,17 @@ public class BrokerUtil extends AbstractLogBase {
             return;
         }
 
+        // Check if node is already (or becoming) aggregator
+        NODE_STATUS currentStatus = this.getNodeStatus(this.getLocalMember());
+        if (currentStatus.equals(AGGREGATOR)) {
+            log_warn("BRU: Node is already Aggregator. Skipping initialization");
+            return;
+        }
+        if (currentStatus.equals(INITIALIZING)) {
+            log_warn("BRU: Node is already initializing for Aggregator. Skipping initialization");
+            return;
+        }
+
         // Notify others that this node starts initializing as Broker
         log_info("BRU: Node will become Broker. Initializing...");
         atomix.getCommunicationService().broadcast(NODE_MESSAGE_TOPIC, MESSAGE_INITIALIZE + " " + getLocalMember().id().id());
