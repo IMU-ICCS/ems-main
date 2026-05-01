@@ -408,12 +408,16 @@
                     </executions>
                     <configuration>
                         <outputDirectory>${project.build.directory}</outputDirectory>
-                        <!--<format>{0,number,integer}</format>-->
-                        <timestampFormat>yyyy-MM-dd HH:mm:ss.SSSZ</timestampFormat>
-                        <revisionOnScmFailure>${project.version}</revisionOnScmFailure>
-                        <!--<revisionOnScmFailure>unknownbuild</revisionOnScmFailure>-->
+
+                        <!-- Limit revision length -->
+                        <shortRevisionLength>8</shortRevisionLength>
+                        <revisionOnScmFailure>${build.timestamp}</revisionOnScmFailure>
+
+                        <!-- Use timestamp + short revision -->
+                        <format>{0,date,yyyyMMddHHmmss}-{1}</format>
                         <items>
-                            <item>buildNumber</item>
+                            <item>timestamp</item>
+                            <item>scmVersion</item>
                         </items>
                         <doCheck>false</doCheck>
                         <doUpdate>false</doUpdate>
