@@ -64,7 +64,7 @@ public class ControlServiceApplication {
 
         // Start EMS server
         SpringApplication springApplication = new SpringApplicationBuilder()
-                .environment(new StandardEncryptableEnvironment())
+//                .environment(new StandardEncryptableEnvironment())
                 .sources(ControlServiceApplication.class)
                 .build();
         //SpringApplication springApplication = new SpringApplication(ControlServiceApplication.class);
