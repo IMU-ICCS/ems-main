@@ -13,7 +13,6 @@ import gr.iccs.imu.ems.baguette.client.install.ClientInstallationProperties;
 import gr.iccs.imu.ems.baguette.client.install.instruction.InstructionsSet;
 import gr.iccs.imu.ems.baguette.server.NodeRegistryEntry;
 import gr.iccs.imu.ems.util.KeystoreUtil;
-import gr.iccs.imu.ems.util.PasswordUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -50,8 +49,6 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
     @Autowired
     @Getter @Setter
     protected ClientInstallationProperties properties;
-    @Autowired
-    protected PasswordUtil passwordUtil;
 
 //XXX: Commented a not used feature with dependency with vulnerability
 //    protected String archiveBase64;

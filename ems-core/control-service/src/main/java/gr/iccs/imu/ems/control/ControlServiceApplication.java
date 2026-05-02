@@ -45,7 +45,7 @@ import java.util.TimerTask;
                 "gr.iccs.imu.ems.baguette.client.selfhealing", "gr.iccs.imu.ems.brokercep",
                 "gr.iccs.imu.ems.control", "gr.iccs.imu.ems.translate",
                 "gr.iccs.imu.ems.common", "gr.iccs.imu.ems.util",
-                "gr.iccs.imu.ems.brokerclient",
+                "gr.iccs.imu.ems.brokerclient", "gr.iccs.imu.ems.k8s",
                 "${scan.packages}"
         },
         exclude = { SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class } )
