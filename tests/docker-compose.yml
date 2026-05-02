@@ -36,8 +36,8 @@ services:
       #- LOGGING_LEVEL_GR_ICCS_IMU_EMS_TRANSLATE=TRACE
       #
       # ===== External dependencies settings =====
-      #- EXTRA_LOADER_PATHS=/plugins/*               # the paths inside EMS server container
-      #- SCAN_PACKAGES=eu.nebulous.ems               # packages to scan for components (Nebulous)
+      - EXTRA_LOADER_PATHS=/plugins/*               # the paths inside EMS server container
+      - SCAN_PACKAGES=eu.nebulous.ems               # packages to scan for components (Nebulous)
       #- SCAN_PACKAGES=eu.melodic.ems                # packages to scan for components (Melodic/Morphemic)
       #
       # ===== EMS Control Service settings =====
@@ -206,6 +206,7 @@ services:
       - "61610:61610"
       - "5672:5672"
     volumes:
+      - ./plugins:/plugins
       - ./logs:/opt/ems-server/logs
       - ./certs:/opt/ems-server/certs
       - ./models:/opt/ems-server/models
