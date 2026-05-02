@@ -23,7 +23,7 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 public class K8sEmsClientDeploymentPostProcessingPlugin implements AppModelPlugin, InitializingBean {
-	private final K8sPodWatcherProperties properties;
+	private final K8sProperties properties;
 	private final ApplicationContext applicationContext;
 
 	@Override

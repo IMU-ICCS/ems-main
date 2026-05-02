@@ -25,7 +25,7 @@ import static gr.iccs.imu.ems.api.EmsConstant.EMS_PROPERTIES_PREFIX;
 @Validated
 @Configuration
 @ConfigurationProperties(prefix = EMS_PROPERTIES_PREFIX + "k8s")
-public class K8sPodWatcherProperties implements InitializingBean {
+public class K8sProperties implements InitializingBean {
     private boolean enabled = true;
     private Duration initDelay = Duration.ofSeconds(30);
     private Duration period = Duration.ofSeconds(60);

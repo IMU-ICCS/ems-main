@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class K8sPodWatcher implements InitializingBean {
-    private final K8sPodWatcherProperties properties;
+    private final K8sProperties properties;
     private final TaskScheduler taskScheduler;
 
     private String EMS_SERVER_POD_UID;

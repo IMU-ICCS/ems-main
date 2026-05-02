@@ -29,7 +29,7 @@ import static gr.iccs.imu.ems.api.EmsConstant.EMS_PROPERTIES_PREFIX;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-public class K8sPodWatcherConfig implements InitializingBean {
+public class K8sConfig implements InitializingBean {
     private final Environment environment;
 
     @Override
@@ -41,7 +41,7 @@ public class K8sPodWatcherConfig implements InitializingBean {
     @ConditionalOnMissingBean(K8sEmsClientDeploymentPostProcessingPlugin.class)
     @ConditionalOnProperty(prefix = EMS_PROPERTIES_PREFIX + "k8s", name = "enabled", havingValue = "true", matchIfMissing = true)
     public K8sEmsClientDeploymentPostProcessingPlugin k8sEmsClientDeploymentPostProcessingPlugin(
-            K8sPodWatcherProperties properties, ApplicationContext applicationContext)
+            K8sProperties properties, ApplicationContext applicationContext)
     {
         return new K8sEmsClientDeploymentPostProcessingPlugin(properties, applicationContext);
     }
@@ -49,7 +49,7 @@ public class K8sPodWatcherConfig implements InitializingBean {
     @Bean
     @ConditionalOnMissingBean(K8sPodWatcher.class)
     @ConditionalOnProperty(prefix = EMS_PROPERTIES_PREFIX + "k8s", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public K8sPodWatcher k8sPodWatcher(K8sPodWatcherProperties properties, TaskScheduler taskScheduler) {
+    public K8sPodWatcher k8sPodWatcher(K8sProperties properties, TaskScheduler taskScheduler) {
         return new K8sPodWatcher(properties, taskScheduler);
     }
 }
