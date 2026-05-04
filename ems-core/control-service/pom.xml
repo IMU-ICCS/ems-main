@@ -134,11 +134,11 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
         <!-- Spring Boot Admin client  -->
-        <dependency>
+        <!--<dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-client</artifactId>
             <version>${spring.boot.admin.version}</version>
-        </dependency>
+        </dependency>-->
         <!-- Jasypt Spring Boot starter  -->
         <dependency>
             <groupId>com.github.ulisesbocchio</groupId>
