@@ -19,7 +19,7 @@ COPY ./ems-core           ${BASEDIR}/ems-core
 #RUN --mount=type=cache,target=/root/.m2  mvn -f ${BASEDIR}/ems-core/pom.xml -DskipTests clean install -P '!build-docker-image' -P '!build-web-admin'
 RUN mvn -f ${BASEDIR}/ems-core/pom.xml -DskipTests clean install -P '!build-docker-image' -P '!build-web-admin'
 RUN cp ems-core/control-service/target/control-service.jar . && \
-    java -Djarmode=layertools -jar control-service.jar extract
+    java -Djarmode=tools -jar control-service.jar extract --layers --launcher
 
 
 # -----------------   EMS-Core Run image   -----------------
