@@ -1,0 +1,8 @@
+/tests
+/ems-core/*/target/**
+/ems-core/public_resources/
+/ems-core/*/dist/
+/ems-core/*/node/
+/ems-core/*/node_modules/
+.flattened-pom.xml
+.env
