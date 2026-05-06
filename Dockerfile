@@ -13,111 +13,135 @@ ARG CLIENT_BASE_IMAGE=eclipse-temurin:21.0.10_7-jre-noble
 
 # ----------------- EMS Builder image -----------------
 FROM $BUILDER_IMAGE AS ems-server-builder
-ENV BASEDIR=/app
-WORKDIR ${BASEDIR}
-COPY ./ems-core           ${BASEDIR}/ems-core
-#RUN --mount=type=cache,target=/root/.m2  mvn -f ${BASEDIR}/ems-core/pom.xml -DskipTests clean install -P '!build-docker-image' -P '!build-web-admin'
-RUN mvn -f ${BASEDIR}/ems-core/pom.xml -DskipTests clean install -P '!build-docker-image' -P '!build-web-admin'
-RUN cp ems-core/control-service/target/control-service.jar . && \
-    java -Djarmode=tools -jar control-service.jar extract --layers --launcher
+
+ARG BUILD_DIR=/build
+ARG SOURCE_DIR=/build/ems-core
+ARG TARGET_DIR=/build/dist
+
+ENV BUILD_DIR=${BUILD_DIR} \
+    TARGET_DIR=${TARGET_DIR}
+
+WORKDIR ${BUILD_DIR}
+
+COPY ./ems-core ${SOURCE_DIR}
+
+#RUN --mount=type=cache,target=/root/.m2  \
+RUN \
+    set -eux; \
+    mvn -B -ntp -f ${BUILD_DIR}/ems-core/pom.xml -DskipTests clean install -P '!build-docker-image' -P '!build-web-admin'; \
+    java -Djarmode=tools -jar ${SOURCE_DIR}/control-service/target/control-service.jar extract --layers --launcher; \
+    mv ${BUILD_DIR}/control-service ${TARGET_DIR}; \
+    cp ${SOURCE_DIR}/control-service/target/esper*.jar ${TARGET_DIR}/application/BOOT-INF/lib/
 
 
 # -----------------   EMS-Core Run image   -----------------
 FROM $SERVER_BASE_IMAGE AS ems-server
 
-# Install required and optional packages
+ARG BUILD_DIR=/build
+ARG SOURCE_DIR=/build/ems-core
+ARG TARGET_DIR=/build/dist
+
+ARG EMS_USER=emsuser
+ARG EMS_HOME=/opt/ems-server
+
+# Install dumb-init
 RUN wget --progress=dot:giga -O /usr/local/bin/dumb-init \
           https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64 && \
     chmod +x /usr/local/bin/dumb-init
+#    echo "e874b55f3279ca41415d290c512a7ba9d08f98041b28ae7c2acb19a545f1c4df  dumb-init" | sha256sum -c - && \
+
+# Install optional packages
 #RUN apt-get update \
 #    && apt-get install -y netcat-openbsd vim iputils-ping \
 #    && rm -rf /var/lib/apt/lists/*
 
-# Add an EMS user
-ARG EMS_USER=emsuser
-ARG EMS_HOME=/opt/ems-server
-RUN mkdir ${EMS_HOME} && \
-    addgroup ${EMS_USER} && \
-    adduser --home ${EMS_HOME} --no-create-home --ingroup ${EMS_USER} --disabled-password ${EMS_USER} && \
-    chown ${EMS_USER}:${EMS_USER} ${EMS_HOME}
-
-USER ${EMS_USER}
-WORKDIR ${EMS_HOME}
+# Add EMS user
+RUN set -eux; \
+    groupadd -r ${EMS_USER}; \
+    useradd -r -g ${EMS_USER} -d ${EMS_HOME} -s /sbin/nologin ${EMS_USER}; \
+    mkdir -p ${EMS_HOME} ${EMS_HOME}/models; \
+    chown -R ${EMS_USER}:${EMS_USER} ${EMS_HOME}
 
 # Setup environment
-ENV BASEDIR=${EMS_HOME}
-ENV EMS_CONFIG_DIR=${BASEDIR}/config
+ENV BASEDIR=${EMS_HOME} \
+    EMS_CONFIG_DIR=${EMS_HOME}/config \
+    BIN_DIR=${EMS_HOME}/bin \
+    CONFIG_DIR=${EMS_HOME}/config \
+    LOGS_DIR=${EMS_HOME}/logs \
+    MODELS_DIR=${EMS_HOME}/models \
+    PUBLIC_DIR=${EMS_HOME}/public_resources
 
-ENV BIN_DIR=${BASEDIR}/bin
-ENV CONFIG_DIR=${BASEDIR}/config
-ENV LOGS_DIR=${BASEDIR}/logs
-ENV PUBLIC_DIR=${BASEDIR}/public_resources
-
-# Download a JRE suitable for running EMS clients, and
-# offer it for download
+# Download a JRE suitable for running EMS clients to offer it for download
 #ENV JRE_LINUX_PACKAGE=zulu21.34.19-ca-jre21.0.3-linux_x64.tar.gz
 #RUN mkdir -p ${PUBLIC_DIR}/resources && \
 #    wget --progress=dot:giga -O ${PUBLIC_DIR}/resources/${JRE_LINUX_PACKAGE} https://cdn.azul.com/zulu/bin/${JRE_LINUX_PACKAGE}
 
 # Copy resource files to image
-COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/ems-core/bin              ${BIN_DIR}
-COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/ems-core/config-files     ${CONFIG_DIR}
-COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/ems-core/public_resources ${PUBLIC_DIR}
-
-# Create 'logs', and 'models' directories. Make bin/*.sh scripts executable
-RUN mkdir ${LOGS_DIR} && \
-    chmod +rx ${BIN_DIR}/*.sh && \
-    mkdir -p ${EMS_HOME}/models
+COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder ${SOURCE_DIR}/bin                    ${BIN_DIR}
+COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder ${SOURCE_DIR}/config-files           ${CONFIG_DIR}
+COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder ${SOURCE_DIR}/public_resources       ${PUBLIC_DIR}
 
 # Copy files from builder container
-COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/dependencies          ${BASEDIR}
-COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/spring-boot-loader    ${BASEDIR}
-COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/snapshot-dependencies ${BASEDIR}
-COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/application           ${BASEDIR}
+COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder ${TARGET_DIR}/dependencies           ${BASEDIR}
+COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder ${TARGET_DIR}/spring-boot-loader     ${BASEDIR}
+COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder ${TARGET_DIR}/snapshot-dependencies  ${BASEDIR}
+COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder ${TARGET_DIR}/application            ${BASEDIR}
 
-# Copy ESPER dependencies
-COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder /app/ems-core/control-service/target/esper*.jar       ${BASEDIR}/BOOT-INF/lib/
+# Create 'logs', and 'models' directories. Make bin/*.sh scripts executable
+RUN set -eux; \
+    mkdir -p ${LOGS_DIR} ${MODELS_DIR} ; \
+    chmod +rx ${BIN_DIR}/*.sh ; \
+    chown -R ${EMS_USER}:${EMS_USER} ${BASEDIR}
 
-EXPOSE 2222
-EXPOSE 8111
-EXPOSE 61610
-EXPOSE 61616
-EXPOSE 61617
+# Set user and work dir.
+USER ${EMS_USER}
+WORKDIR ${EMS_HOME}
+
+EXPOSE 2222 8111 61610 61616 61617
 
 ENTRYPOINT ["dumb-init", "./bin/run.sh"]
+
 
 # -----------------   EMS-Client Runtime image   -----------------
 FROM $CLIENT_BASE_IMAGE AS ems-client
 
-# Install required and optional packages
+ARG BUILD_DIR=/build
+ARG SOURCE_DIR=/build/ems-core
+ARG TARGET_DIR=/build/dist
+
+ARG EMS_USER=emsuser
+ARG EMS_HOME=/opt/baguette-client
+ARG INSTALLATION_PACKAGE=baguette-client-installation-package.tgz
+
+# Install optional packages
 #RUN apt-get update \
 #    && apt-get install -y vim iputils-ping \
 #    && rm -rf /var/lib/apt/lists/*
 
-# Add an EMS user
-ARG EMS_USER=emsuser
-ARG EMS_HOME=/opt/baguette-client
-RUN mkdir -p ${EMS_HOME} && \
-    addgroup ${EMS_USER} && \
-    adduser --home ${EMS_HOME} --no-create-home --ingroup ${EMS_USER} --disabled-password ${EMS_USER} && \
-    chown ${EMS_USER}:${EMS_USER} ${EMS_HOME}
+# Add EMS user
+RUN set -eux; \
+    groupadd -r ${EMS_USER}; \
+    useradd -r -g ${EMS_USER} -d ${EMS_HOME} -s /sbin/nologin ${EMS_USER}; \
+    mkdir -p ${EMS_HOME}; \
+    chown -R ${EMS_USER}:${EMS_USER} ${EMS_HOME}
 
+# Setup environment
+ENV EMS_CONFIG_DIR=${EMS_HOME}/conf \
+    JAVA_HOME=/opt/java/openjdk \
+    PATH=$JAVA_HOME/bin:$PATH
+
+# Copy Baguette Client files
+COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder  ${SOURCE_DIR}/baguette-client/target/$INSTALLATION_PACKAGE  /tmp
+COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder  ${SOURCE_DIR}/baguette-client/conf/  ${EMS_HOME}/conf/
+RUN set -eux; \
+    tar zxvf /tmp/${INSTALLATION_PACKAGE} -C /opt; \
+    rm -f /tmp/${INSTALLATION_PACKAGE}; \
+    chown -R ${EMS_USER}:${EMS_USER} ${EMS_HOME}
+
+# Set user and work dir.
 USER ${EMS_USER}
 WORKDIR ${EMS_HOME}
 
-# Setup environment
-ARG EMS_CONFIG_DIR=${EMS_HOME}/conf
-ARG JAVA_HOME=/opt/java/openjdk
-ARG PATH=$JAVA_HOME/bin:$PATH
-ARG INSTALLATION_PACKAGE=baguette-client-installation-package.tgz
-
-# Copy Baguette Client files
-COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder  /app/ems-core/baguette-client/target/$INSTALLATION_PACKAGE  /tmp
-RUN tar zxvf /tmp/$INSTALLATION_PACKAGE -C /opt && rm -f /tmp/$INSTALLATION_PACKAGE
-COPY --chown=${EMS_USER}:${EMS_USER} --from=ems-server-builder  /app/ems-core/baguette-client/conf/* ${EMS_HOME}/conf/
-
-EXPOSE 61610
-EXPOSE 61616
-EXPOSE 61617
+EXPOSE 61610 61616 61617
 
 ENTRYPOINT ["/bin/sh", "-c", "/opt/baguette-client/bin/run.sh  &&  tail -f /opt/baguette-client/logs/output.txt"]
