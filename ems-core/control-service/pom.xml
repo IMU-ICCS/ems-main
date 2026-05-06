@@ -20,6 +20,11 @@
     <name>EMS - Control Service</name>
 
     <properties>
+        <!-- fallback values -->
+        <git.commit.id>${env.GIT_COMMIT}</git.commit.id>
+        <git.branch>${env.GIT_BRANCH}</git.branch>
+        <git.remote.origin.url>${env.GIT_URL}</git.remote.origin.url>
+
         <!-- Build timestamp -->
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>

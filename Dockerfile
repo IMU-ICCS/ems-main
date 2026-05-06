@@ -18,11 +18,21 @@ ARG BUILD_DIR=/build
 ARG SOURCE_DIR=/build/ems-core
 ARG TARGET_DIR=/build/dist
 
+# Accept optional metadata (CI can pass these, local builds ignore them)
+ARG GIT_COMMIT=unknown
+ARG GIT_BRANCH=unknown
+ARG GIT_URL=unknown
+
+ENV GIT_COMMIT=$GIT_COMMIT \
+    GIT_BRANCH=$GIT_BRANCH \
+    GIT_URL=$GIT_URL
+
 ENV BUILD_DIR=${BUILD_DIR} \
     TARGET_DIR=${TARGET_DIR}
 
 WORKDIR ${BUILD_DIR}
 
+COPY ./.git     ${BUILD_DIR}/.git
 COPY ./ems-core ${SOURCE_DIR}
 
 #RUN --mount=type=cache,target=/root/.m2  \
@@ -31,7 +41,8 @@ RUN \
     mvn -B -ntp -f ${BUILD_DIR}/ems-core/pom.xml -DskipTests clean install -P '!build-docker-image' -P '!build-web-admin'; \
     java -Djarmode=tools -jar ${SOURCE_DIR}/control-service/target/control-service.jar extract --layers --launcher; \
     mv ${BUILD_DIR}/control-service ${TARGET_DIR}; \
-    cp ${SOURCE_DIR}/control-service/target/esper*.jar ${TARGET_DIR}/application/BOOT-INF/lib/
+    cp ${SOURCE_DIR}/control-service/target/esper*.jar ${TARGET_DIR}/application/BOOT-INF/lib/; \
+    rm -rf ${BUILD_DIR}/.git
 
 
 # -----------------   EMS-Core Run image   -----------------
