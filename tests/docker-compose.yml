@@ -206,7 +206,7 @@ services:
       - "61610:61610"
       - "5672:5672"
     volumes:
-      - ./plugins:/plugins
+#      - ./plugins:/plugins
       - ./logs:/opt/ems-server/logs
       - ./certs:/opt/ems-server/certs
       - ./models:/opt/ems-server/models
