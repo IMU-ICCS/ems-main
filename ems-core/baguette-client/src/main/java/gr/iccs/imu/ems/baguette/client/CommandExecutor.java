@@ -1076,7 +1076,7 @@ public class CommandExecutor {
 
     private void setGroupingForwards(String newGroupingName) {
         // Check if new grouping is in available groupings
-        log.info("setGroupingForwards: New target Grouping: {}", newGroupingName, new RuntimeException("DUMMY"));
+        log.info("setGroupingForwards: New target Grouping: {}", newGroupingName);
         List<String> availableGroupings = new ArrayList<>(GROUPING.getNames().stream()
                 .filter(groupings::containsKey).toList());
         Collections.reverse(availableGroupings);
