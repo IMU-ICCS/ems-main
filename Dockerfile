@@ -33,7 +33,7 @@ ENV BUILD_DIR=${BUILD_DIR} \
     GIT_BRANCH=$GIT_BRANCH \
     GIT_URL=$GIT_URL \
     DOCKER_IMAGE=$DOCKER_IMAGE \
-    BUILD_DESCR=$BUILD_DESCR
+    BUILD_DESCR="$BUILD_DESCR"
 
 WORKDIR ${BUILD_DIR}
 
@@ -45,7 +45,7 @@ RUN \
     set -eux; \
     mvn -B -ntp -f ${BUILD_DIR}/ems-core/pom.xml -DskipTests \
         -Ddocker.image=${DOCKER_IMAGE} \
-        -Dbuild.description=${BUILD_DESCR} \
+        -Dbuild.description="${BUILD_DESCR}" \
         clean install -P '!build-docker-image' -P '!build-web-admin'; \
     java -Djarmode=tools -jar ${SOURCE_DIR}/control-service/target/control-service.jar extract --layers --launcher; \
     mv ${BUILD_DIR}/control-service ${TARGET_DIR}; \
