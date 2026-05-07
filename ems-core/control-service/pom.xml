@@ -20,14 +20,15 @@
     <name>EMS - Control Service</name>
 
     <properties>
-        <!-- fallback values -->
+        <!-- Git metadata - fallback values -->
         <git.commit.id>${env.GIT_COMMIT}</git.commit.id>
         <git.branch>${env.GIT_BRANCH}</git.branch>
         <git.remote.origin.url>${env.GIT_URL}</git.remote.origin.url>
 
         <!-- Build timestamp -->
         <timestamp>${maven.build.timestamp}</timestamp>
-        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+        <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ssZ</maven.build.timestamp.format>
 
         <docker.controlServiceJar>${project.build.finalName}.jar</docker.controlServiceJar>
         <docker.esperJar>esper-${esper.version}.jar</docker.esperJar>
