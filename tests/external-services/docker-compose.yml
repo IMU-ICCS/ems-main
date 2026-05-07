@@ -1,0 +1,49 @@
+#
+# Copyright (C) 2017-2026 Institute of Communication and Computer Systems (imu.iccs.gr)
+#
+# This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+# Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+# If a copy of the MPL was not distributed with this file, you can obtain one at
+# https://www.mozilla.org/en-US/MPL/2.0/
+#
+
+services:
+
+  vault:
+    image: hashicorp/vault:1.21.4
+    container_name: vault
+    user: "0"
+    command: server
+    restart: unless-stopped
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_ADDR: http://127.0.0.1:8200
+      VAULT_API_ADDR:
+      VAULT_LOCAL_CONFIG: |
+        {
+          "storage": {
+            "file": {
+              "path": "/vault/data"
+            }
+          },
+          "listener": {
+            "tcp": {
+              "address": "0.0.0.0:8200",
+              "tls_disable": true
+            }
+          },
+          "ui": true,
+          "disable_mlock": true
+        }
+    ports:
+      - "8200:8200"
+    volumes:
+      - ./vault-data:/vault/data
+
+  kind-registry:
+    image: registry:2
+    container_name: kind-registry
+    restart: always
+    ports:
+      - "5000:5000"
