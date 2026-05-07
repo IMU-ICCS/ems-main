@@ -30,14 +30,16 @@
         <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ssZ</maven.build.timestamp.format>
 
+        <!-- JARS to add in the Docker image -->
         <docker.controlServiceJar>${project.build.finalName}.jar</docker.controlServiceJar>
         <docker.esperJar>esper-${esper.version}.jar</docker.esperJar>
-
-        <docker.image.name>ems-server</docker.image.name>
-        <!--<docker.image.tag>${revision}</docker.image.tag>
-        <build.description></build.description>-->
+        <!-- Dockerfile arguments -->
         <docker.user>emsuser</docker.user>
         <docker.user.home>/opt/ems-server</docker.user.home>
+
+        <!-- Docker image metadata for the banner -->
+        <docker.image>ems-server:${project.version}</docker.image>
+        <build.description/>
 
         <!-- EMS server main class -->
         <start-class>gr.iccs.imu.ems.control.ControlServiceApplication</start-class>
@@ -593,8 +595,10 @@
                                 </goals>
                                 <configuration>
                                     <exportAntProperties>true</exportAntProperties>
-                                    <target unless="docker.image.tag">
-                                        <property name="docker.image.tag" value="${project.version}"/>
+                                    <target name="set-docker-image" unless="docker.image">
+                                        <property name="docker.image" value="ems-server:${project.version}"/>
+                                    </target>
+                                    <target name="set-build-description" unless="build.description">
                                         <property name="build.description" value=""/>
                                     </target>
                                 </configuration>
@@ -611,7 +615,7 @@
                                         <delete dir="${project.build.directory}/docker-context"/>
 
                                         <!--<echo>Print Docker image dev properties</echo>
-                                        <echo>Image Tag: "${docker.image.tag}"</echo>
+                                        <echo>Docker Image: "${docker.image}"</echo>
                                         <echo>Description: "${build.description}"</echo>-->
 
                                         <!-- rename-docker-context-dir -->
@@ -636,7 +640,7 @@
                             <useColor>true</useColor>
                             <images>
                                 <image>
-                                    <name>${docker.image.name}:${docker.image.tag}</name>
+                                    <name>${docker.image}</name>
                                     <build>
                                         <contextDir>${project.build.directory}/docker-context</contextDir>
                                         <args>
@@ -675,12 +679,8 @@
                                     <outputDirectory>${project.build.directory}/</outputDirectory>
                                     <properties>
                                         <property>
-                                            <name>docker.image.name</name>
-                                            <value>${docker.image.name}</value>
-                                        </property>
-                                        <property>
-                                            <name>docker.image.tag</name>
-                                            <value>${docker.image.tag}</value>
+                                            <name>docker.image</name>
+                                            <value>${docker.image}</value>
                                         </property>
                                         <property>
                                             <name>docker.user</name>
