@@ -23,6 +23,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.ApplicationPidFileWriter;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
 import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -39,6 +40,7 @@ import java.util.TimerTask;
 @EnableScheduling
 @EnableEncryptableProperties
 @Configuration
+@ConfigurationPropertiesScan
 @SpringBootApplication(
         scanBasePackages = {
                 "gr.iccs.imu.ems.baguette.server", "gr.iccs.imu.ems.baguette.client.install",

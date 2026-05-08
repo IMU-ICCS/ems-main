@@ -11,6 +11,7 @@ package gr.iccs.imu.ems.control.properties;
 
 import gr.iccs.imu.ems.api.EmsConstant;
 import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -57,6 +58,7 @@ public class WebSecurityProperties implements InitializingBean {
         private boolean enabled = true;
         private String requestHeader = "EMS-API-KEY";
         private String requestParameter = "ems-api-key";
+        @ToString.Exclude
         private String value;
     }
 
@@ -83,6 +85,7 @@ public class WebSecurityProperties implements InitializingBean {
     public static class FormAuthentication {
         private boolean enabled = true;
         private String username = "admin";
+        @ToString.Exclude
         private String password;
 
         private String loginPage = "/admin/login.html";

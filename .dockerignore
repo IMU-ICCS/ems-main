@@ -6,3 +6,4 @@
 /ems-core/*/node_modules/
 .flattened-pom.xml
 .env
+secrets.properties
