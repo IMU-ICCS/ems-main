@@ -28,7 +28,6 @@ ARG BUILD_DESCR=''
 
 ENV BUILD_DIR=${BUILD_DIR} \
     TARGET_DIR=${TARGET_DIR} \
-
     GIT_COMMIT=$GIT_COMMIT \
     GIT_BRANCH=$GIT_BRANCH \
     GIT_URL=$GIT_URL \
@@ -37,11 +36,29 @@ ENV BUILD_DIR=${BUILD_DIR} \
 
 WORKDIR ${BUILD_DIR}
 
+# Download dependencies
+COPY ./ems-core/pom.xml                             ${SOURCE_DIR}/pom.xml
+COPY ./ems-core/api/pom.xml                         ${SOURCE_DIR}/api/pom.xml
+COPY ./ems-core/baguette-client/pom.xml             ${SOURCE_DIR}/baguette-client/pom.xml
+COPY ./ems-core/baguette-client-install/pom.xml     ${SOURCE_DIR}/baguette-client-install/pom.xml
+COPY ./ems-core/baguette-server/pom.xml             ${SOURCE_DIR}/baguette-server/pom.xml
+COPY ./ems-core/broker-cep/pom.xml                  ${SOURCE_DIR}/broker-cep/pom.xml
+COPY ./ems-core/broker-client/pom.xml               ${SOURCE_DIR}/broker-client/pom.xml
+COPY ./ems-core/common/pom.xml                      ${SOURCE_DIR}/common/pom.xml
+COPY ./ems-core/control-service/pom.xml             ${SOURCE_DIR}/control-service/pom.xml
+COPY ./ems-core/translator/pom.xml                  ${SOURCE_DIR}/translator/pom.xml
+COPY ./ems-core/util/pom.xml                        ${SOURCE_DIR}/util/pom.xml
+COPY ./ems-core/web-admin/pom.xml                   ${SOURCE_DIR}/web-admin/pom.xml
+
+RUN --mount=type=cache,target=/root/.m2,id=maven-cache \
+    mvn -B -ntp -f ${BUILD_DIR}/ems-core/pom.xml dependency:go-offline
+
+# Copy source and .git
 COPY ./.git     ${BUILD_DIR}/.git
 COPY ./ems-core ${SOURCE_DIR}
 
-#RUN --mount=type=cache,target=/root/.m2  \
-RUN \
+# Build and arrange code
+RUN --mount=type=cache,target=/root/.m2,id=maven-cache  \
     set -eux; \
     mvn -B -ntp -f ${BUILD_DIR}/ems-core/pom.xml -DskipTests \
         -Ddocker.image=${DOCKER_IMAGE} \
