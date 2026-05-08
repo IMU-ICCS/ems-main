@@ -50,7 +50,8 @@ COPY ./ems-core/translator/pom.xml                  ${SOURCE_DIR}/translator/pom
 COPY ./ems-core/util/pom.xml                        ${SOURCE_DIR}/util/pom.xml
 COPY ./ems-core/web-admin/pom.xml                   ${SOURCE_DIR}/web-admin/pom.xml
 
-RUN --mount=type=cache,target=/root/.m2,id=maven-cache \
+#RUN --mount=type=cache,target=/root/.m2,id=maven-cache \
+RUN \
     mvn -B -ntp -f ${BUILD_DIR}/ems-core/pom.xml dependency:go-offline
 
 # Copy source and .git
@@ -58,7 +59,8 @@ COPY ./.git     ${BUILD_DIR}/.git
 COPY ./ems-core ${SOURCE_DIR}
 
 # Build and arrange code
-RUN --mount=type=cache,target=/root/.m2,id=maven-cache  \
+#RUN --mount=type=cache,target=/root/.m2,id=maven-cache  \
+RUN \
     set -eux; \
     mvn -B -ntp -f ${BUILD_DIR}/ems-core/pom.xml -DskipTests \
         -Ddocker.image=${DOCKER_IMAGE} \
