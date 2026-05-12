@@ -52,11 +52,6 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.github.ulisesbocchio</groupId>
-			<artifactId>jasypt-spring-boot-starter</artifactId>
-			<version>${jasypt.starter.version}</version>
-		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.sshd/apache-sshd -->
 		<dependency>

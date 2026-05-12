@@ -69,8 +69,6 @@
         <xstream.version>1.4.21</xstream.version>   <!-- Required by ActiveMQ-STOMP -->
         <!-- QPid AMQP client version -->
         <qpid-jms-client.version>2.9.0</qpid-jms-client.version>
-        <!-- Jasypt version -->
-        <jasypt.starter.version>4.0.4</jasypt.starter.version>
         <!-- Apache SSHD version -->
         <apache-sshd.version>2.16.0</apache-sshd.version>
         <mina-core.version>2.2.4</mina-core.version>

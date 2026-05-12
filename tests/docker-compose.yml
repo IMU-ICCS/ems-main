@@ -23,7 +23,7 @@ services:
       # ===== INITIALIZATION settings =====
       #   --- Entrypoint and run.sh ---
 #      - EMS_CONFIG_DIR=/opt/ems-server/config
-      - JASYPT_PASSWORD=${P_JASYPT_PASSWORD}
+      - ENCRYPT_KEY=${P_ENCRYPT_KEY}
       #- EMS_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,address=*:8000,suspend=n
       #- JAVA_OPTS=-agentlib:native-image-agent=config-output-dir=/native-image
       #- JAVA_OPTS=-agentlib:native-image-agent=config-merge-dir=/native-image
@@ -186,7 +186,7 @@ services:
       #
       # =====  EMS client settings  =====
       # =====  EMS clients - Security and Authentication settings  =====
-#      - EMS_CLIENT_JASYPT_PASSWORD=${P_JASYPT_PASSWORD:-}
+#      - EMS_CLIENT_ENCRYPT_KEY=${P_ENCRYPT_KEY:-}
       - EMS_CLIENT_ADDITIONAL_BROKER_CREDENTIALS=${P_BROKERCEP_CREDENTIALS:-}
       #- EMS_CLIENT_BROKER_USERNAME=ccc
       #- EMS_CLIENT_BROKER_PASSWORD=333

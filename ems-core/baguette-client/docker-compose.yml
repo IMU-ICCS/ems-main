@@ -16,7 +16,6 @@ services:
       # Mode of operation - Common settings
       - IP_SETTING=DEFAULT_IP
       - SELF_HEALING_ENABLED=false
-      #- JASYPT_PASSWORD=
       #- BAGUETTE_CLIENT_BASE_DIR=/opt/baguette-client
 
       # This Node info

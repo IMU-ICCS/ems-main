@@ -18,16 +18,12 @@ if [[ -z $JARS_DIR ]]; then JARS_DIR=$BASEDIR/control-service/target; export JAR
 if [[ -z $LOGS_DIR ]]; then LOGS_DIR=$BASEDIR/logs; export LOGS_DIR; fi
 if [[ -z $PUBLIC_DIR ]]; then PUBLIC_DIR=$BASEDIR/public_resources; export PUBLIC_DIR; fi
 
-# Read JASYPT password (decrypts encrypted configuration settings)
-#JASYPT_PASSWORD=password
-if [[ -z "$JASYPT_PASSWORD" ]]; then
-    printf "Configuration Password: "
-    read -s JASYPT_PASSWORD
+# Read ENCRYPT_KEY (decrypts encrypted configuration settings)
+if [[ -z "$ENCRYPT_KEY" ]]; then
+    printf "Encrypt key: "
+    read -s ENCRYPT_KEY
 fi
-# Use this online service to encrypt/decrypt passwords:
-# https://www.devglan.com/online-tools/jasypt-online-encryption-decryption
-
-export JASYPT_PASSWORD
+export ENCRYPT_KEY
 
 # Check EMS configuration
 if [[ -z "$EMS_SECRETS_FILE" ]]; then
@@ -89,11 +85,11 @@ if [[ -z $RESTART_EXIT_CODE ]]; then RESTART_EXIT_CODE=99; export RESTART_EXIT_C
 retCode=$RESTART_EXIT_CODE
 while :; do
   # Use when Esper is packaged in control-service.jar
-  # java $EMS_DEBUG_OPTS $JAVA_OPTS $JAVA_ADD_OPENS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Djava.security.egd=file:/dev/urandom -jar $JARS_DIR/control-service/target/control-service.jar "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:$LOG_CONFIG_FILE"
+  # java $EMS_DEBUG_OPTS $JAVA_OPTS $JAVA_ADD_OPENS -Dencrypt.key=$ENCRYPT_KEY -Djava.security.egd=file:/dev/urandom -jar $JARS_DIR/control-service/target/control-service.jar "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:$LOG_CONFIG_FILE"
 
   # Use when Esper is NOT packaged in control-service.jar
   java $EMS_DEBUG_OPTS $JAVA_OPTS  $JAVA_ADD_OPENS \
-      -Djasypt.encryptor.password=$JASYPT_PASSWORD \
+      -Dencrypt.key=$ENCRYPT_KEY \
       -Djava.security.egd=file:/dev/urandom \
       -Dscan.packages=${SCAN_PACKAGES} \
       ${CP} \

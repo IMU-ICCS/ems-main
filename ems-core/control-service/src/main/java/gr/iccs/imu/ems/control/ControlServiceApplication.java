@@ -9,8 +9,6 @@
 
 package gr.iccs.imu.ems.control;
 
-import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
-import com.ulisesbocchio.jasyptspringboot.environment.StandardEncryptableEnvironment;
 import gr.iccs.imu.ems.api.EmsRelease;
 import gr.iccs.imu.ems.control.controller.ControlServiceCoordinator;
 import gr.iccs.imu.ems.control.properties.ControlServiceProperties;
@@ -38,7 +36,6 @@ import java.util.TimerTask;
 @Slf4j
 @EnableAsync
 @EnableScheduling
-@EnableEncryptableProperties
 @Configuration
 @ConfigurationPropertiesScan
 @SpringBootApplication(

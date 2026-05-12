@@ -18,6 +18,8 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.security.crypto.encrypt.Encryptors;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
 
 /**
  * Run:
@@ -67,6 +69,22 @@ public class JwtTokenUtil {
                     System.err.printf("%s%s%s\n", ConsoleColors.RED_BOLD_BRIGHT, getExceptionMessages(e), ConsoleColors.RESET);
                     exit(2);
                 }
+            } else if ("encrypt".equalsIgnoreCase(args[0].trim())) {
+                String value = args[1];
+                String password = args[2];
+                String salt = args[3];
+                TextEncryptor encryptor = Encryptors.text(password, salt);
+                String encrypted = encryptor.encrypt(value);
+                System.out.printf("%s{cipher}%s%s\n", ConsoleColors.RED_BOLD_BRIGHT, encrypted, ConsoleColors.RESET);
+
+            } else if ("decrypt".equalsIgnoreCase(args[0].trim())) {
+                String value = args[1];
+                String password = args[2];
+                String salt = args[3];
+                TextEncryptor encryptor = Encryptors.text(password, salt);
+                String text = encryptor.decrypt(value);
+                System.out.printf("%s%s%s\n", ConsoleColors.RED_BOLD_BRIGHT, text, ConsoleColors.RESET);
+
             } else {
                 System.err.printf("%sUnknown command: %s %s %s\n", ConsoleColors.RED_BOLD_BRIGHT, ConsoleColors.RED_BACKGROUND+ConsoleColors.YELLOW_BOLD_BRIGHT, args[0], ConsoleColors.RESET);
                 exit(3);

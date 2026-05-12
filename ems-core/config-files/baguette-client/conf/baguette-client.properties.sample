@@ -15,10 +15,6 @@
 #password-encoder-class = gr.iccs.imu.ems.util.password.IdentityPasswordEncoder
 #password-encoder-class = gr.iccs.imu.ems.util.password.PresentPasswordEncoder
 
-### Jasypt encryptor settings (using old settings until encrypted texts are updated)
-jasypt.encryptor.algorithm = PBEWithMD5AndDES
-jasypt.encryptor.ivGeneratorClassname = org.jasypt.iv.NoIvGenerator
-
 # Baguette Client configuration
 
 baseDir = ${BAGUETTE_CLIENT_BASE_DIR}

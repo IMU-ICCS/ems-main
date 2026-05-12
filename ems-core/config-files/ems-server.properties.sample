@@ -21,10 +21,6 @@ DOLLAR=$
 #password-encoder-class = password.gr.iccs.imu.ems.util.IdentityPasswordEncoder
 #password-encoder-class = password.gr.iccs.imu.ems.util.PresentPasswordEncoder
 
-### Jasypt encryptor settings (using old settings until encrypted texts are updated)
-jasypt.encryptor.algorithm = PBEWithMD5AndDES
-jasypt.encryptor.ivGeneratorClassname = org.jasypt.iv.NoIvGenerator
-
 ### Execution (@EnableAsync) and Scheduling (@EnableScheduling) thread pools
 #spring.task.execution.pool.max-size = 16
 #spring.task.execution.pool.queue-capacity = 100

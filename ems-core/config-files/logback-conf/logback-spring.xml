@@ -21,7 +21,6 @@
     <logger name="gr.iccs.imu.ems.translate" level="INFO"/>
     <logger name="gr.iccs.imu.ems.util" level="INFO"/>
     <logger name="gr.iccs.imu.ems.util.NetUtil" level="INFO"/>
-    <logger name="com.ulisesbocchio.jasyptspringboot" level="WARN"/>
     <logger name="org.apache.catalina.core.AprLifecycleListener" level="ERROR"/>
     <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
     <logger name="eu.paasage.mddb.cdo.server" level="DEBUG"/>

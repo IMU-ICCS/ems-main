@@ -147,12 +147,6 @@
             <artifactId>spring-boot-admin-starter-client</artifactId>
             <version>${spring.boot.admin.version}</version>
         </dependency>-->
-        <!-- Jasypt Spring Boot starter  -->
-        <dependency>
-            <groupId>com.github.ulisesbocchio</groupId>
-            <artifactId>jasypt-spring-boot-starter</artifactId>
-            <version>${jasypt.starter.version}</version>
-        </dependency>
 
         <!-- Lombok project -->
         <dependency>

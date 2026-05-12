@@ -18,14 +18,13 @@ if [[ -z $JARS_DIR ]]; then JARS_DIR=$BASEDIR/control-service/target; export JAR
 if [[ -z EMS_SECRETS_FILE ]]; then EMS_SECRETS_FILE=$EMS_CONFIG_DIR/secrets.properties; export EMS_SECRETS_FILE; fi
 if [[ -z EMS_CONFIG_LOCATION ]]; then EMS_CONFIG_LOCATION=optional:file:$EMS_CONFIG_DIR/ems-server.yml,optional:file:$EMS_CONFIG_DIR/ems-server.properties,optional:file:$EMS_CONFIG_DIR/ems.yml,optional:file:$EMS_CONFIG_DIR/ems.properties,optional:file:$EMS_SECRETS_FILE; export EMS_CONFIG_LOCATION; fi
 
-# Read JASYPT password (decrypts encrypted configuration settings)
-#JASYPT_PASSWORD=password
-if [[ -z "$JASYPT_PASSWORD" ]]; then
-    printf "Configuration Password: "
-    read -s JASYPT_PASSWORD
+# Read ENCRYPT_KEY (decrypts encrypted configuration settings)
+if [[ -z "$ENCRYPT_KEY" ]]; then
+    printf "Encrypt key: "
+    read -s ENCRYPT_KEY
 fi
 
-java -Djasypt.encryptor.password=$JASYPT_PASSWORD  -cp ${JARS_DIR}/control-service.jar -Dloader.main=gr.iccs.imu.ems.control.util.jwt.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.gr.iccs.imu.ems.util=ERROR "-Dspring.config.location=$EMS_CONFIG_LOCATION" org.springframework.boot.loader.launch.PropertiesLauncher "${@}"
+java -Dencrypt.key=$ENCRYPT_KEY  -cp ${JARS_DIR}/control-service.jar -Dloader.main=gr.iccs.imu.ems.control.util.jwt.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.gr.iccs.imu.ems.util=ERROR "-Dspring.config.location=$EMS_CONFIG_LOCATION" org.springframework.boot.loader.launch.PropertiesLauncher "${@}"
 exitcode=$?
 
 cd $PREVWORKDIR

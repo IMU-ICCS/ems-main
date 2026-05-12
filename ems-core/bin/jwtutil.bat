@@ -18,13 +18,12 @@ IF NOT DEFINED JARS_DIR set JARS_DIR=%BASEDIR%\control-service\target
 if NOT DEFINED EMS_SECRETS_FILE set EMS_SECRETS_FILE=%EMS_CONFIG_DIR%\secrets.properties
 if NOT DEFINED EMS_CONFIG_LOCATION set EMS_CONFIG_LOCATION=optional:file:%EMS_CONFIG_DIR%\ems-server.yml,optional:file:%EMS_CONFIG_DIR%\ems-server.properties,optional:file:%EMS_CONFIG_DIR%\ems.yml,optional:file:%EMS_CONFIG_DIR%\ems.properties,optional:file:%EMS_SECRETS_FILE%
 
-:: Read JASYPT password (decrypts encrypted configuration settings)
-::set JASYPT_PASSWORD=password
-if "%JASYPT_PASSWORD%"=="" (
-    set /p JASYPT_PASSWORD="Configuration Password: "
+:: Read ENCRYPT_KEY (decrypts encrypted configuration settings)
+if "%ENCRYPT_KEY%"=="" (
+    set /p ENCRYPT_KEY="Encrypt key: "
 )
 
-java -Djasypt.encryptor.password=%JASYPT_PASSWORD% -cp %JARS_DIR%\control-service.jar -Dloader.main=jwt.util.gr.iccs.imu.ems.control.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.gr.iccs.imu.ems.util=ERROR "-Dspring.config.location=%EMS_CONFIG_LOCATION%" org.springframework.boot.loader.launch.PropertiesLauncher "%*"
+java -Dencrypt.key=%ENCRYPT_KEY% -cp %JARS_DIR%\control-service.jar -Dloader.main=jwt.util.gr.iccs.imu.ems.control.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.gr.iccs.imu.ems.util=ERROR "-Dspring.config.location=%EMS_CONFIG_LOCATION%" org.springframework.boot.loader.launch.PropertiesLauncher "%*"
 set exitcode=%ERRORLEVEL%
 
 cd %PWD%

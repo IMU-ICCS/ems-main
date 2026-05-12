@@ -29,8 +29,7 @@ cd ${BASEDIR}
 EMS_CONFIG_DIR=${BASEDIR}/conf
 EMS_CONFIG_LOCATION=optional:file:$EMS_CONFIG_DIR/ems-client.yml,optional:file:$EMS_CONFIG_DIR/ems-client.properties,optional:file:$EMS_CONFIG_DIR/baguette-client.yml,optional:file:$EMS_CONFIG_DIR/baguette-client.properties
 LOG_FILE=${BASEDIR}/logs/output.txt
-#JASYPT_PASSWORD=password
-JASYPT_PASSWORD=${EMS_CLIENT_JASYPT_PASSWORD}
+ENCRYPT_KEY=${EMS_CLIENT_ENCRYPT_KEY}
 
 [ -z "${JAVA_HOME}" ] && [ -d "${BASEDIR}/jre" ] && JAVA_HOME=${BASEDIR}/jre
 export EMS_CONFIG_DIR LOG_FILE JAVA_HOME
@@ -66,7 +65,7 @@ fi
 #JAVA_OPTS="-Djavax.net.debug=all ${JAVA_OPTS}"
 #JAVA_OPTS="-Dlogging.level.gr.iccs.imu.ems=TRACE ${JAVA_OPTS}"
 #JAVA_OPTS="${JAVA_OPTS} -Xms1g -Xmx8g"
-JAVA_OPTS="${JAVA_OPTS} -Djasypt.encryptor.password=$JASYPT_PASSWORD"
+JAVA_OPTS="${JAVA_OPTS} -Dencrypt.key=$ENCRYPT_KEY"
 JAVA_OPTS="${JAVA_OPTS} --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED"
 
 # Print settings

@@ -18,13 +18,11 @@ IF NOT DEFINED JARS_DIR set JARS_DIR=%BASEDIR%\control-service\target
 IF NOT DEFINED LOGS_DIR set LOGS_DIR=%BASEDIR%\logs
 IF NOT DEFINED PUBLIC_DIR set PUBLIC_DIR=%BASEDIR%\public_resources
 
-:: Read JASYPT password (decrypts encrypted configuration settings)
-::set JASYPT_PASSWORD=password
-if "%JASYPT_PASSWORD%"=="" (
-    set /p JASYPT_PASSWORD="Configuration Password: "
+:: Read ENCRYPT_KEY (decrypts encrypted configuration settings)
+::set ENCRYPT_KEY=password
+if "%ENCRYPT_KEY%"=="" (
+    set /p ENCRYPT_KEY="Encrypt key: "
 )
-:: Use this online service to encrypt/decrypt passwords:
-:: https://www.devglan.com/online-tools/jasypt-online-encryption-decryption
 
 :: Check EMS configuration
 if "%EMS_SECRETS_FILE%"=="" (
@@ -72,11 +70,11 @@ if exist "%JARS_DIR%\control-service.jar" (
 )
 
 rem Use when Esper is packaged in control-service.jar
-rem java %EMS_DEBUG_OPTS% %JAVA_OPTS% %JAVA_ADD_OPENS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Djava.security.egd=file:/dev/urandom -jar %JARS_DIR%\control-service.jar -nolog "--spring.config.location=%EMS_CONFIG_LOCATION%" "--logging.config=file:%LOG_CONFIG_FILE%"
+rem java %EMS_DEBUG_OPTS% %JAVA_OPTS% %JAVA_ADD_OPENS% -Dencrypt.key=%ENCRYPT_KEY% -Djava.security.egd=file:/dev/urandom -jar %JARS_DIR%\control-service.jar -nolog "--spring.config.location=%EMS_CONFIG_LOCATION%" "--logging.config=file:%LOG_CONFIG_FILE%"
 
 rem Use when Esper is NOT packaged in control-service.jar
 java %EMS_DEBUG_OPTS% %JAVA_OPTS% %JAVA_ADD_OPENS% ^
-    -Djasypt.encryptor.password=%JASYPT_PASSWORD% ^
+    -Dencrypt.key=%ENCRYPT_KEY% ^
     -Djava.security.egd=file:/dev/urandom ^
     -Dscan.packages=%SCAN_PACKAGES% ^
     %CP% ^
