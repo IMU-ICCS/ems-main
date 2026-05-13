@@ -13,6 +13,11 @@ services:
     image: ${EMS_IMAGE_REPO}:${EMS_IMAGE_TAG}${EMS_IMAGE_TAG_EXTRA:-}
     environment:
       #
+      # ===== Spring Cloud Vault settings =====
+      - VAULT_URI=http://host.docker.internal:8200
+      - VAULT_TOKEN=${P_VAULT_TOKEN}
+      - VAULT_APP_NAME=${P_VAULT_APP_NAME}
+      #
       # ===== CIPHER settings =====
       #
       # ===== Kubernetes settings =====
@@ -59,26 +64,26 @@ services:
       # =====  Security and Web Management settings  =====
       - CONTROL_SSL_KEY_ENTRY_GENERATE=IF_IP_CHANGED        # Keystore & Truststore are generated during container startup
       - CONTROL_SSL_KEYSTORE_FILE=/opt/ems-server/certs/ems-keystore.p12
-      - CONTROL_SSL_KEYSTORE_PASSWORD=${P_KEYSTORE_PASSWORD}
+#VAULT      - CONTROL_SSL_KEYSTORE_PASSWORD=${P_KEYSTORE_PASSWORD}
       - CONTROL_SSL_TRUSTSTORE_FILE=/opt/ems-server/certs/common-truststore.p12
-      - CONTROL_SSL_TRUSTSTORE_PASSWORD=${P_KEYSTORE_PASSWORD}
+#VAULT      - CONTROL_SSL_TRUSTSTORE_PASSWORD=${P_KEYSTORE_PASSWORD}
       - CONTROL_SSL_CERTIFICATE_FILE=/opt/ems-server/certs/ems.crt
       #
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
       - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
       #
       #- MELODIC_SECURITY_ENABLED=false
-      - JWT_SECRET=${P_JWT_SECRET}
+#VAULT      - JWT_SECRET=${P_JWT_SECRET}
       #- WEB_SECURITY_JWT_AUTHENTICATION_ENABLED=false
       - WEB_SECURITY_JWT_AUTHENTICATION_REQUEST_PARAMETER=jwt    #XXX:TODO: Comment out these two settings for improved security
       - WEB_SECURITY_JWT_AUTHENTICATION_PRINT_SAMPLE_TOKEN=true
       #- WEB_SECURITY_API_KEY_AUTHENTICATION_ENABLED=false
-      - WEB_SECURITY_API_KEY_AUTHENTICATION_VALUE=${P_WEB_API_KEY_VALUE}
+#VAULT      - WEB_SECURITY_API_KEY_AUTHENTICATION_VALUE=${P_WEB_API_KEY_VALUE}
       #- WEB_SECURITY_OTP_AUTHENTICATION_ENABLED=false
       #- WEB_SECURITY_OTP_AUTHENTICATION_DURATION=3600000
       #- WEB_SECURITY_FORM_AUTHENTICATION_ENABLED=false
       #- WEB_SECURITY_FORM_AUTHENTICATION_USERNAME=admin
-      - WEB_SECURITY_FORM_AUTHENTICATION_PASSWORD=${P_WEB_ADMIN_PASSWORD}
+#VAULT      - WEB_SECURITY_FORM_AUTHENTICATION_PASSWORD=${P_WEB_ADMIN_PASSWORD}
       #
       # =====  Topic Beacon settings  =====
       #- BEACON_ENABLED=false
@@ -112,7 +117,7 @@ services:
       #- TRANSLATOR_DAG_EXPORT_IMAGE_WIDTH=600
       #
       # ===== Broker-CEP settings =====
-      - BROKERCEP_ADDITIONAL_BROKER_CREDENTIALS=${P_BROKERCEP_CREDENTIALS:-}
+#VAULT      - BROKERCEP_ADDITIONAL_BROKER_CREDENTIALS=${P_BROKERCEP_CREDENTIALS:-}
       #- BROKERCEP_STATS_PRINTER_ENABLED=true
       #- BROKERCEP_STATS_PRINTER_AS_JSON=true
       #- BROKERCEP_STATS_PRINTER_AS_CSV=true
@@ -134,16 +139,9 @@ services:
       #- K8S_DEPLOY_EMS_CLIENTS_ON_KUBERNETES_ENABLED=false
       #- K8S_WATCHER_ENABLED=false
       #
-      # ===== Nebulous-specific settings -- common =====
-      - EXTERNAL_ENABLED=false
-      - EXTERNAL_BROKER_ADDRESS=activemq  # host.docker.internal
-      - EXTERNAL_BROKER_PORT=5672
-      - EXTERNAL_BROKER_USERNAME=admin
-      - EXTERNAL_BROKER_PASSWORD=admin
-      #
       # ===== Baguette Server settings =====
       #- BAGUETTE_SERVER_ADDRESS=${P_BAGUETTE_SERVER_ADDRESS}
-      - BAGUETTE_SERVER_CREDENTIALS=${P_BAGUETTE_SERVER_CREDENTIALS:-{}
+#VAULT      - BAGUETTE_SERVER_CREDENTIALS=${P_BAGUETTE_SERVER_CREDENTIALS:-{}
       #
       # ===== Server-side client recovery settings =====
       #- SELF_HEALING_ENABLED=true
@@ -187,7 +185,7 @@ services:
       # =====  EMS client settings  =====
       # =====  EMS clients - Security and Authentication settings  =====
 #      - EMS_CLIENT_JASYPT_PASSWORD=${P_JASYPT_PASSWORD:-}
-      - EMS_CLIENT_ADDITIONAL_BROKER_CREDENTIALS=${P_BROKERCEP_CREDENTIALS:-}
+#VAULT      - EMS_CLIENT_ADDITIONAL_BROKER_CREDENTIALS=${P_BROKERCEP_CREDENTIALS:-}
       #- EMS_CLIENT_BROKER_USERNAME=ccc
       #- EMS_CLIENT_BROKER_PASSWORD=333
 #      - EMS_CLIENT_KEYSTORE_SECRET=${P_KEYSTORE_PASSWORD}
