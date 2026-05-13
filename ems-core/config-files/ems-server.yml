@@ -27,6 +27,20 @@ jasypt:
     algorithm: PBEWithMD5AndDES
     ivGeneratorClassname: org.jasypt.iv.NoIvGenerator
 
+### Spring Cloud Vault settings
+spring:
+  config:
+    import: vault://
+  cloud:
+    vault:
+      authentication: token
+      uri: ${VAULT_URI}
+      token: ${VAULT_TOKEN}
+      kv:
+        enabled: true
+        backend: secret
+        application-name: ${VAULT_APP_NAME}
+
 ### Execution (@EnableAsync) and Scheduling (@EnableScheduling) thread pools
 #spring.task.execution.pool.max-size: 16
 #spring.task.execution.pool.queue-capacity: 100
