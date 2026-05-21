@@ -26,7 +26,7 @@ jasypt.encryptor.algorithm = PBEWithMD5AndDES
 jasypt.encryptor.ivGeneratorClassname = org.jasypt.iv.NoIvGenerator
 
 ### Spring Cloud Vault settings
-spring.config.import=vault://
+spring.config.import=optional:vault://
 spring.cloud.vault.authentication=token
 spring.cloud.vault.uri=${VAULT_URI}
 spring.cloud.vault.token=${VAULT_TOKEN}

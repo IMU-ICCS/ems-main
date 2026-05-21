@@ -30,7 +30,7 @@ jasypt:
 ### Spring Cloud Vault settings
 spring:
   config:
-    import: vault://
+    import: optional:vault://
   cloud:
     vault:
       authentication: token
