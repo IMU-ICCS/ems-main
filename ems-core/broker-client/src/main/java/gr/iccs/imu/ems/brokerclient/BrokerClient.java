@@ -59,7 +59,7 @@ public class BrokerClient {
     private TaskScheduler taskScheduler;
     private Connection connection;
     private Session session;
-    private HashMap<MessageListener,Set<MessageConsumer>> listeners = new HashMap<>();
+    private final HashMap<MessageListener,Set<MessageConsumer>> listeners = new HashMap<>();
     @Autowired
     private JsonMapper jsonMapper;
     private boolean keepRunning;
@@ -91,12 +91,21 @@ public class BrokerClient {
         properties = bcp;
         passwordUtil = pu;
         taskScheduler = ts;
+        jsonMapper = getOrCreateJsonMapper();
+    }
+
+    public BrokerClient(BrokerClientProperties bcp, PasswordUtil pu, TaskScheduler ts, JsonMapper jsonMapper) {
+        properties = bcp;
+        passwordUtil = pu;
+        taskScheduler = ts;
+        this.jsonMapper = jsonMapper;
     }
 
     public BrokerClient(Properties p, PasswordUtil pu) {
         properties = new BrokerClientProperties(p);
         passwordUtil = pu;
         taskScheduler = getOrCreateTaskScheduler();
+        jsonMapper = getOrCreateJsonMapper();
     }
 
     private static synchronized TaskScheduler getOrCreateTaskScheduler() {
@@ -104,6 +113,10 @@ public class BrokerClient {
             defaultTaskScheduler = new SimpleAsyncTaskScheduler();
         }
         return defaultTaskScheduler;
+    }
+
+    private static synchronized JsonMapper getOrCreateJsonMapper() {
+        return JsonMapper.builder().build();
     }
 
     // ------------------------------------------------------------------------
