@@ -33,11 +33,12 @@ spring:
     import: optional:vault://
   cloud:
     vault:
+      enabled: ${VAULT_ENABLE:false}
       authentication: token
       uri: ${VAULT_URI:}
       token: ${VAULT_TOKEN:}
       kv:
-        enabled: true
+        enabled: ${VAULT_ENABLE:false}
         backend: secret
         application-name: ${VAULT_APP_NAME:}
 
