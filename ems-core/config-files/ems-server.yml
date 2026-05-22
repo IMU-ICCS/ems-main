@@ -34,12 +34,12 @@ spring:
   cloud:
     vault:
       authentication: token
-      uri: ${VAULT_URI}
-      token: ${VAULT_TOKEN}
+      uri: ${VAULT_URI:}
+      token: ${VAULT_TOKEN:}
       kv:
         enabled: true
         backend: secret
-        application-name: ${VAULT_APP_NAME}
+        application-name: ${VAULT_APP_NAME:}
 
 ### Execution (@EnableAsync) and Scheduling (@EnableScheduling) thread pools
 #spring.task.execution.pool.max-size: 16

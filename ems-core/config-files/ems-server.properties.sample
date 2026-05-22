@@ -28,11 +28,11 @@ jasypt.encryptor.ivGeneratorClassname = org.jasypt.iv.NoIvGenerator
 ### Spring Cloud Vault settings
 spring.config.import=optional:vault://
 spring.cloud.vault.authentication=token
-spring.cloud.vault.uri=${VAULT_URI}
-spring.cloud.vault.token=${VAULT_TOKEN}
+spring.cloud.vault.uri=${VAULT_URI:}
+spring.cloud.vault.token=${VAULT_TOKEN:}
 spring.cloud.vault.kv.enabled=true
 spring.cloud.vault.kv.backend=secret
-spring.cloud.vault.kv.application-name=${VAULT_APP_NAME}
+spring.cloud.vault.kv.application-name=${VAULT_APP_NAME:}
 
 ### Execution (@EnableAsync) and Scheduling (@EnableScheduling) thread pools
 #spring.task.execution.pool.max-size = 16
