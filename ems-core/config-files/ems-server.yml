@@ -21,6 +21,21 @@ DOLLAR: '$'
 #password-encoder-class: gr.iccs.imu.ems.util.password.IdentityPasswordEncoder
 #password-encoder-class: gr.iccs.imu.ems.util.password.PresentPasswordEncoder
 
+### Spring Cloud Vault settings
+spring:
+  config:
+    import: optional:vault://
+  cloud:
+    vault:
+      enabled: ${VAULT_ENABLE:false}
+      authentication: token
+      uri: ${VAULT_URI:}
+      token: ${VAULT_TOKEN:}
+      kv:
+        enabled: ${VAULT_ENABLE:false}
+        backend: secret
+        application-name: ${VAULT_APP_NAME:}
+
 ### Execution (@EnableAsync) and Scheduling (@EnableScheduling) thread pools
 #spring.task.execution.pool.max-size: 16
 #spring.task.execution.pool.queue-capacity: 100

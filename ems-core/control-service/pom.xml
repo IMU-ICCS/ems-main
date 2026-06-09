@@ -148,6 +148,12 @@
             <version>${spring.boot.admin.version}</version>
         </dependency>-->
 
+        <!-- Spring Cloud Vault starter -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-vault-config</artifactId>
+        </dependency>
+
         <!-- Lombok project -->
         <dependency>
             <groupId>org.projectlombok</groupId>
