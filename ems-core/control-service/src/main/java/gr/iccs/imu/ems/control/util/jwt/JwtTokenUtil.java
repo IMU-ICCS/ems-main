@@ -34,6 +34,8 @@ import org.springframework.security.crypto.encrypt.TextEncryptor;
 @ComponentScan(basePackages = { "gr.iccs.imu.ems.control.util.jwt", "gr.iccs.imu.ems.util", "com.ulisesbocchio" })
 @RequiredArgsConstructor
 public class JwtTokenUtil {
+    public static final String HARD_CODED_SALT = "deadbeef";
+
     public static void main(String[] args) {
         SpringApplication springApplication = new SpringApplication(JwtTokenUtil.class);
         springApplication.setBannerMode(Banner.Mode.OFF);
@@ -45,6 +47,7 @@ public class JwtTokenUtil {
             execCommand(ctx.getBean(JwtTokenService.class), args);
         } catch (Exception e) {
             System.err.printf("%sERROR: %s%s\n", ConsoleColors.RED_BOLD_BRIGHT, getExceptionMessages(e), ConsoleColors.RESET);
+            e.printStackTrace(System.err);
             exit(1);
         }
     }
@@ -72,7 +75,7 @@ public class JwtTokenUtil {
             } else if ("encrypt".equalsIgnoreCase(args[0].trim())) {
                 String value = args[1];
                 String password = args[2];
-                String salt = args[3];
+                String salt = args.length>3 ? args[3] : HARD_CODED_SALT;
                 TextEncryptor encryptor = Encryptors.text(password, salt);
                 String encrypted = encryptor.encrypt(value);
                 System.out.printf("%s{cipher}%s%s\n", ConsoleColors.RED_BOLD_BRIGHT, encrypted, ConsoleColors.RESET);
@@ -80,7 +83,7 @@ public class JwtTokenUtil {
             } else if ("decrypt".equalsIgnoreCase(args[0].trim())) {
                 String value = args[1];
                 String password = args[2];
-                String salt = args[3];
+                String salt = args.length>3 ? args[3] : HARD_CODED_SALT;
                 TextEncryptor encryptor = Encryptors.text(password, salt);
                 String text = encryptor.decrypt(value);
                 System.out.printf("%s%s%s\n", ConsoleColors.RED_BOLD_BRIGHT, text, ConsoleColors.RESET);

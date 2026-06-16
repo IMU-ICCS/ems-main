@@ -23,7 +23,7 @@ if "%ENCRYPT_KEY%"=="" (
     set /p ENCRYPT_KEY="Encrypt key: "
 )
 
-java -Dencrypt.key=%ENCRYPT_KEY% -cp %JARS_DIR%\control-service.jar -Dloader.main=jwt.util.gr.iccs.imu.ems.control.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.gr.iccs.imu.ems.util=ERROR "-Dspring.config.location=%EMS_CONFIG_LOCATION%" org.springframework.boot.loader.launch.PropertiesLauncher "%*"
+java -Dencrypt.key=%ENCRYPT_KEY% -cp %JARS_DIR%\control-service.jar -Dloader.main=gr.iccs.imu.ems.control.util.jwt.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.gr.iccs.imu.ems.util=ERROR "-Dspring.config.location=%EMS_CONFIG_LOCATION%" org.springframework.boot.loader.launch.PropertiesLauncher %*
 set exitcode=%ERRORLEVEL%
 
 cd %PWD%
