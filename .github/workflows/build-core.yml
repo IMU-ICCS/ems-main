@@ -1,36 +1,41 @@
-name: Build EMS Core Platform (Server + Client)
+name: Build EMS Core Platform (Native Multi-Arch, No QEMU)
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
     tags:
       - "v*"
       - "r*"
-      - "test"
 
 permissions:
   contents: read
   packages: write
 
 env:
-  CORE_VERSION: 8.0.0-snapshot   # single source of truth
   REGISTRY: ghcr.io/imu-iccs
-
+  CORE_VERSION: 8.0.0-snapshot
 
 jobs:
 
   # -------------------------------------------------------
-  # 1. AMD64 BUILD (fast)
+  # AMD64 BUILD
   # -------------------------------------------------------
   build-amd64:
     runs-on: ubuntu-latest
 
-    outputs:
-      digest: ${{ steps.build.outputs.digest }}
-
     steps:
       - uses: actions/checkout@v4
+
+      - name: Generate build metadata
+        id: meta
+        run: |
+          echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+          ISO_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          SAFE_TIME=$(date -u +"%Y%m%dT%H%M%SZ")
+
+          echo "iso_time=$ISO_TIME" >> $GITHUB_OUTPUT
+          echo "safe_time=$SAFE_TIME" >> $GITHUB_OUTPUT
 
       - uses: docker/setup-buildx-action@v3
 
@@ -40,8 +45,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build AMD64 image
-        id: build
+      - name: Build AMD64
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -54,21 +58,31 @@ jobs:
           cache-to: type=gha,mode=max
 
           tags: |
-            ${{ env.REGISTRY }}/ems-server:${{ env.CORE_VERSION }}-amd64
-            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-amd64
+            ${{ env.REGISTRY }}/ems-server:latest
+            ${{ env.REGISTRY }}/ems-server:${{ env.CORE_VERSION }}
+            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}
+            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-${{ steps.meta.outputs.safe_time }}
   
 
   # -------------------------------------------------------
-  # 2. ARM64 BUILD (Raspberry Pi 4 native)
+  # ARM64 BUILD (native Raspberry Pi runner)
   # -------------------------------------------------------
   build-arm64:
-    runs-on: ubuntu-24.04-arm   # 👈 KEY CHANGE (no QEMU)
-
-    outputs:
-      digest: ${{ steps.build.outputs.digest }}
+    runs-on: ubuntu-24.04-arm   # NO QEMU
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Generate build metadata
+        id: meta
+        run: |
+          echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+          ISO_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          SAFE_TIME=$(date -u +"%Y%m%dT%H%M%SZ")
+
+          echo "iso_time=$ISO_TIME" >> $GITHUB_OUTPUT
+          echo "safe_time=$SAFE_TIME" >> $GITHUB_OUTPUT
 
       - uses: docker/setup-buildx-action@v3
 
@@ -78,8 +92,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build ARM64 image (native)
-        id: build
+      - name: Build ARM64
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -92,14 +105,16 @@ jobs:
           cache-to: type=gha,mode=max
 
           tags: |
-            ${{ env.REGISTRY }}/ems-server:${{ env.CORE_VERSION }}-arm64
-            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-arm64
+            ${{ env.REGISTRY }}/ems-server:latest
+            ${{ env.REGISTRY }}/ems-server:${{ env.CORE_VERSION }}
+            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}
+            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-${{ steps.meta.outputs.safe_time }}
   
 
   # -------------------------------------------------------
-  # 3. MANIFEST MERGE (final multi-arch image)
+  # VERIFY MULTI-ARCH RESULT
   # -------------------------------------------------------
-  manifest:
+  verify:
     needs: [build-amd64, build-arm64]
     runs-on: ubuntu-latest
 
@@ -112,11 +127,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create multi-arch manifest
+      - name: Inspect multi-arch image
         run: |
-          docker buildx imagetools create \
-            -t ${{ env.REGISTRY }}/ems-server:latest \
-            -t ${{ env.REGISTRY }}/ems-server:${{ env.CORE_VERSION }} \
-            -t ${{ env.REGISTRY }}/ems-server:${{ github.sha }} \
-            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-amd64 \
-            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-arm64
+          docker buildx imagetools inspect \
+            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}
