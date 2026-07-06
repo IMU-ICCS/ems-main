@@ -60,17 +60,10 @@ jobs:
       #
       - name: Build and publish all images
         run: |
-          export CORE_VERSION="${{ env.core_version }}"
+          export CORE_VERSION="${{ env.CORE_VERSION }}"
           export REGISTRY="${{ env.REGISTRY }}"
           export COMMIT_SHA="${{ github.sha }}"
           export COMMIT_SAFE_TIME="${{ needs.metadata.outputs.safe_time }}"
           
-          echo "=============================================================" >> "$GITHUB_OUTPUT"
-          echo "CORE_VERSION=$CORE_VERSION" >> "$GITHUB_OUTPUT"
-          echo "REGISTRY=$REGISTRY" >> "$GITHUB_OUTPUT"
-          echo "COMMIT_SHA=$COMMIT_SHA" >> "$GITHUB_OUTPUT"
-          echo "COMMIT_SAFE_TIME=$COMMIT_SAFE_TIME" >> "$GITHUB_OUTPUT"
-          echo "=============================================================" >> "$GITHUB_OUTPUT"
-
           docker buildx bake \
             --push
