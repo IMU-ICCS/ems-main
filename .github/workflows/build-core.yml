@@ -17,20 +17,25 @@ env:
 
 jobs:
 
-  # -------------------------------------------------------
-  # AMD64 BUILD
-  # -------------------------------------------------------
-  build-amd64:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Generate build metadata
         id: meta
         run: |
           set -e
-          
+         
           echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT
 
           # Commit timestamp (author date, stable across runners)
@@ -42,21 +47,13 @@ jobs:
           echo "commit_date_iso=$COMMIT_DATE" >> $GITHUB_OUTPUT
           echo "commit_date_safe=$SAFE_TIME" >> $GITHUB_OUTPUT
 
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build AMD64
+      - name: Build and push multi-arch image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
 
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
 
           cache-from: type=gha
@@ -67,77 +64,3 @@ jobs:
             ${{ env.REGISTRY }}/ems-server:${{ env.CORE_VERSION }}
             ${{ env.REGISTRY }}/ems-server:${{ github.sha }}
             ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-${{ steps.meta.outputs.commit_date_safe }}
-  
-
-  # -------------------------------------------------------
-  # ARM64 BUILD (native Raspberry Pi runner)
-  # -------------------------------------------------------
-  build-arm64:
-    runs-on: ubuntu-24.04-arm   # NO QEMU
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Generate build metadata
-        id: meta
-        run: |
-          set -e
-      
-          echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT
-
-          # Commit timestamp (author date, stable across runners)
-          COMMIT_DATE=$(git show -s --format=%cI HEAD)
-
-          # Normalize formats
-          SAFE_TIME=$(date -u -d "$COMMIT_DATE" +"%Y%m%dT%H%M%SZ")
-      
-          echo "commit_date_iso=$COMMIT_DATE" >> $GITHUB_OUTPUT
-          echo "commit_date_safe=$SAFE_TIME" >> $GITHUB_OUTPUT
-
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build ARM64
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile
-
-          platforms: linux/arm64
-          push: true
-
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-          tags: |
-            ${{ env.REGISTRY }}/ems-server:latest
-            ${{ env.REGISTRY }}/ems-server:${{ env.CORE_VERSION }}
-            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}
-            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-${{ steps.meta.outputs.commit_date_safe }}
-  
-
-  # -------------------------------------------------------
-  # VERIFY MULTI-ARCH RESULT
-  # -------------------------------------------------------
-  verify:
-    needs: [build-amd64, build-arm64]
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Inspect multi-arch image
-        run: |
-          docker buildx imagetools inspect \
-            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}
