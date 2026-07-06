@@ -1,0 +1,22 @@
+name: Build EMS Core Platform (Server + Client)
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+      - "r*"
+      - "test"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    uses: ./.github/workflows/publish-core.yml
+    with:
+      core_version: "8.0.0-snapshot"
+      push_latest: ${{ github.ref == 'refs/heads/main' }}
+    secrets: inherit

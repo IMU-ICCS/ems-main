@@ -1,0 +1,49 @@
+name: Publish EMS Core Platform (Server + Client)
+
+on:
+  workflow_call:
+    inputs:
+      core_version:
+        required: true
+        type: string
+      push_latest:
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io/imu-iccs
+
+  EMS_CORE_BUILDER_IMAGE: ems-server-core-builder
+  EMS_CORE_IMAGE: ems-server
+  EMS_CLIENT_IMAGE: ems-client
+
+jobs:
+
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      #
+      # Publish all images
+      #
+      - name: Build and publish all images
+        run: |
+          docker buildx bake \
+            --push
