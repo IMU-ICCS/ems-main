@@ -55,6 +55,7 @@ jobs:
 
           tags: |
             ${{ env.REGISTRY }}/ems-server:${{ env.CORE_VERSION }}-amd64
+            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-amd64
   
 
   # -------------------------------------------------------
@@ -92,6 +93,7 @@ jobs:
 
           tags: |
             ${{ env.REGISTRY }}/ems-server:${{ env.CORE_VERSION }}-arm64
+            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-arm64
   
 
   # -------------------------------------------------------
@@ -113,7 +115,8 @@ jobs:
       - name: Create multi-arch manifest
         run: |
           docker buildx imagetools create \
-            -t ghcr.io/imu-iccs/ems-server:${CORE_VERSION} \
-            -t ghcr.io/imu-iccs/ems-server:latest \
-            ghcr.io/imu-iccs/ems-server:${CORE_VERSION}-amd64 \
-            ghcr.io/imu-iccs/ems-server:${CORE_VERSION}-arm64
+            -t ${{ env.REGISTRY }}/ems-server:latest \
+            -t ${{ env.REGISTRY }}/ems-server:${{ env.CORE_VERSION }} \
+            -t ${{ env.REGISTRY }}/ems-server:${{ github.sha }} \
+            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-amd64 \
+            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-arm64
