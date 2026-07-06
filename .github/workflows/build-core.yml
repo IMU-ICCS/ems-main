@@ -14,7 +14,7 @@ permissions:
   packages: write
 
 env:
-  CORE_VERSION: core-snapshot   # single source of truth
+  CORE_VERSION: 8.0.0-snapshot   # single source of truth
   REGISTRY: ghcr.io/imu-iccs
 
 
