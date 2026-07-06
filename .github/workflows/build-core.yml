@@ -38,14 +38,11 @@ jobs:
           echo "safe_time=$SAFE_TIME" >> "$GITHUB_OUTPUT"
 
   # -------------------------------------------------------
-  # 2. AMD64 BUILD (fast)
+  # 2. Build and publish
   # -------------------------------------------------------
-  build-amd64:
+  build-and-publish:
     needs: metadata
     runs-on: ubuntu-latest
-
-    outputs:
-      digest: ${{ steps.build.outputs.digest }}
 
     steps:
       - uses: actions/checkout@v4
@@ -58,83 +55,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build AMD64 image
-        id: build
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile
-
-          platforms: linux/amd64
-          push: true
-
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-          tags: |
-            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-amd64
-  
-
-  # -------------------------------------------------------
-  # 3. ARM64 BUILD (Raspberry Pi 4 native)
-  # -------------------------------------------------------
-  build-arm64:
-    needs: metadata
-    runs-on: ubuntu-24.04-arm   # 👈 KEY CHANGE (no QEMU)
-
-    outputs:
-      digest: ${{ steps.build.outputs.digest }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build ARM64 image (native)
-        id: build
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile
-
-          platforms: linux/arm64
-          push: true
-
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-          tags: |
-            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-arm64
-  
-
-  # -------------------------------------------------------
-  # 4. MANIFEST MERGE (final multi-arch image)
-  # -------------------------------------------------------
-  manifest:
-    needs: [metadata, build-amd64, build-arm64]
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create multi-arch manifest
+      #
+      # Publish all images
+      #
+      - name: Build and publish all images
         run: |
-          docker buildx imagetools create \
-            -t ${{ env.REGISTRY }}/ems-server:latest \
-            -t ${{ env.REGISTRY }}/ems-server:${{ env.CORE_VERSION }} \
-            -t ${{ env.REGISTRY }}/ems-server:${{ github.sha }} \
-            -t ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-${{ needs.metadata.outputs.safe_time }} \
-            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-amd64 \
-            ${{ env.REGISTRY }}/ems-server:${{ github.sha }}-arm64
+          export CORE_VERSION="${{ env.core_version }}"
+          export REGISTRY="${{ env.REGISTRY }}"
+          export COMMIT_SHA="${{ github.sha }}"
+          export COMMIT_SAFE_TIME="${{ needs.metadata.outputs.safe_time }}"
+          
+          echo "=============================================================" >> "$GITHUB_OUTPUT"
+          echo "CORE_VERSION=$CORE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "REGISTRY=$REGISTRY" >> "$GITHUB_OUTPUT"
+          echo "COMMIT_SHA=$COMMIT_SHA" >> "$GITHUB_OUTPUT"
+          echo "COMMIT_SAFE_TIME=$COMMIT_SAFE_TIME" >> "$GITHUB_OUTPUT"
+          echo "=============================================================" >> "$GITHUB_OUTPUT"
+
+          docker buildx bake \
+            --push
