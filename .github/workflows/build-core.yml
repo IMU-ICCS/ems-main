@@ -14,33 +14,106 @@ permissions:
   packages: write
 
 env:
-  CORE_VERSION: 8.0.0-snapshot
+  CORE_VERSION: core-snapshot   # single source of truth
+  REGISTRY: ghcr.io/imu-iccs
+
 
 jobs:
 
-  preflight:
+  # -------------------------------------------------------
+  # 1. AMD64 BUILD (fast)
+  # -------------------------------------------------------
+  build-amd64:
     runs-on: ubuntu-latest
+
     outputs:
-      should_build: ${{ steps.check.outputs.should_build }}
-      core_version: ${{ env.CORE_VERSION }}
+      digest: ${{ steps.build.outputs.digest }}
 
     steps:
-      - name: Check if core image exists
-        id: check
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build AMD64 image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+
+          platforms: linux/amd64
+          push: true
+
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+          tags: |
+            ${{ env.REGISTRY }}/ems-server:${{ env.CORE_VERSION }}-amd64
+  
+
+  # -------------------------------------------------------
+  # 2. ARM64 BUILD (Raspberry Pi 4 native)
+  # -------------------------------------------------------
+  build-arm64:
+    runs-on: ubuntu-24.04-arm   # 👈 KEY CHANGE (no QEMU)
+
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build ARM64 image (native)
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+
+          platforms: linux/arm64
+          push: true
+
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+          tags: |
+            ${{ env.REGISTRY }}/ems-server:${{ env.CORE_VERSION }}-arm64
+  
+
+  # -------------------------------------------------------
+  # 3. MANIFEST MERGE (final multi-arch image)
+  # -------------------------------------------------------
+  manifest:
+    needs: [build-amd64, build-arm64]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create multi-arch manifest
         run: |
-          IMAGE="ghcr.io/imu-iccs/ems-server:${CORE_VERSION}"
-
-          if docker buildx imagetools inspect "$IMAGE" > /dev/null 2>&1; then
-            echo "should_build=false" >> $GITHUB_OUTPUT
-          else
-            echo "should_build=true" >> $GITHUB_OUTPUT
-          fi
-
-  publish:
-    needs: preflight
-    if: needs.preflight.outputs.should_build == 'true'
-    uses: ./.github/workflows/publish-core.yml
-    with:
-      core_version: ${{ needs.preflight.outputs.core_version }}
-      push_latest: ${{ github.ref == 'refs/heads/main' }}
-    secrets: inherit
+          docker buildx imagetools create \
+            -t ghcr.io/imu-iccs/ems-server:${CORE_VERSION} \
+            -t ghcr.io/imu-iccs/ems-server:latest \
+            ghcr.io/imu-iccs/ems-server:${CORE_VERSION}-amd64 \
+            ghcr.io/imu-iccs/ems-server:${CORE_VERSION}-arm64
