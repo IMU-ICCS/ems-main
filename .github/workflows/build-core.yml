@@ -13,10 +13,34 @@ permissions:
   contents: read
   packages: write
 
+env:
+  CORE_VERSION: 8.0.0-snapshot
+
 jobs:
+
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+      core_version: ${{ env.CORE_VERSION }}
+
+    steps:
+      - name: Check if core image exists
+        id: check
+        run: |
+          IMAGE="ghcr.io/imu-iccs/ems-server:${CORE_VERSION}"
+
+          if docker buildx imagetools inspect "$IMAGE" > /dev/null 2>&1; then
+            echo "should_build=false" >> $GITHUB_OUTPUT
+          else
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          fi
+
   publish:
+    needs: preflight
+    if: needs.preflight.outputs.should_build == 'true'
     uses: ./.github/workflows/publish-core.yml
     with:
-      core_version: "8.0.0-snapshot"
+      core_version: ${{ needs.preflight.outputs.core_version }}
       push_latest: ${{ github.ref == 'refs/heads/main' }}
     secrets: inherit
