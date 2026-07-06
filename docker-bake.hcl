@@ -36,6 +36,7 @@ target "builder" {
   inherits = ["common"]
   target = "ems-server-builder"
   tags = [
+    "${REGISTRY}/ems-server-core-builder:${CORE_VERSION}",
     "${REGISTRY}/ems-server-core-builder:latest",
     "${REGISTRY}/ems-server-core-builder:${COMMIT_SHA}",
     "${REGISTRY}/ems-server-core-builder:${COMMIT_SHA}-${COMMIT_SAFE_TIME}",
