@@ -117,7 +117,7 @@ jobs:
   # 4. MANIFEST MERGE (final multi-arch image)
   # -------------------------------------------------------
   manifest:
-    needs: [build-amd64, build-arm64]
+    needs: [metadata, build-amd64, build-arm64]
     runs-on: ubuntu-latest
 
     steps:
