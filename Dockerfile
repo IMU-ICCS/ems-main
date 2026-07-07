@@ -52,7 +52,7 @@ COPY ./ems-core/web-admin/pom.xml                   ${SOURCE_DIR}/web-admin/pom.
 
 #RUN --mount=type=cache,target=/root/.m2,id=maven-cache \
 RUN \
-    mvn -B -ntp -f ${BUILD_DIR}/ems-core/pom.xml dependency:go-offline
+    mvn -q -B -ntp -f ${BUILD_DIR}/ems-core/pom.xml dependency:go-offline
 
 # Copy source and .git
 COPY ./.git     ${BUILD_DIR}/.git
