@@ -59,7 +59,7 @@
         <write-properties-file-maven-plugin.version>1.0.1</write-properties-file-maven-plugin.version>
 
         <!-- Spring Cloud dependencies version -->
-        <spring-cloud-dependencies.version>2025.1.1</spring-cloud-dependencies.version>
+        <spring-cloud-dependencies.version>2025.1.2</spring-cloud-dependencies.version>
         <!-- Apache Commons Text version -->
         <commons-text.version>1.14.0</commons-text.version>
         <!-- Esper version -->
@@ -72,8 +72,8 @@
         <!-- QPid AMQP client version -->
         <qpid-jms-client.version>2.9.0</qpid-jms-client.version>
         <!-- Apache SSHD version -->
-        <apache-sshd.version>2.16.0</apache-sshd.version>
-        <mina-core.version>2.2.4</mina-core.version>
+        <apache-sshd.version>2.18.0</apache-sshd.version>
+        <mina-core.version>2.2.9</mina-core.version>
         <!-- Bouncy Castle version -->
         <bouncy-castle.version>1.84</bouncy-castle.version>
         <!-- Guava version -->
