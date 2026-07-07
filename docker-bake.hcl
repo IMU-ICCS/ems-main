@@ -25,6 +25,8 @@ target "common" {
 
   platforms = [
     "linux/amd64",
+    "linux/arm64",
+    "linux/arm/v7",
   ]
 
   cache-from = ["type=gha"]
@@ -56,12 +58,7 @@ target "server" {
 target "client" {
   inherits = ["common"]
   target = "ems-client"
-   platforms = [
-     "linux/amd64",
-     "linux/arm64",
-     "linux/arm/v7",
-   ]
- tags = [
+  tags = [
     "${REGISTRY}/ems-client:${CORE_VERSION}",
     "${REGISTRY}/ems-client:latest",
     "${REGISTRY}/ems-client:${COMMIT_SHA}",
