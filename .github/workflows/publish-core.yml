@@ -1,0 +1,21 @@
+name: Publish EMS Core (native build)
+
+on:
+  workflow_call:
+    inputs:
+      core_version:
+        required: true
+        type: string
+      push_latest:
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+
+  publish:
+    uses: ./.github/workflows/build-core.yml
