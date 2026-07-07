@@ -25,7 +25,6 @@ target "common" {
 
   platforms = [
     "linux/amd64",
-//     "linux/arm64",
   ]
 
   cache-from = ["type=gha"]
@@ -60,7 +59,6 @@ target "client" {
    platforms = [
      "linux/amd64",
      "linux/arm64",
-     "linux/arm/v7",
    ]
  tags = [
     "${REGISTRY}/ems-client:${CORE_VERSION}",
