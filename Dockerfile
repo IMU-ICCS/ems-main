@@ -82,9 +82,17 @@ ARG TARGET_DIR=/build/dist
 ARG EMS_USER=emsuser
 ARG EMS_HOME=/opt/ems-server
 
-# Install dumb-init
-RUN wget --progress=dot:giga -O /usr/local/bin/dumb-init \
-          https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64 && \
+ARG TARGETARCH
+
+# Install dumb-init for the target architecture
+RUN set -eux; \
+    case "${TARGETARCH}" in \
+      amd64) DUMB_INIT_ARCH="x86_64" ;; \
+      arm64) DUMB_INIT_ARCH="aarch64" ;; \
+      *) echo "Unsupported architecture: ${TARGETARCH}"; exit 1 ;; \
+    esac; \
+    wget --progress=dot:giga -O /usr/local/bin/dumb-init \
+      "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_${DUMB_INIT_ARCH}"; \
     chmod +x /usr/local/bin/dumb-init
 #    echo "e874b55f3279ca41415d290c512a7ba9d08f98041b28ae7c2acb19a545f1c4df  dumb-init" | sha256sum -c - && \
 
