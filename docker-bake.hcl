@@ -14,13 +14,12 @@ variable "COMMIT_SAFE_TIME" {
   default = "unknown-time"
 }
 
-
 group "default" {
   targets = ["builder", "server", "client"]
 }
 
 target "common" {
-  context = "."
+  context    = "."
   dockerfile = "Dockerfile"
 
   platforms = [
@@ -28,13 +27,13 @@ target "common" {
     "linux/arm64",
   ]
 
-  cache-from = ["type=gha"]
-  cache-to   = ["type=gha,mode=max"]
+  cache-from = ["type=gha,scope=ems-shared"]
+  cache-to   = ["type=gha,scope=ems-shared,mode=max"]
 }
 
 target "builder" {
   inherits = ["common"]
-  target = "ems-server-builder"
+  target   = "ems-server-builder"
   tags = [
     "${REGISTRY}/ems-server-core-builder:${CORE_VERSION}",
     "${REGISTRY}/ems-server-core-builder:latest",
@@ -45,7 +44,10 @@ target "builder" {
 
 target "server" {
   inherits = ["common"]
-  target = "ems-server"
+  target   = "ems-server"
+  contexts = {
+    ems-server-builder = "target:builder"
+  }
   tags = [
     "${REGISTRY}/ems-server:${CORE_VERSION}",
     "${REGISTRY}/ems-server:latest",
@@ -56,7 +58,10 @@ target "server" {
 
 target "client" {
   inherits = ["common"]
-  target = "ems-client"
+  target   = "ems-client"
+  contexts = {
+    ems-server-builder = "target:builder"
+  }
   tags = [
     "${REGISTRY}/ems-client:${CORE_VERSION}",
     "${REGISTRY}/ems-client:latest",
