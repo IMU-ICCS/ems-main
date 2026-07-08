@@ -74,8 +74,8 @@ server:
 
 ################################################################################
 ### JWT settings
-jwt:
-  secret: ENC(I0mRWgH2FVDDNs4OBcdh7Z+o3lOQDa3ztaEtmnXT2HN0aClkChp/lqm9zM5HyTk0stJ7v2Di75U=)
+#jwt:
+#  secret: Y2lwaGVyY2lwaGVyY2lwaGVyY2lwaGVyY2lwaGVyY2lwaGVy    # BASE64 of 'ciphercipherciphercipherciphercipher'
 #  expirationTime: 86400000
 #  refreshTokenExpirationTime: 86400000
 
@@ -198,7 +198,7 @@ web.static:
 ### Web & REST Security configuration
 
 ### NOTE: Setting this to 'false' will turn off all security features
-#melodic.security.enabled: false
+#ems.security.enabled: false
 
 #web.security:
 #

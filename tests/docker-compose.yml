@@ -75,13 +75,16 @@ services:
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
       - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
       #
-      #- MELODIC_SECURITY_ENABLED=false
+      #- EMS_SECURITY_ENABLED=false                                   # WARN: Disables all authentication and security checks
 #VAULT
       - ENCRYPT_KEY=${P_ENCRYPT_KEY}
       #- WEB_SECURITY_JWT_AUTHENTICATION_ENABLED=false
       - WEB_SECURITY_JWT_AUTHENTICATION_REQUEST_PARAMETER=jwt    #XXX:TODO: Comment out these two settings for improved security
       - WEB_SECURITY_JWT_AUTHENTICATION_PRINT_SAMPLE_TOKEN=true
       #- WEB_SECURITY_API_KEY_AUTHENTICATION_ENABLED=false
+      - JWT_SECRET=${P_JWT_SECRET}
+      - JWT_EXPIRATION_TIME=86400000                                  # 1 day
+      - JWT_REFRESH_TOKEN_EXPIRATION_TIME=86400000                    # 1 day
 #VAULT
       - WEB_SECURITY_API_KEY_AUTHENTICATION_VALUE=${P_WEB_API_KEY_VALUE}
       #- WEB_SECURITY_OTP_AUTHENTICATION_ENABLED=false

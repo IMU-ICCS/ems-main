@@ -72,7 +72,7 @@ server.ssl.key-alias=${control.ssl.key-entry-name}
 
 ################################################################################
 ### JWT settings
-jwt.secret=ENC(I0mRWgH2FVDDNs4OBcdh7Z+o3lOQDa3ztaEtmnXT2HN0aClkChp/lqm9zM5HyTk0stJ7v2Di75U=)
+#jwt.secret=Y2lwaGVyY2lwaGVyY2lwaGVyY2lwaGVyY2lwaGVyY2lwaGVy
 #jwt.expirationTime=86400000
 #jwt.refreshTokenExpirationTime=86400000
 
@@ -194,7 +194,7 @@ web.static.redirects.[/resources/]=/resources/index.html
 ### Web & REST Security configuration
 
 ### NOTE: Setting this to 'false' will turn off all security features
-#melodic.security.enabled=false
+#ems.security.enabled=false
 
 ### JWT authentication ###
 #web.security.jwt-authentication.enabled=false

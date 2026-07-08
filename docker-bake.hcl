@@ -1,6 +1,6 @@
-variable "CORE_VERSION" {
-  default = "unknown"
-}
+# variable "CORE_VERSION" {
+#   default = "unknown"
+# }
 
 variable "REGISTRY" {
   default = "ghcr.io/imu-iccs"
@@ -10,9 +10,9 @@ variable "COMMIT_SHA" {
   default = "unknown-sha"
 }
 
-variable "COMMIT_SAFE_TIME" {
-  default = "unknown-time"
-}
+# variable "COMMIT_SAFE_TIME" {
+#   default = "unknown-time"
+# }
 
 # Single platform per bake invocation - set per matrix leg in CI
 variable "PLATFORM" {
