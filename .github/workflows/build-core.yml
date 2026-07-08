@@ -111,21 +111,3 @@ jobs:
               -t "${REGISTRY}/${IMAGE}:${COMMIT_SHA}-${COMMIT_SAFE_TIME}" \
               "${SRC_AMD64}" "${SRC_ARM64}"
           done
-
-  # -------------------------------------------------------
-  # 4. Clean up temporary per-arch tags
-  # -------------------------------------------------------
-  cleanup:
-    needs: [metadata, merge]
-    runs-on: ubuntu-24.04
-    permissions:
-      packages: write
-    steps:
-      - name: Delete temporary arch-suffixed tags
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: "ems-server-core-builder"
-          package-type: container
-          min-versions-to-keep: 0
-          delete-only-untagged-versions: false
-        continue-on-error: true
