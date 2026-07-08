@@ -14,6 +14,18 @@ variable "COMMIT_SAFE_TIME" {
   default = "unknown-time"
 }
 
+# Single platform per bake invocation - set per matrix leg in CI
+variable "PLATFORM" {
+  default = "linux/amd64"
+}
+
+# Suffix for temporary per-arch tags, e.g. "amd64" or "arm64"
+# Used to keep matrix legs from clobbering each other's pushed tags
+# and to keep GHA cache scopes separate per architecture.
+variable "ARCH_TAG" {
+  default = "amd64"
+}
+
 group "default" {
   targets = ["builder", "server", "client"]
 }
@@ -22,50 +34,44 @@ target "common" {
   context    = "."
   dockerfile = "Dockerfile"
 
-  platforms = [
-    "linux/amd64",
-    "linux/arm64",
-  ]
+  platforms = [PLATFORM]
 
-  cache-from = ["type=gha,scope=ems-shared"]
-  cache-to   = ["type=gha,scope=ems-shared,mode=max"]
+  cache-from = ["type=gha,scope=ems-${ARCH_TAG}"]
+  cache-to   = ["type=gha,scope=ems-${ARCH_TAG},mode=max"]
 }
 
 target "builder" {
   inherits = ["common"]
   target   = "ems-server-builder"
   tags = [
-    "${REGISTRY}/ems-server-core-builder:${CORE_VERSION}",
-    "${REGISTRY}/ems-server-core-builder:latest",
-    "${REGISTRY}/ems-server-core-builder:${COMMIT_SHA}",
-    "${REGISTRY}/ems-server-core-builder:${COMMIT_SHA}-${COMMIT_SAFE_TIME}",
+    "${REGISTRY}/ems-server-core-builder:${COMMIT_SHA}-${ARCH_TAG}",
   ]
 }
 
 target "server" {
   inherits = ["common"]
   target   = "ems-server"
+
+  # Reuse the already-built "builder" target's output for this platform
+  # instead of recompiling the ems-server-builder stage.
   contexts = {
     ems-server-builder = "target:builder"
   }
+
   tags = [
-    "${REGISTRY}/ems-server:${CORE_VERSION}",
-    "${REGISTRY}/ems-server:latest",
-    "${REGISTRY}/ems-server:${COMMIT_SHA}",
-    "${REGISTRY}/ems-server:${COMMIT_SHA}-${COMMIT_SAFE_TIME}",
+    "${REGISTRY}/ems-server:${COMMIT_SHA}-${ARCH_TAG}",
   ]
 }
 
 target "client" {
   inherits = ["common"]
   target   = "ems-client"
+
   contexts = {
     ems-server-builder = "target:builder"
   }
+
   tags = [
-    "${REGISTRY}/ems-client:${CORE_VERSION}",
-    "${REGISTRY}/ems-client:latest",
-    "${REGISTRY}/ems-client:${COMMIT_SHA}",
-    "${REGISTRY}/ems-client:${COMMIT_SHA}-${COMMIT_SAFE_TIME}",
+    "${REGISTRY}/ems-client:${COMMIT_SHA}-${ARCH_TAG}",
   ]
 }
