@@ -111,3 +111,18 @@ jobs:
               -t "${REGISTRY}/${IMAGE}:${COMMIT_SHA}-${COMMIT_SAFE_TIME}" \
               "${SRC_AMD64}" "${SRC_ARM64}"
           done
+
+  # -------------------------------------------------------
+  # 4. Notify downstream plugin repo(s) of new publish
+  # -------------------------------------------------------
+  notify-downstream:
+    needs: [metadata, merge]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Dispatch to ems-nebulous-translator
+        run: |
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${{ secrets.DOWNSTREAM_DISPATCH_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/IMU-ICCS/ems-nebulous-translator/dispatches \
+            -d '{"event_type":"core-published","client_payload":{"core_version":"${{ env.CORE_VERSION }}","commit_sha":"${{ needs.metadata.outputs.commit_sha }}"}}'
