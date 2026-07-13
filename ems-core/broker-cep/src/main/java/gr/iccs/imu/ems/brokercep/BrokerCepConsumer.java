@@ -55,7 +55,9 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
     private final CepService cepService;
     private final JsonMapper jsonMapper;
 
+    @Getter
     private Connection connection;
+    @Getter
     private Session session;
     private final Map<String,MessageConsumer> addedDestinations = new HashMap<>();
 
