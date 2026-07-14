@@ -76,6 +76,9 @@ jobs:
           export COMMIT_SAFE_TIME="${{ needs.metadata.outputs.safe_time }}"
           export PLATFORM="${{ matrix.platform }}"
           export ARCH_TAG="${{ matrix.arch_tag }}"
+          
+          export DOCKER_IMAGE="${REGISTRY}/ems-server:${{ env.CORE_VERSION }}"
+          export BUILD_DESCR="EMS built by Github CI"
 
           docker buildx bake \
             --push

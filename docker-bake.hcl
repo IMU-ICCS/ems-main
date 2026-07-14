@@ -26,6 +26,14 @@ variable "ARCH_TAG" {
   default = "amd64"
 }
 
+variable "DOCKER_IMAGE" {
+  default = ""
+}
+variable "BUILD_DESCR" {
+  default = ""
+}
+
+
 group "default" {
   targets = ["builder", "server", "client"]
 }
@@ -46,6 +54,10 @@ target "builder" {
   tags = [
     "${REGISTRY}/ems-server-core-builder:${COMMIT_SHA}-${ARCH_TAG}",
   ]
+  args = {
+    DOCKER_IMAGE = DOCKER_IMAGE
+    BUILD_DESCR  = BUILD_DESCR
+  }
 }
 
 target "server" {
