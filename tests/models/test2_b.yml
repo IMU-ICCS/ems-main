@@ -70,6 +70,7 @@ spec:
 #        - name: DYNAMIC_LIMIT
 #          type: constant
 #          initial: 0
+# -OR-
         - name: DYNAMIC_LIMIT
           sensor: constant 0.0
 
