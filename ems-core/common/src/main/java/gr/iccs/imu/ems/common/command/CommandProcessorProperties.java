@@ -16,6 +16,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.nio.file.Path;
 import java.util.*;
 
 @Slf4j
@@ -30,4 +31,6 @@ public class CommandProcessorProperties implements InitializingBean {
     }
 
     private final Map<String, Map<String,String>> receivers = new LinkedHashMap<>();
+
+    private Path commandsSocket;
 }

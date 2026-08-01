@@ -28,7 +28,7 @@ public class Command implements Serializable {
     private long endExecutionTimestamp;
     private String ref;
     private String command;
-    private ArrayList<String> args;
+    private List<String> args;
     @JsonIgnore
     @ToString.Exclude
     private transient Consumer<Object> callback;

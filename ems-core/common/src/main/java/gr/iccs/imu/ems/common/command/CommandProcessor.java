@@ -9,6 +9,7 @@
 
 package gr.iccs.imu.ems.common.command;
 
+import gr.iccs.imu.ems.common.ipc.socket.UnixSocketServer;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -39,6 +41,7 @@ public class CommandProcessor implements InitializingBean {
     public final static String BLANK_ARGUMENTS        = "BLANK_ARGUMENTS";
     public final static String NO_EXECUTOR_FOUND      = "NO_EXECUTOR_FOUND";
 
+    private final CommandProcessorProperties properties;
     private final PriorityQueue<ICommandExecutor> commandExecutors = new PriorityQueue<>(Comparator.comparingInt(ICommandExecutor::getPriority));
     private final BlockingQueue<Command> commandsQueue = new LinkedBlockingQueue<>(MAX_COMMAND_QUEUE_SIZE);
 
@@ -52,6 +55,20 @@ public class CommandProcessor implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
         startCommandExecutionThread();
+
+        if (properties.getCommandsSocket()!=null) {
+            log.info("Commands socket file: {}", properties.getCommandsSocket().toAbsolutePath());
+            UnixSocketServer unixSocketServer = new UnixSocketServer(
+                    properties.getCommandsSocket().toAbsolutePath().toString(),
+                    args -> {
+                        log.info("Command from socket file: {}", Arrays.asList(args));
+                        addCommand(Command.builder()
+                                .args(Arrays.asList(args))
+                                .build());
+                        return new String[]{};
+                    });
+            Thread.ofVirtual().start(unixSocketServer::run);
+        }
     }
 
     public synchronized void registerCommandExecutor(@NonNull ICommandExecutor commandExecutor) {
