@@ -63,7 +63,7 @@ public class CommandProcessor implements InitializingBean {
                     args -> {
                         log.info("Command from socket file: {}", Arrays.asList(args));
                         addCommand(Command.builder()
-                                .args(Arrays.asList(args))
+                                .command(String.join(" ", args))
                                 .build());
                         return new String[]{};
                     });

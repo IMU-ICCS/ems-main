@@ -245,7 +245,7 @@ public class UnixSocketServer implements Runnable {
         }
 
         // Check for Server command
-        if ("SERVER".equalsIgnoreCase(part[1])) {
+        /*if ("SERVER".equalsIgnoreCase(part[1])) {
             if (part.length < 3) {
                 return correlationId + "|ERROR|Invalid number of arguments in Server command request";
             }
@@ -265,7 +265,7 @@ public class UnixSocketServer implements Runnable {
             } else {
                 return correlationId + "|ERROR|Unknown Server command: "+part[2];
             }
-        }
+        }*/
 
         // Call request handler
         String[] response = requestHandler.apply(Arrays.copyOfRange(part, 1, part.length));

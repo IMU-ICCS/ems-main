@@ -17,6 +17,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
@@ -77,21 +78,21 @@ public class LogLevelICommandExecutor implements ICommandExecutor, InitializingB
                     return CommandProcessor.MISSING_ARGUMENTS;
                 }
                 String logLevel = command.getArgs().get(2).trim().toUpperCase();
-                if (StringUtils.equalsAnyIgnoreCase(logLevel, "-", "null")) logLevel = null;
+                if (Strings.CI.equalsAny(logLevel, "-", "null")) logLevel = null;
                 LogsUtil.setLogLevel(loggerName, logLevel);
                 return LogsUtil.getLogLevel(loggerName);
             }
             case "GET", "PRINT" -> {
-                if (StringUtils.endsWithAny(loggerName, "*")) {
+                if (Strings.CS.endsWith(loggerName, "*")) {
                     boolean returnMap =
                             (command.getArgs().size()>=3 && "TRUE".equalsIgnoreCase(command.getArgs().get(2).trim()));
                     TreeMap<String,String> resultMap = returnMap ? new TreeMap<>() : null;
 
-                    String prefix = StringUtils.stripEnd(loggerName, "*");
+                    String prefix = Strings.CS.removeEnd(loggerName, "*");
                     log.info("LOG-LEVELS for: {}", loggerName);
                     Objects.requireNonNullElse(LogsUtil.getLoggers(prefix), Map.<String,String>of()).entrySet().stream()
                             .filter(entry ->
-                                    StringUtils.startsWith(entry.getKey(), prefix))
+                                    Strings.CS.startsWith(entry.getKey(), prefix))
                             .forEach(entry -> {
                                     log.info("  {} {}", "%-5s".formatted(entry.getValue()), entry.getKey());
                                     if (returnMap) resultMap.put(entry.getKey(), entry.getValue());
