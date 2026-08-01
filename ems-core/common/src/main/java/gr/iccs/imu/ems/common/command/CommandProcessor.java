@@ -62,9 +62,11 @@ public class CommandProcessor implements InitializingBean {
                     properties.getCommandsSocket().toAbsolutePath().toString(),
                     args -> {
                         log.info("Command from socket file: {}", Arrays.asList(args));
-                        addCommand(Command.builder()
+                        Command command = Command.builder()
                                 .command(String.join(" ", args))
-                                .build());
+                                .build();
+                        command.splitArgs();
+                        addCommand(command);
                         return new String[]{};
                     });
             Thread.ofVirtual().start(unixSocketServer::run);
