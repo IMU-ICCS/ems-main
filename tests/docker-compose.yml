@@ -62,6 +62,9 @@ services:
       - EMS_PRELOAD_APP_MODEL=test2.yml
       - EMS_PRELOAD_CP_MODEL=
       #
+      # =====  EMS commands socket settings  =====
+      #- COMMON_COMMAND_SOCKET_PATH=/opt/ems-server/commands.socket
+      #
       # =====  Security and Web Management settings  =====
       - CONTROL_SSL_KEY_ENTRY_GENERATE=IF_IP_CHANGED        # Keystore & Truststore are generated during container startup
       - CONTROL_SSL_KEYSTORE_FILE=/opt/ems-server/certs/ems-keystore.p12
@@ -201,6 +204,9 @@ services:
       #- EMS_CLIENT_BROKER_PASSWORD=333
 #      - EMS_CLIENT_KEYSTORE_SECRET=${P_KEYSTORE_PASSWORD}
 #      - EMS_CLIENT_TRUSTSTORE_SECRET=${P_KEYSTORE_PASSWORD}
+      #
+      # =====  EMS commands socket settings  =====
+      #- EMS_CLIENT_COMMON_COMMAND_SOCKET_PATH=./commands.socket
       #
       # ===== EMS server post-boot command =====
       - POST_BOOT_COMMAND=/deploy-ems-clients.sh
