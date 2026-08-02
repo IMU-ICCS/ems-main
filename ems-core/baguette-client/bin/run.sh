@@ -68,6 +68,13 @@ fi
 JAVA_OPTS="${JAVA_OPTS} -Dencrypt.key=$ENCRYPT_KEY"
 JAVA_OPTS="${JAVA_OPTS} --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED"
 
+# Set EMS server provided env. vars
+if [ -f conf/setenv.sh ]; then
+  set -a
+  source conf/setenv.sh
+  set +a
+fi
+
 # Print settings
 echo "" | tee -a ${LOG_FILE}
 echo "---------------- $(date -Iseconds |sed -e 's/T/ /') ----------------" | tee -a ${LOG_FILE}

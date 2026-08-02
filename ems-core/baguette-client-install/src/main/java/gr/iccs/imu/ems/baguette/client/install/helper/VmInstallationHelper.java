@@ -24,6 +24,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.json.JsonMapper;
@@ -254,6 +255,16 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         nodeMap.put("EMS_CLIENT_BROKER_PASSWORD", System.getenv("EMS_CLIENT_BROKER_PASSWORD"));
         nodeMap.put("EMS_CLIENT_KEYSTORE_SECRET", System.getenv("EMS_CLIENT_KEYSTORE_SECRET"));
         nodeMap.put("EMS_CLIENT_TRUSTSTORE_SECRET", System.getenv("EMS_CLIENT_TRUSTSTORE_SECRET"));
+
+        StringBuilder sb = new StringBuilder();
+        System.getenv().forEach((k, v) -> {
+            if (Strings.CS.startsWith(k, "EMS_CLIENT_")) {
+                nodeMap.put(k, v);
+                String envName = Strings.CS.removeStart(k, "EMS_CLIENT_");
+                sb.append(envName).append("=").append(v).append("\n");
+            }
+        });
+        nodeMap.put("EMS_CLIENT_ENV_VARS_STRING", sb.toString());
 
         // Misc. installation property values
         nodeMap.put("BASE_URL", baseUrl);
