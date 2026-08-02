@@ -197,6 +197,8 @@ services:
       #
       #
       # =====  EMS client settings  =====
+      #- EMS_CLIENT_LOGGING_LEVEL_GR_ICCS_IMU_EMS_BAGUETTE_CLIENT_COLLECTOR
+      #
       # =====  EMS clients - Security and Authentication settings  =====
 #      - EMS_CLIENT_ENCRYPT_KEY=${P_ENCRYPT_KEY:-}
 #VAULT       - EMS_CLIENT_ADDITIONAL_BROKER_CREDENTIALS=${P_BROKERCEP_CREDENTIALS:-}
