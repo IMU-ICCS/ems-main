@@ -56,10 +56,10 @@ public class CommandProcessor implements InitializingBean {
     public void afterPropertiesSet() {
         startCommandExecutionThread();
 
-        if (properties.getCommandsSocket()!=null) {
-            log.info("Commands socket file: {}", properties.getCommandsSocket().toAbsolutePath());
+        if (properties.getSocketPath()!=null) {
+            log.info("Commands socket file: {}", properties.getSocketPath().toAbsolutePath());
             UnixSocketServer unixSocketServer = new UnixSocketServer(
-                    properties.getCommandsSocket().toAbsolutePath().toString(),
+                    properties.getSocketPath().toAbsolutePath().toString(),
                     args -> {
                         log.info("Command from socket file: {}", Arrays.asList(args));
                         Command command = Command.builder()
@@ -69,7 +69,7 @@ public class CommandProcessor implements InitializingBean {
                         addCommand(command);
                         return new String[]{};
                     });
-            Thread.ofVirtual().start(unixSocketServer::run);
+            Thread.ofVirtual().start(unixSocketServer);
         }
     }
 

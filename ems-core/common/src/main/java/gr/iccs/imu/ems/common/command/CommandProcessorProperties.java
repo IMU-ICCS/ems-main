@@ -32,5 +32,5 @@ public class CommandProcessorProperties implements InitializingBean {
 
     private final Map<String, Map<String,String>> receivers = new LinkedHashMap<>();
 
-    private Path commandsSocket;
+    private Path socketPath;
 }
