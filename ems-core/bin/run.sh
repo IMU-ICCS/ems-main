@@ -122,6 +122,7 @@ while :; do
   wait $emsPid
 
   retCode=$?
+  if [[ -n "${KUBERNETES_SERVICE_HOST:-}" ]]; then echo "Kubernetes will restart EMS server..."; break; fi
   if [[ $retCode -eq $RESTART_EXIT_CODE ]]; then echo "Restarting EMS server..."; else break; fi
 done
 echo "EMS server exited"
