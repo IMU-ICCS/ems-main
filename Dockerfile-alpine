@@ -47,7 +47,9 @@ ARG EMS_HOME=/opt/ems-server
 
 # Install required tools (Alpine uses apk)
 RUN set -eux; \
-    apk add --no-cache wget ca-certificates dumb-init
+    apk add --no-cache wget ca-certificates dumb-init; \
+    apk add --no-cache netcat-openbsd; \
+    apk add --no-cache vim iputils-ping
 
 # Add EMS user (Alpine style)
 RUN set -eux; \

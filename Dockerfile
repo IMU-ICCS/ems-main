@@ -97,9 +97,11 @@ RUN set -eux; \
 #    echo "e874b55f3279ca41415d290c512a7ba9d08f98041b28ae7c2acb19a545f1c4df  dumb-init" | sha256sum -c - && \
 
 # Install optional packages
-#RUN apt-get update \
-#    && apt-get install -y netcat-openbsd vim iputils-ping \
-#    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y netcat-openbsd  \
+    && apt-get install --no-install-recommends -y vim iputils-ping  \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Add EMS user
 RUN set -eux; \
