@@ -103,7 +103,9 @@ ARG INSTALLATION_PACKAGE=baguette-client-installation-package.tgz
 
 # Install minimal tools
 RUN set -eux; \
-    apk add --no-cache tar bash ca-certificates
+    apk add --no-cache tar bash ca-certificates; \
+    apk add --no-cache netcat-openbsd; \
+    apk add --no-cache vim iputils-ping
 
 # Add user (Alpine style)
 RUN set -eux; \

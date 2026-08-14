@@ -162,9 +162,11 @@ ARG EMS_HOME=/opt/baguette-client
 ARG INSTALLATION_PACKAGE=baguette-client-installation-package.tgz
 
 # Install optional packages
-#RUN apt-get update \
-#    && apt-get install -y vim iputils-ping \
-#    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y netcat-openbsd  \
+    && apt-get install --no-install-recommends -y vim iputils-ping  \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Add EMS user
 RUN set -eux; \
