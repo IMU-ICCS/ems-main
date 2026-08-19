@@ -89,11 +89,11 @@ while :; do
 
   # Use when Esper is NOT packaged in control-service.jar
   java $EMS_DEBUG_OPTS $JAVA_OPTS  $JAVA_ADD_OPENS \
-      -Dencrypt.key=$ENCRYPT_KEY \
+      -Dencrypt.key="${ENCRYPT_KEY}" \
       -Djava.security.egd=file:/dev/urandom \
-      -Dscan.packages=${SCAN_PACKAGES} \
+      -Dscan.packages="${SCAN_PACKAGES}" \
       ${CP} \
-      -Dloader.path=${ESPER_PATH}${EXTRA_LOADER_PATHS} \
+      -Dloader.path="${ESPER_PATH}${EXTRA_LOADER_PATHS}" \
       org.springframework.boot.loader.launch.PropertiesLauncher \
       "--spring.config.location=${EMS_CONFIG_LOCATION}" \
       "--logging.config=file:$LOG_CONFIG_FILE" \

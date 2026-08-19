@@ -65,7 +65,7 @@ IF NOT DEFINED RESTART_EXIT_CODE set RESTART_EXIT_CODE=99
 
 rem Check if fat-jar exists
 if exist "%JARS_DIR%\control-service.jar" (
-    set "CP=-cp %JARS_DIR%\control-service.jar"
+    set "CP=%JARS_DIR%\control-service.jar"
     set "ESPER_PATH=%JARS_DIR%\esper-7.1.0.jar,"
 )
 
@@ -74,10 +74,9 @@ rem java %EMS_DEBUG_OPTS% %JAVA_OPTS% %JAVA_ADD_OPENS% -Dencrypt.key=%ENCRYPT_KE
 
 rem Use when Esper is NOT packaged in control-service.jar
 java %EMS_DEBUG_OPTS% %JAVA_OPTS% %JAVA_ADD_OPENS% ^
-    -Dencrypt.key=%ENCRYPT_KEY% ^
-    -Djava.security.egd=file:/dev/urandom ^
-    -Dscan.packages=%SCAN_PACKAGES% ^
-    %CP% ^
+    "-Dencrypt.key=%ENCRYPT_KEY%" ^
+    "-Dscan.packages=%SCAN_PACKAGES%" ^
+    -cp "%CP%" ^
     "-Dloader.path=%ESPER_PATH%%EXTRA_LOADER_PATHS%" ^
     org.springframework.boot.loader.launch.PropertiesLauncher ^
     -nolog ^

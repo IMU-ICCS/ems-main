@@ -50,7 +50,14 @@ echo EMS_CONFIG_LOCATION=%EMS_CONFIG_LOCATION% >> %LOG_FILE%
 echo LOG_FILE=%LOG_FILE% >> %LOG_FILE%
 
 :: Run Baguette Client
-java %JAVA_OPTS% -classpath "%EMS_CONFIG_DIR%;%BASEDIR%\jars\*;%BASEDIR%\target\classes;%BASEDIR%\target\dependency\*" gr.iccs.imu.ems.baguette.client.BaguetteClient "--spring.config.location=%EMS_CONFIG_LOCATION%" "--logging.config=file:%EMS_CONFIG_DIR%\logback-spring.xml"  %*
+java %JAVA_OPTS% ^
+    "-Dencrypt.key=%ENCRYPT_KEY%" ^
+    "-Dscan.packages=%SCAN_PACKAGES%" ^
+    -classpath "%EMS_CONFIG_DIR%;%BASEDIR%\jars\*;%BASEDIR%\target\classes;%BASEDIR%\target\dependency\*" ^
+    gr.iccs.imu.ems.baguette.client.BaguetteClient ^
+    "--spring.config.location=%EMS_CONFIG_LOCATION%" ^
+    "--logging.config=file:%EMS_CONFIG_DIR%\logback-spring.xml"  ^
+    %*
 
 cd %PWD%
 endlocal
