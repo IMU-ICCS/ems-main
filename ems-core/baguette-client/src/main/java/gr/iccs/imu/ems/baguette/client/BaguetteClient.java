@@ -40,7 +40,7 @@ import java.util.List;
 @EnableScheduling
 @SpringBootApplication(scanBasePackages = {
         "gr.iccs.imu.ems.baguette.client", "gr.iccs.imu.ems.brokercep", "gr.iccs.imu.ems.common",
-        "gr.iccs.imu.ems.brokerclient", "gr.iccs.imu.ems.util"})
+        "gr.iccs.imu.ems.brokerclient", "gr.iccs.imu.ems.util", "${scan.packages}"})
 @RequiredArgsConstructor
 public class BaguetteClient implements ApplicationRunner {
     @Getter
