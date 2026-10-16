@@ -9,6 +9,7 @@
 
 package gr.iccs.imu.ems.baguette.client.collector.prometheus;
 
+import gr.iccs.imu.ems.api.client.IMetricsFilter;
 import gr.iccs.imu.ems.baguette.client.IClientCollector;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.common.collector.AbstractEndpointCollector;
@@ -18,6 +19,7 @@ import gr.iccs.imu.ems.common.collector.prometheus.OpenMetricsParser;
 import gr.iccs.imu.ems.common.collector.prometheus.PrometheusCollectorProperties;
 import gr.iccs.imu.ems.common.k8s.K8sClient;
 import gr.iccs.imu.ems.util.EventBus;
+import gr.iccs.imu.ems.util.client.MetricFilterHelper;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +36,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -57,12 +60,20 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
     private Thread eventPublishThread;
     private boolean keepRunning;
 
+    private final MetricFilterHelper metricFilterHelper;
+
     @SuppressWarnings("unchecked")
-    public PrometheusCollector2(PrometheusCollectorProperties properties, CollectorContext collectorContext, TaskScheduler taskScheduler, EventBus<String,Object,Object> eventBus) {
+    public PrometheusCollector2(PrometheusCollectorProperties properties,
+                                CollectorContext collectorContext,
+                                TaskScheduler taskScheduler,
+                                EventBus<String,Object,Object> eventBus,
+                                MetricFilterHelper metricFilterHelper)
+    {
         super("PrometheusCollector2", properties, collectorContext, taskScheduler, eventBus);
         this.properties = properties;
         this.properties.setEnable(true);    //XXX: TODO: Temporary fix... 'enable' property is not set while initializing 'PrometheusCollectorProperties'
         this.autoStartRunner = false;   // Don't start the default runner
+        this.metricFilterHelper = metricFilterHelper;
     }
 
     @Override
@@ -396,14 +407,30 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
         log.debug("Collectors::{}: queueForPublish: metric={}, destination={}, metricInstances={}, node={}, endpoint={}",
                 collectorId, node, prometheusMetric, destination, metricInstances, endpoint);
         metricInstances.forEach(v -> {
-            EventMap event = new EventMap(v.getMetricValue(), 1);
-            event.setEventProperty("metric", prometheusMetric);
-            event.setEventProperty("source-node", node);
-            event.setEventProperty("source-endpoint", endpoint);
-            event.setEventProperty("destination-topic", destination);
-            if (v.getTags()!=null)
-                v.getTags().forEach((tag,tagValue) -> event.setEventProperty("tag-"+tag, tagValue));
-            eventsQueue.add(event);
+            // Call pre-publish filters
+            AtomicBoolean canPublish = new AtomicBoolean(true);
+            String nodeAddress = node!=null ? node.toString() : "";
+            Map<IMetricsFilter, IMetricsFilter.Context> mpCtxMap =
+                    metricFilterHelper.runPrePublishMetricFor(canPublish, destination, v.getMetricValue(), nodeAddress);
+
+            // Enqueue metric for publish
+            if (canPublish.get()) {
+                EventMap event = new EventMap(v.getMetricValue(), 1);
+                event.setEventProperty("metric", prometheusMetric);
+                event.setEventProperty("source-node", node);
+                event.setEventProperty("source-endpoint", endpoint);
+                event.setEventProperty("destination-topic", destination);
+                if (v.getTags() != null)
+                    v.getTags().forEach((tag, tagValue) -> event.setEventProperty("tag-" + tag, tagValue));
+                eventsQueue.add(event);
+
+                // Metric enqueued for publish
+                metricFilterHelper.runPostPublishMetricFor(mpCtxMap, destination, v.getMetricValue(), nodeAddress);
+            } else
+            {
+                // Metric not enqueued for publish
+                metricFilterHelper.runNotPublishedMetricFor(mpCtxMap, destination, v.getMetricValue(), nodeAddress);
+            }
         });
     }
 

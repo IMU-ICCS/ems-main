@@ -10,7 +10,6 @@
 package gr.iccs.imu.ems.baguette.client.collector.netdata;
 
 import gr.iccs.imu.ems.api.EmsConstant;
-import gr.iccs.imu.ems.api.client.HasMetricsFilter;
 import gr.iccs.imu.ems.api.client.IMetricsFilter;
 import gr.iccs.imu.ems.baguette.client.IClientCollector;
 import gr.iccs.imu.ems.baguette.client.collector.ClientCollectorContext;
@@ -21,6 +20,7 @@ import gr.iccs.imu.ems.common.collector.netdata.INetdataCollector;
 import gr.iccs.imu.ems.common.collector.netdata.NetdataCollectorProperties;
 import gr.iccs.imu.ems.util.EventBus;
 import gr.iccs.imu.ems.util.StrUtil;
+import gr.iccs.imu.ems.util.client.MetricFilterHelper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class K8sNetdataCollector implements IClientCollector, INetdataCollector, InitializingBean, HasMetricsFilter {
+public class K8sNetdataCollector implements IClientCollector, INetdataCollector, InitializingBean {
 
     public static final String K8S_NODE_ADDRESS_ENV_VAR = "NODE_ADDRESS";
 
@@ -97,14 +97,12 @@ public class K8sNetdataCollector implements IClientCollector, INetdataCollector,
     private boolean started;
     private List<Map<String, Object>> configurations;
 
-    private final Set<IMetricsFilter> metricsFilters;
+    private final MetricFilterHelper metricFilterHelper;
 
     @Override
     public void afterPropertiesSet() throws Exception {
         if (!(collectorContext instanceof ClientCollectorContext))
             throw new IllegalArgumentException("Invalid CollectorContext provided. Expected: ClientCollectorContext, but got "+collectorContext.getClass().getName());
-
-        log.info("K8sNetdataCollector: Metric Filters: {}", metricsFilters);
     }
 
     @Override
@@ -675,23 +673,23 @@ public class K8sNetdataCollector implements IClientCollector, INetdataCollector,
     }
 
     protected CollectorContext.PUBLISH_RESULT publishMetricEvent(String metricName, String key, double metricValue, long timestamp, String nodeAddress) {
-        // Call pre-publish processors
+        // Call pre-publish filters
         AtomicBoolean canPublish = new AtomicBoolean(true);
         Map<IMetricsFilter, IMetricsFilter.Context> mpCtxMap =
-                runPrePublishMetricFor(canPublish, metricsFilters, metricName, metricValue, nodeAddress);
+                metricFilterHelper.runPrePublishMetricFor(canPublish, metricName, metricValue, nodeAddress);
 
         // Publish metric
         if (canPublish.get()) {
             EventMap event = new EventMap(metricValue, 1, timestamp);
             CollectorContext.PUBLISH_RESULT result = sendEvent(metricName, metricName, key, event, null, true);
 
-            // Call post-publish processors
-            runPostPublishMetricFor(mpCtxMap, metricName, metricValue, nodeAddress);
+            // Metric published
+            metricFilterHelper.runPostPublishMetricFor(mpCtxMap, metricName, metricValue, nodeAddress);
             return result;
         }
 
         // Metric not published
-        runNotPublishedMetricFor(mpCtxMap, metricName, metricValue, nodeAddress);
+        metricFilterHelper.runNotPublishedMetricFor(mpCtxMap, metricName, metricValue, nodeAddress);
 
         return null;
     }
@@ -705,20 +703,5 @@ public class K8sNetdataCollector implements IClientCollector, INetdataCollector,
         CollectorContext.PUBLISH_RESULT result = collectorContext.sendEvent(null, metricName, event, createDestination);
         log.trace("K8sNetdataCollector:    Publishing metric: {}: {} -> result: {}", metricName, event.getMetricValue(), result);
         return result;
-    }
-
-    @Override
-    public void addMetricsFilter(IMetricsFilter processor) {
-        metricsFilters.add(processor);
-    }
-
-    @Override
-    public void removeMetricsFilter(IMetricsFilter processor) {
-        metricsFilters.remove(processor);
-    }
-
-    @Override
-    public List<IMetricsFilter> getMetricsFilters() {
-        return new ArrayList<>(metricsFilters);
     }
 }

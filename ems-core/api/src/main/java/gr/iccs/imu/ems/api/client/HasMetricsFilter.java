@@ -9,8 +9,6 @@
 
 package gr.iccs.imu.ems.api.client;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,11 +16,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public interface HasMetricsFilter {
-    default void addMetricsFilter(IMetricsFilter metricsFilter) {}
-    default void removeMetricsFilter(IMetricsFilter metricsFilter) {}
-    default List<IMetricsFilter> getMetricsFilters() {
-        return Collections.emptyList();
-    }
+//    default void addMetricsFilter(IMetricsFilter metricsFilter) {}
+//    default void removeMetricsFilter(IMetricsFilter metricsFilter) {}
+//    default List<IMetricsFilter> getMetricsFilters() {
+//        return Collections.emptyList();
+//    }
 
     default Map<IMetricsFilter, IMetricsFilter.Context> runPrePublishMetricFor(AtomicBoolean canPublish, Set<IMetricsFilter> metricsFilters, String metricName, double metricValue, String nodeAddress) {
         canPublish.set(true);
