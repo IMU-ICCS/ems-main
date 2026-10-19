@@ -410,12 +410,13 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
             // Call pre-publish filters
             AtomicBoolean canPublish = new AtomicBoolean(true);
             String nodeAddress = node!=null ? node.toString() : "";
+            long timestamp = System.currentTimeMillis();
             Map<IMetricsFilter, IMetricsFilter.Context> mpCtxMap =
-                    metricFilterHelper.runPrePublishMetricFor(canPublish, destination, v.getMetricValue(), nodeAddress);
+                    metricFilterHelper.runPrePublishMetricFor(canPublish, destination, v.getMetricValue(), timestamp, nodeAddress);
 
             // Enqueue metric for publish
             if (canPublish.get()) {
-                EventMap event = new EventMap(v.getMetricValue(), 1);
+                EventMap event = new EventMap(v.getMetricValue(), 1, timestamp);
                 event.setEventProperty("metric", prometheusMetric);
                 event.setEventProperty("source-node", node);
                 event.setEventProperty("source-endpoint", endpoint);
@@ -425,11 +426,11 @@ public class PrometheusCollector2 extends AbstractEndpointCollector<String> impl
                 eventsQueue.add(event);
 
                 // Metric enqueued for publish
-                metricFilterHelper.runPostPublishMetricFor(mpCtxMap, destination, v.getMetricValue(), nodeAddress);
+                metricFilterHelper.runPostPublishMetricFor(mpCtxMap, destination, v.getMetricValue(), timestamp, nodeAddress);
             } else
             {
                 // Metric not enqueued for publish
-                metricFilterHelper.runNotPublishedMetricFor(mpCtxMap, destination, v.getMetricValue(), nodeAddress);
+                metricFilterHelper.runNotPublishedMetricFor(mpCtxMap, destination, v.getMetricValue(), timestamp, nodeAddress);
             }
         });
     }

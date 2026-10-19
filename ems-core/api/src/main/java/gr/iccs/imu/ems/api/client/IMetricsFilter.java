@@ -10,9 +10,9 @@
 package gr.iccs.imu.ems.api.client;
 
 public interface IMetricsFilter {
-    Context prePublishMetric(String metricName, double metricValue, String nodeAddress);
-    void postPublishMetric(String metricName, double metricValue, String nodeAddress, Context context);
-    void notPublishedMetric(String metricName, double metricValue, String nodeAddress, Context context);
+    Context prePublishMetric(String metricName, double metricValue, long timestamp, String nodeAddress);
+    void postPublishMetric(String metricName, double metricValue, long timestamp, String nodeAddress, Context context);
+    void notPublishedMetric(String metricName, double metricValue, long timestamp, String nodeAddress, Context context);
 
     record Context(boolean canPublish, Object extra) {
     }

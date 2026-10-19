@@ -32,9 +32,9 @@ public class MetricFilterHelper implements HasMetricsFilter, InitializingBean {
         log.info("MetricFilterHelper has been initialized");
     }
 
-    public Map<IMetricsFilter, IMetricsFilter.Context> runPrePublishMetricFor(AtomicBoolean canPublish, String metricName, double metricValue, String nodeAddress) {
+    public Map<IMetricsFilter, IMetricsFilter.Context> runPrePublishMetricFor(AtomicBoolean canPublish, String metricName, double metricValue, long timestamp, String nodeAddress) {
         if (metricsFilters.isEmpty())
             return Collections.emptyMap();
-        return runPrePublishMetricFor(canPublish, metricsFilters, metricName, metricValue, nodeAddress);
+        return runPrePublishMetricFor(canPublish, metricsFilters, metricName, metricValue, timestamp, nodeAddress);
     }
 }

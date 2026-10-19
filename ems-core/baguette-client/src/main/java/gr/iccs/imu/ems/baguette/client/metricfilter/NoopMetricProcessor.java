@@ -14,18 +14,18 @@ public class NoopMetricProcessor implements IMetricsFilter, InitializingBean {
     }
 
     @Override
-    public Context prePublishMetric(String metricName, double metricValue, String nodeAddress) {
-        log.trace("NoopMetricProcessor.prePublishMetric: {}, {}, {}", metricName, metricValue, nodeAddress);
+    public Context prePublishMetric(String metricName, double metricValue, long timestamp, String nodeAddress) {
+        log.trace("NoopMetricProcessor.prePublishMetric: {}, {}, {}, {}", metricName, metricValue, timestamp, nodeAddress);
         return new Context(true, this);
     }
 
     @Override
-    public void postPublishMetric(String metricName, double metricValue, String nodeAddress, Context context) {
-        log.trace("NoopMetricProcessor.postPublishMetric: {}, {}, {}, {}", metricName, metricValue, nodeAddress, context);
+    public void postPublishMetric(String metricName, double metricValue, long timestamp, String nodeAddress, Context context) {
+        log.trace("NoopMetricProcessor.postPublishMetric: {}, {}, {}, {}, {}", metricName, metricValue, timestamp, nodeAddress, context);
     }
 
     @Override
-    public void notPublishedMetric(String metricName, double metricValue, String nodeAddress, Context context) {
-        log.trace("NoopMetricProcessor.notPublishedMetric: {}, {}, {}, {}", metricName, metricValue, nodeAddress, context);
+    public void notPublishedMetric(String metricName, double metricValue, long timestamp, String nodeAddress, Context context) {
+        log.trace("NoopMetricProcessor.notPublishedMetric: {}, {}, {}, {}, {}", metricName, metricValue, timestamp, nodeAddress, context);
     }
 }

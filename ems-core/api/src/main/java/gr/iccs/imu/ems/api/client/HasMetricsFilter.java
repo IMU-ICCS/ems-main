@@ -22,26 +22,26 @@ public interface HasMetricsFilter {
 //        return Collections.emptyList();
 //    }
 
-    default Map<IMetricsFilter, IMetricsFilter.Context> runPrePublishMetricFor(AtomicBoolean canPublish, Set<IMetricsFilter> metricsFilters, String metricName, double metricValue, String nodeAddress) {
+    default Map<IMetricsFilter, IMetricsFilter.Context> runPrePublishMetricFor(AtomicBoolean canPublish, Set<IMetricsFilter> metricsFilters, String metricName, double metricValue, long timestamp, String nodeAddress) {
         canPublish.set(true);
         return metricsFilters.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
                         processor -> {
-                            IMetricsFilter.Context context = processor.prePublishMetric(metricName, metricValue, nodeAddress);
+                            IMetricsFilter.Context context = processor.prePublishMetric(metricName, metricValue, timestamp, nodeAddress);
                             if (! context.canPublish()) canPublish.set(false);
                             return context;
                         }
                 ));
     }
 
-    default void runPostPublishMetricFor(Map<IMetricsFilter, IMetricsFilter.Context> metricsFiltersWithContexts, String metricName, double metricValue, String nodeAddress) {
+    default void runPostPublishMetricFor(Map<IMetricsFilter, IMetricsFilter.Context> metricsFiltersWithContexts, String metricName, double metricValue, long timestamp, String nodeAddress) {
         metricsFiltersWithContexts.forEach((processor,context) ->
-                processor.postPublishMetric(metricName, metricValue, nodeAddress, context));
+                processor.postPublishMetric(metricName, metricValue, timestamp, nodeAddress, context));
     }
 
-    default void runNotPublishedMetricFor(Map<IMetricsFilter, IMetricsFilter.Context> metricsFiltersWithContexts, String metricName, double metricValue, String nodeAddress) {
+    default void runNotPublishedMetricFor(Map<IMetricsFilter, IMetricsFilter.Context> metricsFiltersWithContexts, String metricName, double metricValue, long timestamp, String nodeAddress) {
         metricsFiltersWithContexts.forEach((processor,context) ->
-                processor.notPublishedMetric(metricName, metricValue, nodeAddress, context));
+                processor.notPublishedMetric(metricName, metricValue, timestamp, nodeAddress, context));
     }
 }

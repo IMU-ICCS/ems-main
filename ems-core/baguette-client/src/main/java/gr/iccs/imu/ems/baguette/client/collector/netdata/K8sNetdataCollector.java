@@ -676,7 +676,7 @@ public class K8sNetdataCollector implements IClientCollector, INetdataCollector,
         // Call pre-publish filters
         AtomicBoolean canPublish = new AtomicBoolean(true);
         Map<IMetricsFilter, IMetricsFilter.Context> mpCtxMap =
-                metricFilterHelper.runPrePublishMetricFor(canPublish, metricName, metricValue, nodeAddress);
+                metricFilterHelper.runPrePublishMetricFor(canPublish, metricName, metricValue, timestamp, nodeAddress);
 
         // Publish metric
         if (canPublish.get()) {
@@ -684,12 +684,12 @@ public class K8sNetdataCollector implements IClientCollector, INetdataCollector,
             CollectorContext.PUBLISH_RESULT result = sendEvent(metricName, metricName, key, event, null, true);
 
             // Metric published
-            metricFilterHelper.runPostPublishMetricFor(mpCtxMap, metricName, metricValue, nodeAddress);
+            metricFilterHelper.runPostPublishMetricFor(mpCtxMap, metricName, metricValue, timestamp, nodeAddress);
             return result;
         }
 
         // Metric not published
-        metricFilterHelper.runNotPublishedMetricFor(mpCtxMap, metricName, metricValue, nodeAddress);
+        metricFilterHelper.runNotPublishedMetricFor(mpCtxMap, metricName, metricValue, timestamp, nodeAddress);
 
         return null;
     }
