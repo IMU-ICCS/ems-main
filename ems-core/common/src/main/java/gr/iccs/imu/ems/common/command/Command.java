@@ -34,7 +34,7 @@ public class Command implements Serializable {
     private transient Consumer<Object> callback;
 
     public void splitArgs() {
-        if (args==null && StringUtils.isNotBlank(command)) {
+        if (StringUtils.isNotBlank(command)) {
             String[] part = command.trim().split("[ \t\r\n]+");
             command = part[0];
             //args = new ArrayList<>( Arrays.asList(Arrays.copyOfRange(part, 1, part.length)) );

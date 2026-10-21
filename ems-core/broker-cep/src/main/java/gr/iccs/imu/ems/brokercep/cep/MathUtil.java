@@ -265,10 +265,10 @@ public class MathUtil {
             String argName = arg.getKey();
             List<Double> argValue = arg.getValue();
             log.debug("MathUtil: evalAgg: iteration #{}: arg-name={}, arg-value={}", iter, argName, argValue);
-            String valStr = argValue.stream().map(value -> value.toString()).collect(Collectors.joining(", "));
+            String valStr = argValue.stream().map(Object::toString).collect(Collectors.joining(", "));
             log.debug("MathUtil: evalAgg: iteration #{}: arg-name={}, arg-value-str={}", iter, argName, valStr);
 
-            formula = formula.replaceAll(argName, valStr);
+            formula = formula.replaceAll("\\b" + argName + "\\b", valStr);
             iter++;
         }
         log.debug("MathUtil: evalAgg: formula-to-evaluate: {}", formula);

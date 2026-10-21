@@ -21,4 +21,4 @@ if [ -f ${BASEDIR}/jre/bin/java ]; then
   JAVACMD=${JAVA_HOME}/bin/java
 fi
 
-${JAVACMD} $JAVA_OPTS -jar ${BASEDIR}/jars/broker-client/broker-client-jar-with-dependencies.jar $*
+${JAVACMD} $JAVA_OPTS -jar ${BASEDIR}/jars/broker-client/broker-client-jar-with-dependencies.jar "$@"
