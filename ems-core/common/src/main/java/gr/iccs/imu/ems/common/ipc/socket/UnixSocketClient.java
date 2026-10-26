@@ -8,7 +8,6 @@ import java.net.UnixDomainSocketAddress;
 import java.nio.channels.Channels;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -132,7 +131,7 @@ public class UnixSocketClient implements Closeable {
     }
 
     public static void main(String[] args) throws IOException {
-        try (UnixSocketClient client = new UnixSocketClient(Paths.get(args[0]))) {
+        try (UnixSocketClient client = new UnixSocketClient(Path.of(args[0]))) {
             String request = UUID.randomUUID() + "|" + String.join("|", Arrays.copyOfRange(args, 1, args.length));
             log.info("Request: {}", request);
             String response = client.sendRequest(request);

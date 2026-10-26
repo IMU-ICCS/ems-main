@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.9</version>
+        <version>4.1.2</version>
         <relativePath></relativePath>
     </parent>
 
@@ -40,7 +40,7 @@
         <source-plugin.version>3.3.1</source-plugin.version>
         <maven-clean-plugin.version>3.3.1</maven-clean-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-        <maven-compiler.version>3.15.0</maven-compiler.version>
+        <maven-compiler.version>3.16.0</maven-compiler.version>
         <javadoc-plugin.version>3.8.0</javadoc-plugin.version>
         <maven-assembly-plugin.version>3.7.1</maven-assembly-plugin.version>
         <maven-install-plugin.version>3.1.2</maven-install-plugin.version>
@@ -59,7 +59,7 @@
         <write-properties-file-maven-plugin.version>1.0.1</write-properties-file-maven-plugin.version>
 
         <!-- Spring Cloud dependencies version -->
-        <spring-cloud-dependencies.version>2025.1.2</spring-cloud-dependencies.version>
+        <spring-cloud-dependencies.version>2025.1.4</spring-cloud-dependencies.version>
         <!-- Apache Commons Text version -->
         <commons-text.version>1.14.0</commons-text.version>
         <!-- Esper version -->
@@ -75,7 +75,7 @@
         <apache-sshd.version>2.18.0</apache-sshd.version>
         <mina-core.version>2.2.9</mina-core.version>
         <!-- Bouncy Castle version -->
-        <bouncy-castle.version>1.84</bouncy-castle.version>
+        <bouncy-castle.version>1.86</bouncy-castle.version>
         <!-- Guava version -->
         <guava.version>33.6.0-jre</guava.version>
         <!-- Apache Commons-CSV -->
@@ -274,6 +274,26 @@
                         <groupId>org.openrewrite.recipe</groupId>
                         <artifactId>rewrite-spring</artifactId>
                         <version>6.29.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>-->
+            <!-- OpenRewrire: Migrate from SB 4.0 to 4.1 -->
+            <!--<plugin>
+                <groupId>org.openrewrite.maven</groupId>
+                <artifactId>rewrite-maven-plugin</artifactId>
+                <version>6.46.1</version>
+                <configuration>
+                    <exportDatatables>true</exportDatatables>
+                    <activeRecipes>
+                        <recipe>io.moderne.java.spring.boot4.UpgradeSpringBoot_4_1</recipe>
+                        &lt;!&ndash;<recipe>org.openrewrite.java.spring.boot4.SpringBootProperties_4_1</recipe>&ndash;&gt;
+                    </activeRecipes>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.moderne.recipe</groupId>
+                        <artifactId>rewrite-spring</artifactId>
+                        <version>0.40.1</version>
                     </dependency>
                 </dependencies>
             </plugin>-->
