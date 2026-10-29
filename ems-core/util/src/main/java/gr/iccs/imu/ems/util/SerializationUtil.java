@@ -21,9 +21,9 @@ public class SerializationUtil {
      */
     public static String serializeToString(Object o) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(o);
-        oos.close();
+        try (var out = new ObjectOutputStream(baos)) {
+            out.writeObject(o);
+        }
         return Base64.getEncoder().encodeToString(baos.toByteArray());
     }
 
@@ -32,9 +32,8 @@ public class SerializationUtil {
      */
     public static Object deserializeFromString(String s) throws IOException, ClassNotFoundException {
         byte[] data = Base64.getDecoder().decode(s);
-        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-        Object o = ois.readObject();
-        ois.close();
-        return o;
+        try (var in = new ObjectInputStream(new ByteArrayInputStream(data))) {
+            return in.readObject();
+        }
     }
 }
