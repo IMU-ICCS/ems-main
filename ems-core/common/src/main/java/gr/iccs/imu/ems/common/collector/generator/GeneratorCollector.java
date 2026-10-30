@@ -17,6 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.TaskScheduler;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
@@ -61,10 +65,12 @@ public class GeneratorCollector extends AbstractEndpointCollector<Map<String,Dou
     }
 
     private Double generateValue() {
+        log.debug("GeneratorCollector::generateValue: BEGIN: {}",properties);
         if (properties.getLimitsMaxCount()>0 && currentCount+1 > properties.getLimitsMaxCount()) {
             stop();
             return null;
         }
+        log.debug("GeneratorCollector::generateValue: Type: {}",properties.getType());
         if (properties.getType()==GeneratorCollectorProperties.GENERATOR_TYPE.count) {
             Double newCountValue = (currentCount==0)
                 ? properties.getLimitsStart()
@@ -94,6 +100,19 @@ public class GeneratorCollector extends AbstractEndpointCollector<Map<String,Dou
             return asValueType(newCountValue, properties.getValueType());
         }
 
+        if (properties.getType()==GeneratorCollectorProperties.GENERATOR_TYPE.datetime) {
+            SimpleDateFormat formatter = properties.getFormat();
+            if (formatter==null) properties.setFormat(formatter = new SimpleDateFormat("HHmmss"));
+            String s = formatter.format(Date.from(Instant.now()));
+            log.debug("GeneratorCollector::generateValue: datetime: s={}", s);
+            double d = Double.parseDouble(s);
+            log.debug("GeneratorCollector::generateValue: datetime: d={}", d);
+            if (properties.getValueType()==GeneratorCollectorProperties.GENERATOR_VALUE_TYPE.Int)
+                d = Math.round(d);
+            log.debug("GeneratorCollector::generateValue: datetime: d2={}", d);
+            return asValueType(d, properties.getValueType());
+        }
+
         // else GENERATOR_TYPE.random
         double range = properties.getLimitsUpper() - properties.getLimitsLower();
         return asValueType(ThreadLocalRandom.current().nextDouble() * range + properties.getLimitsLower(), properties.getValueType());
@@ -106,6 +125,7 @@ public class GeneratorCollector extends AbstractEndpointCollector<Map<String,Dou
 
     protected void processData(Map<String,Double> data, String nodeAddress, ProcessingStats stats) {
         long timestamp = System.currentTimeMillis();
+        log.debug("GeneratorCollector::processData: nodeAddress={}, timestamp={}, data={}", nodeAddress, timestamp, data);
         for (Map.Entry<String, Double> entry : data.entrySet()) {
             String destination = entry.getKey();
             double value = entry.getValue();
