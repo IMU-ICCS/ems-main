@@ -823,8 +823,12 @@ public class CommandExecutor {
             // Update collectors' configurations
             Map<String, List<Map<String, Serializable>>> collectorConfigs = clientConfiguration.getCollectorConfigurations();
             log.debug("collectorConfigs={}", collectorConfigs);
+            log.debug("collectorsList={}", applicationContext.getBean(BaguetteClient.class).getCollectorsList());
             applicationContext.getBean(BaguetteClient.class).getCollectorsList().forEach(collector -> {
+                log.trace("...collector={}", collector);
+                log.trace("...collector-name={}", collector.getName());
                 List<Map<String, Serializable>> cc = collectorConfigs.get(collector.getName());
+                log.trace("...collector-config={}", cc);
                 if (cc!=null)
                     collector.setConfiguration(cc);
             });

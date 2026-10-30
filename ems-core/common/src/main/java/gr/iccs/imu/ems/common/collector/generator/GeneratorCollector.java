@@ -12,7 +12,6 @@ package gr.iccs.imu.ems.common.collector.generator;
 import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.common.collector.AbstractEndpointCollector;
 import gr.iccs.imu.ems.common.collector.CollectorContext;
-import gr.iccs.imu.ems.common.collector.prometheus.IPrometheusCollector;
 import gr.iccs.imu.ems.util.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +25,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * Generates measurements. Can be used for testing and debugging
  */
 @Slf4j
-public class GeneratorCollector extends AbstractEndpointCollector<Map<String,Double>> implements IPrometheusCollector {
+public class GeneratorCollector extends AbstractEndpointCollector<Map<String,Double>> implements IGeneratorCollector {
     protected GeneratorCollectorProperties properties;
     private long currentCount;
     private Double currentCountValue;
