@@ -9,6 +9,7 @@
 
 package gr.iccs.imu.ems.baguette.client;
 
+import gr.iccs.imu.ems.api.EmsConstant;
 import gr.iccs.imu.ems.api.comm.ClientConfiguration;
 import gr.iccs.imu.ems.api.comm.FunctionDefinition;
 import gr.iccs.imu.ems.api.comm.GROUPING;
@@ -127,6 +128,8 @@ public class CommandExecutor {
     private ScheduledFuture<?> statsSendTask;
     @Autowired
     private SystemResourceMonitor systemResourceMonitor;
+
+    private String currentCollectorConfigTimestamp = null;
 
     public CommandExecutor() {
         initializeClientId();
@@ -822,12 +825,37 @@ public class CommandExecutor {
 
             // Update collectors' configurations
             Map<String, List<Map<String, Serializable>>> collectorConfigs = clientConfiguration.getCollectorConfigurations();
-            log.debug("collectorConfigs={}", collectorConfigs);
-            applicationContext.getBean(BaguetteClient.class).getCollectorsList().forEach(collector -> {
-                List<Map<String, Serializable>> cc = collectorConfigs.get(collector.getName());
-                if (cc!=null)
-                    collector.setConfiguration(cc);
-            });
+            List<Map<String, Serializable>> timestampEntry = collectorConfigs.get(EmsConstant.COLLECTOR_CONFIGURATIONS_TIMESTAMP_KEY);
+            boolean updateCollectorConfigs = false;
+            if (timestampEntry!=null && ! timestampEntry.isEmpty()) {
+                Map<String, Serializable> firstEntry = timestampEntry.getFirst();
+                if (firstEntry!=null && ! firstEntry.isEmpty()) {
+                    Serializable tsSer = firstEntry.get(EmsConstant.COLLECTOR_CONFIGURATIONS_TIMESTAMP_KEY);
+                    if (tsSer != null) {
+                        String timestamp = tsSer.toString().trim();
+                        log.debug("Collector configs timestamp: new={},  current={}", timestamp, currentCollectorConfigTimestamp);
+                        updateCollectorConfigs = currentCollectorConfigTimestamp == null
+                                || !currentCollectorConfigTimestamp.equalsIgnoreCase(timestamp);
+                        if (updateCollectorConfigs)
+                            currentCollectorConfigTimestamp = timestamp;
+                    }
+                }
+            }
+            if (! updateCollectorConfigs && currentCollectorConfigTimestamp==null) {
+                updateCollectorConfigs = true;
+                log.warn("Collector configs sent from EMS server have no timestamp");
+            }
+            if (updateCollectorConfigs) {
+                log.info("Updating collector configurations");
+                log.debug("collectorConfigs={}", collectorConfigs);
+                applicationContext.getBean(BaguetteClient.class).getCollectorsList().forEach(collector -> {
+                    List<Map<String, Serializable>> cc = collectorConfigs.get(collector.getName());
+                    if (cc != null)
+                        collector.setConfiguration(cc);
+                });
+            } else {
+                log.debug("Skipping update of collector configurations");
+            }
 
         } catch (Exception ex) {
             log.error("Exception while deserializing received Client configuration: ", ex);
