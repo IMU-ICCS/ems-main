@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Slf4j
@@ -31,7 +32,7 @@ public class GeneratorCollectorProperties extends AbstractEndpointCollectorPrope
     private List<String> destinations;
     private boolean createTopic;
 
-    public enum GENERATOR_TYPE { count, random }
+    public enum GENERATOR_TYPE { count, random, datetime }
     public enum GENERATOR_VALUE_TYPE { Int, Double }
     public enum GENERATOR_OVERFLOW { round, reset, stop, reverse }
 
@@ -43,6 +44,9 @@ public class GeneratorCollectorProperties extends AbstractEndpointCollectorPrope
     private double limitsStep = 1;
     private GENERATOR_OVERFLOW limitsOnOverflow = GENERATOR_OVERFLOW.round;
     private long limitsMaxCount = -1;
+
+    private SimpleDateFormat datetimeFormatter = new SimpleDateFormat("yyyyMMdd.HHmmss");
+    private String zone;
 
     @Override
     public void afterPropertiesSet() throws Exception {
