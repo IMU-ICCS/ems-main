@@ -111,6 +111,18 @@ public class ClientGeneratorCollector extends GeneratorCollector implements ICli
 
                         applyConfig(configurationMap, "zone", value ->
                                 properties.setZone(TimeZone.getTimeZone(value).getID()));
+
+                        applyConfig(configurationMap, "interval", value -> {
+                            String[] part = value.trim().split("(?U)\\s+");
+                            if (part.length != 2) {
+                                throw new IllegalArgumentException("Sensor 'config.interval' is invalid: " + value);
+                            }
+                            long period = Long.parseLong(part[0].trim());
+                            String unit = part[1].trim().toLowerCase();
+
+                            properties.setDelay(
+                                    getDuration(period, unit).toMillis());
+                        });
                     } else {
                         throw new IllegalArgumentException("Sensor 'config' block is missing or not a Map: "
                                 + sensorConfigMap.get("configuration").getClass());
@@ -118,12 +130,18 @@ public class ClientGeneratorCollector extends GeneratorCollector implements ICli
 
                     // Interval
                     if (sensorConfigMap.get("interval") instanceof Map intervalMap) {
-                        long period = Long.parseLong(
-                                getString(intervalMap, "period", "30"));
-                        String unit = getString(intervalMap, "unit", "milliseconds");
+                        //boolean isDefaultPeriod = "true".equalsIgnoreCase(
+                        //        getString(intervalMap, "defaultPeriod", ""));
+                        if (properties.getDelay()<=0) {
+                            long period = Long.parseLong(
+                                    getString(intervalMap, "period", "30"));
+                            String unit = getString(intervalMap, "unit", "milliseconds");
 
-                        properties.setDelay(
-                                getDuration(period, unit).toMillis());
+                            properties.setDelay(
+                                    getDuration(period, unit).toMillis());
+                        } else {
+                            log.trace("Collectors::{}: Skipping pull sensor default output period, because delay was set with 'interval' config setting", collectorId);
+                        }
                     }
 
                     log.debug("Collectors::{}: Generator properties: {}", collectorId, properties);
