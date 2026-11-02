@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,6 +62,11 @@ public class CollectorConfigurationsProcessorPlugin implements InstallationConte
                 }
             }
         });
+
+        // Add generation timestamp
+        collectorConfigs.put(
+                EmsConstant.COLLECTOR_CONFIGURATIONS_TIMESTAMP_KEY,
+                List.of(Map.of(EmsConstant.COLLECTOR_CONFIGURATIONS_TIMESTAMP_KEY, Instant.now().toString())));
 
         try {
             log.debug("CollectorConfigurationsProcessorPlugin: Task #{}: Pull-Sensor collector configurations: \n{}", taskCounter, collectorConfigs);

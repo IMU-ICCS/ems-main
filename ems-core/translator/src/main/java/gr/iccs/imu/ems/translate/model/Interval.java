@@ -29,4 +29,5 @@ public class Interval extends AbstractInterfaceRootObject {
 
     private UnitType unit;
     private long period;
+    private boolean defaultPeriod;
 }
