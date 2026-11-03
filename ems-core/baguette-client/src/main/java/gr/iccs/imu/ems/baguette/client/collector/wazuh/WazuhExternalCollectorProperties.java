@@ -65,7 +65,7 @@ public class WazuhExternalCollectorProperties {
 
     /** Keys extracted from each alert, in addition to any sensor-specific 'keys-to-extract' */
     private List<String> keysToExtract = List.of(
-            "rule.id", "rule.description", "rule.groups",
+            "rule.id", "rule.description", "rule.groups", "rule.level",
             "agent.id", "agent.name", "agent.ip",
             "event.location", "event.full_log",
             "additional_context.*",
