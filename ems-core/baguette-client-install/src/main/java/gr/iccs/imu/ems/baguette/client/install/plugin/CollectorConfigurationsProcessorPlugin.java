@@ -42,6 +42,7 @@ public class CollectorConfigurationsProcessorPlugin implements InstallationConte
         log.trace("CollectorConfigurationsProcessorPlugin: Task #{}: processBeforeInstallation: BEGIN: task={}", taskCounter, task);
 
         Map<String, List<Object>> collectorConfigs = new LinkedHashMap<>();
+        Map<String, Object> collectorTypeCommonConfigs = new LinkedHashMap<>();
         String collectorConfigsStr = null;
 
         task.getTranslationContext().getMON().forEach(monitor -> {
@@ -54,14 +55,29 @@ public class CollectorConfigurationsProcessorPlugin implements InstallationConte
             if (sensorConfig!=null) {
                 if (monitor.getSensor().isPullSensor()) {
                     if (sensorConfig.get("type") instanceof String type && StringUtils.isNotBlank(type)) {
+                        // Add sensor configuration
                         collectorConfigs
                                 .computeIfAbsent(type, key->new LinkedList<>())
                                 .add(monitor.getSensor());
                         log.trace("CollectorConfigurationsProcessorPlugin: Task #{}: Added monitor sensor: {}", taskCounter, monitor.getSensor());
+
+                        // Add sensor type (common) configuration
+                        if (! collectorTypeCommonConfigs.containsKey(type) && ! task.getTranslationContext().getAdditionalArguments().isEmpty()) {
+                            Object o = task.getTranslationContext().getAdditionalArguments().get(EmsConstant.COLLECTOR_CONFIGURATIONS_EXTRA_VAR);
+                            if (o instanceof Map metadataSpecs && metadataSpecs.containsKey(type)) {
+                                if (metadataSpecs.get(type)!=null)
+                                    collectorTypeCommonConfigs.put(type, metadataSpecs.get(type));
+                            }
+                        }
                     }
                 }
             }
         });
+
+        // Add collector type (common) configurations
+        collectorConfigs.put(
+                EmsConstant.COLLECTOR_CONFIGURATIONS_EXTRA_KEY,
+                List.of(collectorTypeCommonConfigs));
 
         // Add generation timestamp
         collectorConfigs.put(

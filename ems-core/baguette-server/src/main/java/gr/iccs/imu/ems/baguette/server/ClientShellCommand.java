@@ -282,7 +282,7 @@ public class ClientShellCommand implements Command, Runnable, ServerSessionAware
 
                     // Send client configuration
                     clientConfiguration = nodeRegistryEntry.getBaguetteServer().getClientConfiguration(this);
-                    sendClientConfiguration(clientConfiguration);
+                    sendClientConfiguration();
 
                     // Register CSC to Coordinator
                     coordinator.register(this);

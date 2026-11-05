@@ -847,10 +847,26 @@ public class CommandExecutor {
             }
             if (updateCollectorConfigs) {
                 log.info("Updating collector configurations");
+
+                // Check for collector type (common) configurations
+                Map<String, Serializable> commonConfigs;
+                if (collectorConfigs.get(EmsConstant.COLLECTOR_CONFIGURATIONS_EXTRA_KEY)!=null) {
+                    List<Map<String, Serializable>> list = collectorConfigs.get(EmsConstant.COLLECTOR_CONFIGURATIONS_EXTRA_KEY);
+                    collectorConfigs.put(EmsConstant.COLLECTOR_CONFIGURATIONS_EXTRA_KEY, null);
+                    if (list!=null && ! list.isEmpty()) {
+                        commonConfigs = list.getFirst();
+                    } else
+                        commonConfigs = null;
+                } else
+                    commonConfigs = null;
+
                 log.debug("collectorConfigs={}", collectorConfigs);
                 applicationContext.getBean(BaguetteClient.class).getCollectorsList().forEach(collector -> {
                     List<Map<String, Serializable>> cc = collectorConfigs.get(collector.getName());
-                    if (cc != null)
+                    Serializable common = commonConfigs.get(collector.getName());
+                    if (common != null)
+                        collector.setConfiguration(cc, common);
+                    else if (cc != null)
                         collector.setConfiguration(cc);
                 });
             } else {

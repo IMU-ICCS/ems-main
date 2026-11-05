@@ -60,7 +60,7 @@ public class WazuhExternalCollectorProperties {
     private String processorCheckpointFile = "wazuh_checkpoint.json";
 
     /** Default minimum/maximum alert levels for metrics that don't specify them */
-    private int defaultMinLevel = 7;
+    private int defaultMinLevel = 1;
     private int defaultMaxLevel = 999;
 
     /** Keys extracted from each alert, in addition to any sensor-specific 'keys-to-extract' */

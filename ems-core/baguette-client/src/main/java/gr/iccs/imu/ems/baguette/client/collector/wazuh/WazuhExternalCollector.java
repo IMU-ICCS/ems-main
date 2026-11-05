@@ -83,23 +83,51 @@ public class WazuhExternalCollector implements IClientCollector {
     private String initialSince;        // fixed once chosen, so that rewrites don't move the start point
     private String lastWrittenContent;
 
+    private record IndexerConfig(
+            String host,
+            String username,
+            String password,
+            String index,
+            boolean verifySsl,
+            String initialSince,
+            int minimumLevel,
+            int batchSize
+    ) {}
+
+    private IndexerConfig indexerConfig;
+
     @Override
     public String getName() {
         return "wazuh";
     }
 
-    @SneakyThrows
-    public static void main(String[] args) {
-        String graph = "rO0ABXNyABNqYXZhLnV0aWwuQXJyYXlMaXN0eIHSHZnHYZ0DAAFJAARzaXpleHAAAAAEdwQAAAAEc3IAF2phdmEudXRpbC5MaW5rZWRIYXNoTWFwNMBOXBBswPsCAAFaAAthY2Nlc3NPcmRlcnhyABFqYXZhLnV0aWwuSGFzaE1hcAUH2sHDFmDRAwACRgAKbG9hZEZhY3RvckkACXRocmVzaG9sZHhwP0AAAAAAAAx3CAAAABAAAAAIdAAMQG9iamVjdENsYXNzdAAqZ3IuaWNjcy5pbXUuZW1zLnRyYW5zbGF0ZS5tb2RlbC5QdWxsU2Vuc29ydAAJY2xhc3NOYW1ldAAAdAANY29uZmlndXJhdGlvbnNxAH4AAj9AAAAAAAAMdwgAAAAQAAAABnQADl9jb250YWluZXJOYW1ldAALY2lwaGVyX25vZGV0AAhydWxlX2lkc3NxAH4AAAAAAAF3BAAAAAF0AAM1MDZ4dAAJYWdncmVnYXRldAAFY291bnR0AAhpbnRlcnZhbHQABjMwIHNlY3QABHR5cGV0AAV3YXp1aHQACmNvbXBvbmVudHNzcQB+AAAAAAABdwQAAAABdAALY2lwaGVyX25vZGV4eABxAH4AEnNxAH4AAj9AAAAAAAAMdwgAAAAQAAAAA3EAfgAFdAAoZ3IuaWNjcy5pbXUuZW1zLnRyYW5zbGF0ZS5tb2RlbC5JbnRlcnZhbHQABnBlcmlvZHNyABFqYXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHAAAAA8dAAEdW5pdHQAB1NFQ09ORFN4AHQABG5hbWV0ACBjaXBoZXJfbm9kZV9hZ2VudF9zdG9wcGVkX1NFTlNPUnQACnB1bGxTZW5zb3JzcgARamF2YS5sYW5nLkJvb2xlYW7NIHKA1Zz67gIAAVoABXZhbHVleHABdAAEcHVzaHNxAH4AJAB0AApwdXNoU2Vuc29ycQB+ACd4AHNxAH4AAj9AAAAAAAAMdwgAAAAQAAAACHEAfgAFdAAqZ3IuaWNjcy5pbXUuZW1zLnRyYW5zbGF0ZS5tb2RlbC5QdWxsU2Vuc29ycQB+AAdxAH4ACHEAfgAJc3EAfgACP0AAAAAAAAx3CAAAABAAAAAGcQB+AAt0AAtjaXBoZXJfbm9kZXEAfgANc3EAfgAAAAAAAncEAAAAAnQAAzU1MHQAAzU1M3hxAH4AEHQABWNvdW50cQB+ABJ0AAYzMCBzZWNxAH4AFHQABXdhenVocQB+ABZzcQB+AAAAAAABdwQAAAABdAALY2lwaGVyX25vZGV4eABxAH4AEnNxAH4AAj9AAAAAAAAMdwgAAAAQAAAAA3EAfgAFdAAoZ3IuaWNjcy5pbXUuZW1zLnRyYW5zbGF0ZS5tb2RlbC5JbnRlcnZhbHEAfgAbcQB+AB5xAH4AH3QAB1NFQ09ORFN4AHEAfgAhdAAhY2lwaGVyX25vZGVfZmlsZV9pbnRlZ3JpdHlfU0VOU09ScQB+ACNxAH4AJXEAfgAmcQB+ACdxAH4AKHEAfgAneABzcQB+AAI/QAAAAAAADHcIAAAAEAAAAAhxAH4ABXQAKmdyLmljY3MuaW11LmVtcy50cmFuc2xhdGUubW9kZWwuUHVsbFNlbnNvcnEAfgAHcQB+AAhxAH4ACXNxAH4AAj9AAAAAAAAMdwgAAAAQAAAABnEAfgALdAALY2lwaGVyX25vZGVxAH4ADXNxAH4AAAAAAAF3BAAAAAF0AAM1MTB4cQB+ABB0AAVjb3VudHEAfgASdAAGMzAgc2VjcQB+ABR0AAV3YXp1aHEAfgAWc3EAfgAAAAAAAXcEAAAAAXQAC2NpcGhlcl9ub2RleHgAcQB+ABJzcQB+AAI/QAAAAAAADHcIAAAAEAAAAANxAH4ABXQAKGdyLmljY3MuaW11LmVtcy50cmFuc2xhdGUubW9kZWwuSW50ZXJ2YWxxAH4AG3EAfgAecQB+AB90AAdTRUNPTkRTeABxAH4AIXQAJGNpcGhlcl9ub2RlX3Jvb3RjaGVja19hbm9tYWx5X1NFTlNPUnEAfgAjcQB+ACVxAH4AJnEAfgAncQB+AChxAH4AJ3gAc3EAfgACP0AAAAAAAAx3CAAAABAAAAAIcQB+AAV0ACpnci5pY2NzLmltdS5lbXMudHJhbnNsYXRlLm1vZGVsLlB1bGxTZW5zb3JxAH4AB3EAfgAIcQB+AAlzcQB+AAI/QAAAAAAADHcIAAAAEAAAAAZxAH4AC3QAC2NpcGhlcl9ub2RlcQB+AA1zcQB+AAAAAAACdwQAAAACdAAEMjkwMnQABDI5MDN4cQB+ABB0AAVjb3VudHEAfgASdAAGMzAgc2VjcQB+ABR0AAV3YXp1aHEAfgAWc3EAfgAAAAAAAXcEAAAAAXQAC2NpcGhlcl9ub2RleHgAcQB+ABJzcQB+AAI/QAAAAAAADHcIAAAAEAAAAANxAH4ABXQAKGdyLmljY3MuaW11LmVtcy50cmFuc2xhdGUubW9kZWwuSW50ZXJ2YWxxAH4AG3EAfgAecQB+AB90AAdTRUNPTkRTeABxAH4AIXQAImNpcGhlcl9ub2RlX3BhY2thZ2VfY2hhbmdlc19TRU5TT1JxAH4AI3EAfgAlcQB+ACZxAH4AJ3EAfgAocQB+ACd4AHg=";
-        Object config = SerializationUtil.deserializeFromString(graph);
-
-        WazuhExternalCollector collector = new WazuhExternalCollector(new WazuhExternalCollectorProperties(), null);
-        collector.setConfiguration(config);
-        collector.start();
+    @Override
+    public synchronized void setConfiguration(Object config) {
+        setConfiguration(config, null);
     }
 
     @Override
-    public synchronized void setConfiguration(Object config) {
+    public synchronized void setConfiguration(Object config, Object typeConfig) {
+        // Process wazuh collector common configuration
+        if (typeConfig instanceof Map map) {
+            if (map.get("indexer") instanceof Map indexerMap && ! indexerMap.isEmpty()) {
+                indexerConfig = new IndexerConfig(
+                    indexerMap.getOrDefault("host", "").toString(),
+                    indexerMap.getOrDefault("username", "").toString(),
+                    indexerMap.getOrDefault("password", "").toString(),
+                    indexerMap.getOrDefault("index", "wazuh-alerts-*").toString(),
+                    "true".equalsIgnoreCase( indexerMap.getOrDefault("verify_ssl", "false").toString() ),
+                    indexerMap.getOrDefault("initial_since", "").toString(),
+                    Integer.parseInt( indexerMap.getOrDefault("minimum_level", "1").toString() ),
+                    Integer.parseInt( indexerMap.getOrDefault("batch_size", "500").toString() )
+                );
+
+                if (StringUtils.isAnyBlank(indexerConfig.host(), indexerConfig.username(), indexerConfig.password())) {
+                    log.warn("Missing essential Wazuh Indexer settings: host, username, or password is missing or blank");
+                }
+            }
+        }
+
         if (config instanceof List<?> sensorConfigList) {
             List<Map<String, Object>> newConfigurations = new ArrayList<>();
             for (Object o : sensorConfigList) {
@@ -165,16 +193,15 @@ public class WazuhExternalCollector implements IClientCollector {
 
     /** Builds the complete client configuration as an ordered map (mirrors the client's config.yaml) */
     protected Map<String, Object> buildClientConfig() {
-        String indexerHost = properties.getIndexerHost();
-        String indexerUsername = properties.getIndexerUsername();
-        String indexerPassword = properties.getIndexerPassword();
-        String indexerIndex = properties.getIndexerIndex();
-        boolean indexerVerifySSL = properties.isIndexerVerifySsl();
+        String indexerHost = indexerConfig.host();
+        String indexerUsername = indexerConfig.username();
+        String indexerPassword = indexerConfig.password();
+        String indexerIndex = indexerConfig.index();
+        boolean indexerVerifySSL = indexerConfig.verifySsl();
 
-        String queryInitialSince = properties.getAlertsInitialSince();
-        int queryMinimumLevel = Objects.requireNonNullElse(
-                properties.getAlertsMinimumLevel(), properties.getDefaultMinLevel());
-        int queryBatchSize = properties.getAlertsBatchSize();
+        String queryInitialSince = indexerConfig.initialSince();
+        int queryMinimumLevel = indexerConfig.minimumLevel();
+        int queryBatchSize = indexerConfig.batchSize();
 
         List<Map<String, Object>> metrics = new ArrayList<>();
         Map<Map<String, Object>, Map<String, Object>> pendingFilters = new IdentityHashMap<>();
@@ -204,7 +231,7 @@ public class WazuhExternalCollector implements IClientCollector {
             @SuppressWarnings("unchecked")
             Map<String, Object> cfg = (Map<String, Object>) cfgRaw;
 
-            if (cfg.get("indexer") instanceof Map<?, ?> indexerCfg) {
+            /*if (cfg.get("indexer") instanceof Map<?, ?> indexerCfg) {
                 Object o;
                 indexerHost = (o = indexerCfg.get("host"))!=null ? o.toString() : null;
                 indexerUsername = (o = indexerCfg.get("username"))!=null ? o.toString() : null;
@@ -215,7 +242,7 @@ public class WazuhExternalCollector implements IClientCollector {
                 queryInitialSince = (o = indexerCfg.get("initial_since"))!=null ? o.toString() : null;
                 queryMinimumLevel = (o = indexerCfg.get("minimum_level"))!=null ? Integer.parseInt(o.toString()) : queryMinimumLevel;
                 queryBatchSize = (o = indexerCfg.get("batch_size"))!=null ? Integer.parseInt(o.toString()) : queryBatchSize;
-            }
+            }*/
 
             Map<String, Object> metric = new LinkedHashMap<>();
             metric.put("topic", name.startsWith(TOPIC_PREFIX) ? name : TOPIC_PREFIX + name);

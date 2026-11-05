@@ -13,5 +13,8 @@ import gr.iccs.imu.ems.common.collector.ICollector;
 
 public interface IClientCollector extends ICollector {
     void setConfiguration(Object config);
+    default void setConfiguration(Object config, Object typeConfig) {
+        setConfiguration(config);
+    }
     void activeGroupingChanged(String oldGrouping, String newGrouping);
 }
