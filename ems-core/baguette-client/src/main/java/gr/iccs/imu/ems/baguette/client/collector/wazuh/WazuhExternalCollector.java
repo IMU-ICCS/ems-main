@@ -11,9 +11,7 @@ package gr.iccs.imu.ems.baguette.client.collector.wazuh;
 
 import gr.iccs.imu.ems.baguette.client.IClientCollector;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
-import gr.iccs.imu.ems.util.SerializationUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -248,6 +246,7 @@ public class WazuhExternalCollector implements IClientCollector {
             metric.put("topic", name.startsWith(TOPIC_PREFIX) ? name : TOPIC_PREFIX + name);
             metric.put("min_level", getInt(cfg, properties.getDefaultMinLevel(), "min_level", "min-level"));
             metric.put("max_level", getInt(cfg, properties.getDefaultMaxLevel(), "max_level", "max-level"));
+            metric.put("publish_empty", true);
 
             // Filters: explicit 'filters' map first, then any other entries of 'configuration'.
             // Metric-level settings (aggregation, interval, levels...) are never filters, even when
@@ -398,6 +397,7 @@ public class WazuhExternalCollector implements IClientCollector {
         processor.put("checkpoint_file", properties.getProcessorCheckpointFile());
         processor.put("keys_to_extract", new ArrayList<>(keysToExtract));
         processor.put("metrics", metrics);
+        processor.put("publish_empty", true);
         return processor;
     }
 
