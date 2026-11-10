@@ -863,7 +863,8 @@ public class CommandExecutor {
                 log.debug("collectorConfigs={}", collectorConfigs);
                 applicationContext.getBean(BaguetteClient.class).getCollectorsList().forEach(collector -> {
                     List<Map<String, Serializable>> cc = collectorConfigs.get(collector.getName());
-                    Serializable common = commonConfigs.get(collector.getName());
+                    Serializable common = commonConfigs!=null
+                            ? commonConfigs.get(collector.getName()) : null;
                     if (common != null)
                         collector.setConfiguration(cc, common);
                     else if (cc != null)
