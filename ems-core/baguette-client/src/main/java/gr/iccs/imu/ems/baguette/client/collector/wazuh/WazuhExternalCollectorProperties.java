@@ -71,6 +71,7 @@ public class WazuhExternalCollectorProperties {
             "additional_context.*",
             "mitre.tactic", "mitre.technique", "mitre.subtechnique",
             "source.io", "source.user",
-            "destination.ip", "destination.user"
+            "destination.ip", "destination.user",
+            "timestamp"
     );
 }
