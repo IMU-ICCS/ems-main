@@ -11,6 +11,7 @@ package gr.iccs.imu.ems.baguette.client.collector.wazuh;
 
 import gr.iccs.imu.ems.baguette.client.IClientCollector;
 import gr.iccs.imu.ems.brokercep.BrokerCepService;
+import gr.iccs.imu.ems.util.UnitsUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -246,7 +247,7 @@ public class WazuhExternalCollector implements IClientCollector {
             metric.put("topic", name.startsWith(TOPIC_PREFIX) ? name : TOPIC_PREFIX + name);
             metric.put("min_level", getInt(cfg, properties.getDefaultMinLevel(), "min_level", "min-level"));
             metric.put("max_level", getInt(cfg, properties.getDefaultMaxLevel(), "max_level", "max-level"));
-            metric.put("publish_empty", true);
+            //metric.put("publish_empty", true);
 
             // Filters: explicit 'filters' map first, then any other entries of 'configuration'.
             // Metric-level settings (aggregation, interval, levels...) are never filters, even when
@@ -263,8 +264,8 @@ public class WazuhExternalCollector implements IClientCollector {
             cfg.forEach((k, v) -> { if (StringUtils.isNotBlank(k)) addFilter(filters, k, v); });
 
             // Interval and aggregation: metric-level settings, looked up in the sensor,
-            // its 'configuration', and its 'filters' map
-            Integer intervalSeconds = getIntervalSeconds(sensor, cfg, filtersIn);
+            // and its 'configuration' map
+            Long intervalSeconds = getIntervalSeconds(sensor, cfg);
             if (intervalSeconds != null) metric.put("interval_seconds", intervalSeconds);
             String aggregation = firstNonBlank(
                     getAny(cfg, "results-aggregation", "results_aggregation", "aggregation"),
@@ -500,25 +501,41 @@ public class WazuhExternalCollector implements IClientCollector {
     }
 
     /** Reads sensor 'interval' ({period, unit}) from the sensor or its configuration; null if absent */
-    private Integer getIntervalSeconds(Map<String, Object> sensor, Map<String, Object> cfg, Map<String, Object> filtersIn) {
-        Object o = Stream.of(sensor, cfg, filtersIn).map(m -> m.get("interval"))
+    private Long getIntervalSeconds(Map<String, Object> sensor, Map<String, Object> cfg) {
+        Object o = Stream.of(cfg, sensor).map(m -> m.get("interval"))
                 .filter(Objects::nonNull).findFirst().orElse(null);
         try {
             if (o instanceof Map<?, ?> m) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> im = (Map<String, Object>) m;
+
+                // Check if it is the default pull sensor period
+                if ("true".equalsIgnoreCase(im.getOrDefault("defaultPeriod", "").toString()))
+                    return null;
+
                 long period = Long.parseLong(get(im, "period", "0"));
-                if (period <= 0) return null;
-                java.util.concurrent.TimeUnit unit = java.util.concurrent.TimeUnit.valueOf(
-                        get(im, "unit", "SECONDS").toUpperCase());
-                return (int) unit.toSeconds(period);
+                if (period <= 0)
+                    return null;
+                return toSeconds(period, get(im, "unit", "SECONDS").toUpperCase());
             }
-            if (o != null && StringUtils.isNotBlank(o.toString()))
-                return Integer.parseInt(o.toString().trim());
+            if (o != null && StringUtils.isNotBlank(o.toString())) {
+                String[] part = o.toString().trim().split("\\s", 2);
+                long period = Long.parseLong(part[0].trim());
+                if (period <= 0)
+                    return null;
+                String unitStr = (part.length>1 && ! part[1].trim().isBlank() ? part[1].trim() : "SECONDS").toUpperCase();
+                return toSeconds(period, unitStr);
+            }
         } catch (Exception e) {
-            log.warn("WazuhExternalCollector: Invalid interval specified: {}", o);
+            log.warn("WazuhExternalCollector: Invalid interval specified: {}", o, e);
         }
         return null;
+    }
+
+    private long toSeconds(long value, String unitStr) {
+        ChronoUnit unit = UnitsUtil.normalizeTimeUnit(unitStr)
+                .orElseThrow(() -> new RuntimeException("TimeUnit is not supported: " + unitStr));
+        return Math.round(value * unit.getDuration().toSeconds());
     }
 
     /** Accepts either a collection or a comma/space separated string */
