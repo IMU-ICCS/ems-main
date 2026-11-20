@@ -7,9 +7,12 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-ARG BUILDER_IMAGE=docker.io/library/maven:3.9.15-eclipse-temurin-21-noble
-ARG SERVER_BASE_IMAGE=eclipse-temurin:21.0.10_7-jre-noble
-ARG CLIENT_BASE_IMAGE=eclipse-temurin:21.0.10_7-jre-noble
+#ARG BUILDER_IMAGE=docker.io/library/maven:3.9.15-eclipse-temurin-21-noble
+#ARG SERVER_BASE_IMAGE=eclipse-temurin:21.0.10_7-jre-noble
+#ARG CLIENT_BASE_IMAGE=eclipse-temurin:21.0.10_7-jre-noble
+ARG BUILDER_IMAGE=docker.io/library/maven:3.10.0-amazoncorretto-21
+ARG SERVER_BASE_IMAGE=azul/zulu-openjdk:21.0.13.1-jre
+ARG CLIENT_BASE_IMAGE=azul/zulu-openjdk:21.0.13.1-jre
 
 # ----------------- EMS Builder image -----------------
 FROM $BUILDER_IMAGE AS ems-server-builder
@@ -84,6 +87,13 @@ ARG EMS_HOME=/opt/ems-server
 
 ARG TARGETARCH
 
+# Install optional packages
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y wget netcat-openbsd  \
+    && apt-get install --no-install-recommends -y vim iputils-ping  \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install dumb-init for the target architecture
 RUN set -eux; \
     case "${TARGETARCH}" in \
@@ -95,13 +105,6 @@ RUN set -eux; \
       "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_${DUMB_INIT_ARCH}"; \
     chmod +x /usr/local/bin/dumb-init
 #    echo "e874b55f3279ca41415d290c512a7ba9d08f98041b28ae7c2acb19a545f1c4df  dumb-init" | sha256sum -c - && \
-
-# Install optional packages
-RUN apt-get update \
-    && apt-get install --no-install-recommends -y netcat-openbsd  \
-    && apt-get install --no-install-recommends -y vim iputils-ping  \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
 
 # Add EMS user
 RUN set -eux; \
