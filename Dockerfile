@@ -7,9 +7,9 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-#ARG BUILDER_IMAGE=docker.io/library/maven:3.9.15-eclipse-temurin-21-noble
-#ARG SERVER_BASE_IMAGE=eclipse-temurin:21.0.10_7-jre-noble
-#ARG CLIENT_BASE_IMAGE=eclipse-temurin:21.0.10_7-jre-noble
+#ARG BUILDER_IMAGE=docker.io/library/maven:3.10.0-eclipse-temurin-21-noble
+#ARG SERVER_BASE_IMAGE=eclipse-temurin:21.0.13.1_2-jre-noble
+#ARG CLIENT_BASE_IMAGE=eclipse-temurin:21.0.13.1_2-jre-noble
 ARG BUILDER_IMAGE=docker.io/library/maven:3.10.0-amazoncorretto-21
 ARG SERVER_BASE_IMAGE=azul/zulu-openjdk:21.0.13.1-jre
 ARG CLIENT_BASE_IMAGE=azul/zulu-openjdk:21.0.13.1-jre

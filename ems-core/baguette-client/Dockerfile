@@ -8,7 +8,7 @@
 #
 
 #ARG RUN_IMAGE=eclipse-temurin
-#ARG RUN_IMAGE_TAG=21.0.10_7-jre-noble
+#ARG RUN_IMAGE_TAG=21.0.13.1_2-jre-noble
 ARG RUN_IMAGE=azul/zulu-openjdk
 ARG RUN_IMAGE_TAG=21.0.13.1-jre
 
