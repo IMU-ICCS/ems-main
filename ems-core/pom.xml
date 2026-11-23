@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.2</version>
+        <version>4.2.0</version>
         <relativePath></relativePath>
     </parent>
 
@@ -59,7 +59,7 @@
         <write-properties-file-maven-plugin.version>1.0.1</write-properties-file-maven-plugin.version>
 
         <!-- Spring Cloud dependencies version -->
-        <spring-cloud-dependencies.version>2025.1.4</spring-cloud-dependencies.version>
+        <spring-cloud-dependencies.version>2026.0.0</spring-cloud-dependencies.version>
         <!-- Apache Commons Text version -->
         <commons-text.version>1.14.0</commons-text.version>
         <!-- Esper version -->
