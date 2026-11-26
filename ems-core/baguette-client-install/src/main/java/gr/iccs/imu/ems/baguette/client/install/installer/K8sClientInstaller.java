@@ -303,7 +303,7 @@ public class K8sClientInstaller implements ClientInstallerPlugin {
         values.put("EMS_CLIENT_EXTRA_ENV_VARS", extraEnvVars);
         log.debug("K8sClientInstaller:       values: {}", values);
 
-        client.createDaemonSet(null, resourceName, values);
+        client.createDaemonSet(daemonSetName, resourceName, values);
     }
 
     private void applyExtraManifests(K8sClient client) throws IOException {

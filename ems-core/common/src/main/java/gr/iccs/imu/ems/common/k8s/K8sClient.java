@@ -17,6 +17,7 @@ import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.dsl.Resource;
+import io.fabric8.kubernetes.client.utils.Serialization;
 import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -93,25 +95,53 @@ public class K8sClient implements Closeable {
         return value==null ? defaultValue : value;
     }
 
+    private static <T> void writeAsYamlToFile(String name, T object) {
+        try {
+            String outputDir = getConfig("EMS_CLIENT_MANIFESTS_DIR", "yaml");
+            if (StringUtils.isBlank(outputDir)) return ;
+            Path path = Paths.get(outputDir, name + ".yaml").toAbsolutePath().normalize();
+            path.getParent().toFile().mkdirs();
+            String yaml = Serialization.asYaml(object);
+            Files.writeString(path, yaml);
+            log.info("K8sClient.createConfigMap: Stored to file: {} --> {}", name, path);
+            log.trace("K8sClient.createConfigMap: Stored to file: {} --> {}\n{}", name, path, yaml);
+        } catch (Exception e) {
+            log.error("K8sClient.createConfigMap: Error while storing to file: {} ", name, e);
+        }
+    }
+
     public K8sClient createConfigMap(String configMapName, Map<String,String> configMapData) {
         log.debug("K8sClient.createConfigMap: BEGIN: configMap-name: {}, configMap-data{}, namespace={}, dry-run={}",
                 configMapName, configMapData, namespace, dryRun);
 
         // Create configmap
-        Resource<ConfigMap> configMapResource = client.configMaps()
+        /*Resource<ConfigMap> configMapResource = client.configMaps()
                 .inNamespace(namespace)
                 .resource(new ConfigMapBuilder()
                         .withNewMetadata().withName(configMapName).endMetadata()
                         .addToData("creationTimestamp", Long.toString(Instant.now().getEpochSecond()))
                         .addToData(configMapData)
-                        .build());
-        log.trace("K8sClient.createConfigMap:  ConfigMap to create: {}", configMapResource);
+                        .build());*/
+        ConfigMap configMapSpec = new ConfigMapBuilder()
+                .withNewMetadata()
+                    .withName(configMapName)
+                    .withNamespace(namespace)
+                .endMetadata()
+                .addToData("creationTimestamp", Long.toString(Instant.now().getEpochSecond()))
+                .addToData(configMapData)
+                .build();
+        log.trace("K8sClient.createConfigMap:  ConfigMap to create: {}", configMapSpec);
         if (!dryRun) {
-            ConfigMap configMap = configMapResource.serverSideApply();
+            //ConfigMap configMap = configMapResource.serverSideApply();
+            ConfigMap configMap = client.configMaps().inNamespace(namespace).resource(configMapSpec).serverSideApply();
             log.debug("K8sClient.createConfigMap:    ConfigMap created: {}", configMap);
         } else {
             log.warn("K8sClient.createConfigMap: DRY-RUN: Didn't create configmap: {}", configMapName);
         }
+
+        // Write config-map YAML in a file
+        writeAsYamlToFile(configMapName, configMapSpec);
+
         return this;
     }
 
@@ -174,6 +204,9 @@ public class K8sClient implements Closeable {
                 } else {
                     log.warn("K8sClient.createDaemonSet: DRY-RUN: Didn't create DaemonSet: {}", daemonSetName);
                 }
+
+                // Write daemonset YAML in a file
+                writeAsYamlToFile(daemonSetName, daemonSet);
             }
         } else {
             log.warn("K8sClient.createDaemonSet: ERROR: DaemonSet spec is empty");
