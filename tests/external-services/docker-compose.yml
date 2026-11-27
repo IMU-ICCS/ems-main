@@ -47,3 +47,24 @@ services:
     restart: always
     ports:
       - "5000:5000"
+
+  gitea:
+    image: gitea/gitea:1
+    container_name: gitea
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      GITEA__security__INSTALL_LOCK: "true"
+      GITEA__repository__ENABLE_PUSH_CREATE_USER: "true"
+      GITEA__repository__DEFAULT_PUSH_CREATE_PRIVATE: "false"
+    volumes:
+      - gitea-data:/data
+    networks:
+      - kind
+
+volumes:
+  gitea-data:
+
+networks:
+  kind:
+    external: true
